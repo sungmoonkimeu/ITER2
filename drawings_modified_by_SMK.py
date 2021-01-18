@@ -18,7 +18,7 @@ from numpy import (array, asarray, cos, exp, linspace, matrix, meshgrid,
                    zeros_like)
 from scipy.signal import fftconvolve
 
-from . import np, degrees, eps
+from venv import np, degrees, eps
 from .utils import nearest2
 
 # print(matplotlib.__version__)
