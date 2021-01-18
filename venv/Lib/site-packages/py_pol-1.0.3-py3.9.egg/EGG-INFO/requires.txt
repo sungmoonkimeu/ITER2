@@ -1,0 +1,7 @@
+numpy
+scipy
+matplotlib
+hickle
+Click>=6.0
+sympy
+nbsphinx

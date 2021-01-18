@@ -1,0 +1,2048 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="English" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Mueller module &mdash; Python polarization 1.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Python polarization
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">1. Python polarization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">3. Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">4. py_pol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">5. Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">6. Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">7. History</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Python polarization</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Mueller module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/source/tests_help/test_mueller.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Mueller-module">
+<h1>Mueller module<a class="headerlink" href="#Mueller-module" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">run</span> ../config_jupyter.ipynb
+<span class="o">%</span><span class="k">autoreload</span> 2
+
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span>
+
+<span class="kn">from</span> <span class="nn">py_pol.mueller</span> <span class="k">import</span> <span class="n">Mueller</span>
+<span class="kn">from</span> <span class="nn">py_pol.stokes</span> <span class="k">import</span> <span class="n">Stokes</span>
+<span class="kn">from</span> <span class="nn">py_pol.jones_matrix</span> <span class="k">import</span> <span class="n">Jones_matrix</span>
+<span class="kn">from</span> <span class="nn">py_pol.utils</span> <span class="k">import</span> <span class="n">rotation_matrix_Mueller</span><span class="p">,</span> <span class="n">isrow</span><span class="p">,</span> <span class="n">iscolumn</span><span class="p">,</span> <span class="n">azimuth_elipt_2_charac_angles</span><span class="p">,</span> <span class="n">list_of_objects</span>
+
+<span class="kn">from</span> <span class="nn">py_pol</span> <span class="k">import</span> <span class="n">degrees</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-6</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;commit_hash&#39;: &#39;523ed2fe5&#39;,
+ &#39;commit_source&#39;: &#39;installation&#39;,
+ &#39;default_encoding&#39;: &#39;cp1252&#39;,
+ &#39;ipython_path&#39;: &#39;C:\\Users\\Jesus\\Anaconda3\\lib\\site-packages\\IPython&#39;,
+ &#39;ipython_version&#39;: &#39;7.2.0&#39;,
+ &#39;os_name&#39;: &#39;nt&#39;,
+ &#39;platform&#39;: &#39;Windows-10-10.0.17134-SP0&#39;,
+ &#39;sys_executable&#39;: &#39;C:\\Users\\Jesus\\Anaconda3\\python.exe&#39;,
+ &#39;sys_platform&#39;: &#39;win32&#39;,
+ &#39;sys_version&#39;: &#39;3.7.1 (default, Dec 10 2018, 22:54:23) [MSC v.1915 64 bit &#39;
+                &#39;(AMD64)]&#39;}
+3.0.2
+</pre></div></div>
+</div>
+<div class="section" id="Algebraic-operations">
+<h2>Algebraic operations<a class="headerlink" href="#Algebraic-operations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Rotation-with-keep-=-True">
+<h3>Rotation with keep = True<a class="headerlink" href="#Rotation-with-keep-=-True" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_linear</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">M1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+c
+M1 =
+  [+0.500, +0.500, +0.000, +0.000]
+  [+0.500, +0.500, +0.000, +0.000]
+  [+0.000, +0.000, +0.000, +0.000]
+  [+0.000, +0.000, +0.000, +0.000]
+
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">M2</span><span class="o">=</span><span class="n">M1</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">M1</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+a
+M1 @45.00º =
+  [+0.500, +0.000, +0.500, +0.000]
+  [+0.000, +0.000, +0.000, +0.000]
+  [+0.500, +0.000, +0.500, +0.000]
+  [+0.000, +0.000, +0.000, +0.000]
+
+
+None
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Rotation-with-keep-=-False">
+<h3>Rotation with keep = False<a class="headerlink" href="#Rotation-with-keep-=-False" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_linear</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+c
+M1 =
+  [+0.500, +0.500, +0.000, +0.000]
+  [+0.500, +0.500, +0.000, +0.000]
+  [+0.000, +0.000, +0.000, +0.000]
+  [+0.000, +0.000, +0.000, +0.000]
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">M2</span><span class="o">=</span><span class="n">M1</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">M1</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+b
+M1 =
+  [+0.500, +0.500, +0.000, +0.000]
+  [+0.500, +0.500, +0.000, +0.000]
+  [+0.000, +0.000, +0.000, +0.000]
+  [+0.000, +0.000, +0.000, +0.000]
+
+
+None
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">t</span><span class="o">=</span><span class="n">M1</span><span class="o">.</span><span class="n">vacuum</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+None
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">t</span><span class="o">=</span><span class="n">M1</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Multiplication-of-2-Mueller-Matrices">
+<h3>Multiplication of 2 Mueller Matrices<a class="headerlink" href="#Multiplication-of-2-Mueller-Matrices" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Test for matrix multiplication.&quot;&quot;&quot;</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">96</span><span class="p">,</span> <span class="mi">68</span><span class="p">,</span> <span class="mi">69</span><span class="p">,</span> <span class="mi">69</span><span class="p">],</span> <span class="p">[</span><span class="mi">24</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">52</span><span class="p">],</span> <span class="p">[</span><span class="mi">58</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="mi">71</span><span class="p">,</span> <span class="mi">92</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">107</span><span class="p">,</span> <span class="mi">81</span><span class="p">,</span> <span class="mi">142</span><span class="p">]]))</span>
+
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]))</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">]]))</span>
+<span class="n">Mueller1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">()</span>
+<span class="n">Mueller1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">Mueller2</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">()</span>
+<span class="n">Mueller2</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+<span class="n">Mueller3</span> <span class="o">=</span> <span class="n">Mueller1</span> <span class="o">*</span> <span class="n">Mueller2</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">Mueller3</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 96  68  69  69]
+ [ 24  56  18  52]
+ [ 58  95  71  92]
+ [ 90 107  81 142]]
+0.0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_linear</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">)</span>
+<span class="n">M2</span><span class="o">.</span><span class="n">diattenuator_linear</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">M3</span> <span class="o">=</span> <span class="n">M1</span> <span class="o">*</span> <span class="n">M2</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M3</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0. 0. 0. 0.]
+ [0. 0. 0. 0.]
+ [0. 0. 0. 0.]
+ [0. 0. 0. 0.]]
+0.0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">depolarizer</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">J1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;J1&#39;</span><span class="p">)</span>
+<span class="n">J1</span><span class="o">.</span><span class="n">from_elements</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">J2</span> <span class="o">=</span> <span class="n">M1</span> <span class="o">*</span> <span class="n">J1</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">J2</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[1.]
+ [0.]
+ [0.]
+ [0.]]
+0.0
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Mueller-matrix-and-stokes-vector">
+<h3>Mueller matrix and stokes vector<a class="headerlink" href="#Mueller-matrix-and-stokes-vector" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Matrix definition</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_linear</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">general_azimuth_ellipticity</span><span class="p">(</span><span class="n">azimuth</span><span class="o">=</span><span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="n">M1</span><span class="o">*</span><span class="n">S1</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">S2</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.]
+ [0.]
+ [0.]
+ [0.]]
+0.0
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Numbers">
+<h3>Numbers<a class="headerlink" href="#Numbers" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Division</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_linear</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="mi">5</span><span class="o">/</span><span class="n">M1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
+<span class="ansi-red-intense-fg ansi-bold">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-4-30f82b69629c&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">      2</span> M1 <span class="ansi-yellow-intense-fg ansi-bold">=</span> Mueller<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#39;M1&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      3</span> M1<span class="ansi-yellow-intense-fg ansi-bold">.</span>diattenuator_linear<span class="ansi-yellow-intense-fg ansi-bold">(</span>p1<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-cyan-intense-fg ansi-bold">1</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> p2<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-cyan-intense-fg ansi-bold">0</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> angle<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-cyan-intense-fg ansi-bold">0</span><span class="ansi-yellow-intense-fg ansi-bold">*</span>degrees<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">----&gt; 4</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>M2 <span class="ansi-yellow-intense-fg ansi-bold">=</span> <span class="ansi-cyan-intense-fg ansi-bold">5</span><span class="ansi-yellow-intense-fg ansi-bold">/</span>M1
+<span class="ansi-green-fg">      5</span> print<span class="ansi-yellow-intense-fg ansi-bold">(</span>M2<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+
+<span class="ansi-red-intense-fg ansi-bold">TypeError</span>: unsupported operand type(s) for /: &#39;int&#39; and &#39;Mueller&#39;
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Matrix-operations">
+<h2>Matrix operations<a class="headerlink" href="#Matrix-operations" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># divide_in_blocks</span>
+<span class="n">solution1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]))</span>
+<span class="n">solution2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">5</span><span class="p">],[</span><span class="mi">9</span><span class="p">],[</span><span class="mi">13</span><span class="p">]]))</span>
+<span class="n">solution3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]]))</span>
+<span class="n">solution4</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_elements</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<span class="p">(</span><span class="n">proposal1</span><span class="p">,</span><span class="n">proposal2</span><span class="p">,</span><span class="n">proposal3</span><span class="p">,</span><span class="n">proposal4</span><span class="p">)</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">divide_in_blocks</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal1</span> <span class="o">-</span> <span class="n">solution1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal2</span> <span class="o">-</span> <span class="n">solution2</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal3</span> <span class="o">-</span> <span class="n">solution3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal4</span> <span class="o">-</span> <span class="n">solution4</span><span class="p">))</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0.0
+0.0
+0.0
+0.0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Rotate</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">solution</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">r3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">r3</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.125</span><span class="p">,</span> <span class="o">-</span><span class="n">r3</span><span class="o">/</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">r3</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="n">r3</span><span class="o">/</span><span class="mi">8</span><span class="p">,</span> <span class="mf">0.375</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+0.0
+[[5.00000000e-01 3.06161700e-17 5.00000000e-01 0.00000000e+00]
+ [3.06161700e-17 1.87469973e-33 3.06161700e-17 0.00000000e+00]
+ [5.00000000e-01 3.06161700e-17 5.00000000e-01 0.00000000e+00]
+ [0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00]]
+6.123233995736766e-17
+[[ 0.5        -0.25        0.4330127   0.        ]
+ [-0.25        0.125      -0.21650635  0.        ]
+ [ 0.4330127  -0.21650635  0.375       0.        ]
+ [ 0.          0.          0.          0.        ]]
+2.2887833992611187e-16
+[[ 5.00000000e-01 -5.00000000e-01  6.12323400e-17  0.00000000e+00]
+ [-5.00000000e-01  5.00000000e-01 -6.12323400e-17  0.00000000e+00]
+ [ 6.12323400e-17 -6.12323400e-17  7.49879891e-33  0.00000000e+00]
+ [ 0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00]]
+1.2246467991473532e-16
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Subtest: Rotation matrix mueller</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]))</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">rotation_matrix_Mueller</span><span class="p">(</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 1.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00]
+ [ 0.000000e+00  6.123234e-17  1.000000e+00  0.000000e+00]
+ [ 0.000000e+00 -1.000000e+00  6.123234e-17  0.000000e+00]
+ [ 0.000000e+00  0.000000e+00  0.000000e+00  1.000000e+00]]
+8.659560562354933e-17
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Definitions">
+<h2>Definitions<a class="headerlink" href="#Definitions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="from*">
+<h3><a href="#id1"><span class="problematic" id="id2">from_</span></a>*<a class="headerlink" href="#from*" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># from_elemnts</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_elements</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 1.  2.  3.  4.]
+ [ 5.  6.  7.  8.]
+ [ 9. 10. 11. 12.]
+ [13. 14. 15. 16.]]
+0.0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># from_matrix</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]]))</span>
+
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 1  2  3  4]
+ [ 5  6  7  8]
+ [ 9 10 11 12]
+ [13 14 15 16]]
+0.0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># from_Jones</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">JM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="o">+</span><span class="mi">0</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">))</span>
+<span class="n">J1</span> <span class="o">=</span> <span class="n">Jones_matrix</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)</span>
+<span class="n">J1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">JM</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_Jones</span><span class="p">(</span><span class="n">J1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+0.0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># from_blocks</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]]))</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]))</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">5</span><span class="p">],[</span><span class="mi">9</span><span class="p">],[</span><span class="mi">13</span><span class="p">]]))</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]]))</span>
+<span class="n">m00</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_blocks</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">m00</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 1  2  3  4]
+ [ 5  6  7  8]
+ [ 9 10 11 12]
+ [13 14 15 16]]
+0.0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># covariance_matrix and from_covariance</span>
+<span class="n">original</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0229</span><span class="p">,</span> <span class="mf">0.0027</span><span class="p">,</span> <span class="mf">0.0058</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.0186</span><span class="p">,</span> <span class="mf">0.9956</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0361</span><span class="p">,</span> <span class="mf">0.0318</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.0129</span><span class="p">,</span> <span class="mf">0.0392</span><span class="p">,</span> <span class="mf">0.2207</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9656</span><span class="p">],</span>
+              <span class="p">[</span><span class="mf">0.0014</span><span class="p">,</span> <span class="mf">0.0280</span><span class="p">,</span> <span class="mf">0.9706</span><span class="p">,</span> <span class="mf">0.2231</span><span class="p">]]))</span>
+<span class="n">covariant</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.4885</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0083</span><span class="o">+</span><span class="mf">0.0094</span><span class="n">j</span><span class="p">,</span> <span class="mf">0.0066</span><span class="o">-</span><span class="mf">0.0073</span><span class="n">j</span><span class="p">,</span> <span class="mf">0.1109</span><span class="o">-</span><span class="mf">0.484</span><span class="n">j</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.0086</span><span class="o">-</span><span class="mf">0.0094</span><span class="n">j</span><span class="p">,</span> <span class="mf">0.0022</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0006</span><span class="o">-</span><span class="mf">0.0013</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.013</span><span class="o">+</span><span class="mf">0.0067</span><span class="n">j</span><span class="p">],</span>
+              <span class="p">[</span><span class="mf">0.0066</span><span class="o">+</span><span class="mf">0.0073</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0006</span><span class="o">+</span><span class="mf">0.0013</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0097</span><span class="o">-</span><span class="mf">0.0065</span><span class="n">j</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.1109</span><span class="o">+</span><span class="mf">0.484</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.013</span><span class="o">-</span><span class="mf">0.0067</span><span class="n">j</span><span class="p">,</span> <span class="mf">0.0097</span><span class="o">+</span><span class="mf">0.0068</span><span class="n">j</span><span class="p">,</span> <span class="mf">0.5093</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">original</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">covariance_matrix</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">covariant</span><span class="p">))</span>
+
+<span class="n">M1</span><span class="o">.</span><span class="n">from_covariance</span><span class="p">(</span><span class="n">covariant</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">original</span><span class="p">))</span>
+
+
+
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0.0004301162633521301
+0.0008602325267042792
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># from_inverse</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">error</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">ellipticity</span><span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">original</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">()</span>
+    <span class="n">original</span><span class="o">.</span><span class="n">diattenuator_azimuth_ellipticity_from_vector</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">p1</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">p2</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">ellipticity</span><span class="p">)</span>
+    <span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">()</span>
+    <span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_azimuth_ellipticity_from_vector</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">ellipticity</span><span class="p">)</span>
+    <span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">from_inverse</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+    <span class="n">error</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">original</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[2.48667876e-10 8.20167646e-15 9.00180757e-15 3.56020034e-16
+ 3.90257240e-16 5.61816067e-15 3.07273280e-15 9.22438715e-15
+ 2.21160057e-15 1.11636473e-15 1.12332627e-13 7.69768489e-16
+ 2.15066920e-11 7.41525929e-14 3.87640788e-13 1.10570354e-15
+ 1.17271508e-13 4.19840396e-16 2.34705850e-10 1.36247745e-14]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Generators">
+<h3>Generators<a class="headerlink" href="#Generators" title="Permalink to this headline">¶</a></h3>
+<p><strong>Diattenuators</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># diattenuator_linear</span>
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_linear</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+0.0
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># diattenuator_linear_depolarizer</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_linear_depolarizer</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="kc">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># diattenuator_charac_angles_from_Jones</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_charac_angles_from_Jones</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_charac_angles_from_Jones</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">180</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_charac_angles_from_Jones</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+0.0
+[[ 5.00000000e-01  1.11022302e-16 -5.00000000e-01  6.12323400e-17]
+ [ 1.11022302e-16  0.00000000e+00 -1.11022302e-16  1.23259516e-32]
+ [-5.00000000e-01 -1.11022302e-16  5.00000000e-01 -6.12323400e-17]
+ [ 6.12323400e-17  1.23259516e-32 -6.12323400e-17  0.00000000e+00]]
+2.535772158592562e-16
+[[5.00000000e-01 1.11022302e-16 3.06161700e-17 5.00000000e-01]
+ [1.11022302e-16 0.00000000e+00 6.16297582e-33 1.11022302e-16]
+ [3.06161700e-17 6.16297582e-33 0.00000000e+00 3.06161700e-17]
+ [5.00000000e-01 1.11022302e-16 3.06161700e-17 5.00000000e-01]]
+2.303328157969851e-16
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># diattenuator_azimuth_ellipticity_from_Jones</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_azimuth_ellipticity_from_Jones</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_azimuth_ellipticity_from_Jones</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">135</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_azimuth_ellipticity_from_Jones</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+0.0
+[[ 5.00000000e-01 -1.11022302e-16 -5.00000000e-01  6.12323400e-17]
+ [-1.11022302e-16  0.00000000e+00  1.11022302e-16 -1.23259516e-32]
+ [-5.00000000e-01  1.11022302e-16  5.00000000e-01 -6.12323400e-17]
+ [ 6.12323400e-17 -1.23259516e-32 -6.12323400e-17  0.00000000e+00]]
+2.535772158592562e-16
+[[5.00000000e-01 1.11022302e-16 3.06161700e-17 5.00000000e-01]
+ [1.11022302e-16 0.00000000e+00 6.16297582e-33 1.11022302e-16]
+ [3.06161700e-17 6.16297582e-33 0.00000000e+00 3.06161700e-17]
+ [5.00000000e-01 1.11022302e-16 3.06161700e-17 5.00000000e-01]]
+2.303328157969851e-16
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># diattenuator_charac_angles_from_vector</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_charac_angles_from_vector</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_charac_angles_from_vector</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">180</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_charac_angles_from_vector</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+0.0
+[[ 5.00000000e-01  3.06161700e-17 -5.00000000e-01  6.12323400e-17]
+ [ 3.06161700e-17  1.87469973e-33 -3.06161700e-17  3.74939946e-33]
+ [-5.00000000e-01 -3.06161700e-17  5.00000000e-01 -6.12323400e-17]
+ [ 6.12323400e-17  3.74939946e-33 -6.12323400e-17  7.49879891e-33]]
+1.3691967456605067e-16
+[[5.00000000e-01 3.06161700e-17 3.06161700e-17 5.00000000e-01]
+ [3.06161700e-17 1.87469973e-33 1.87469973e-33 3.06161700e-17]
+ [3.06161700e-17 1.87469973e-33 1.87469973e-33 3.06161700e-17]
+ [5.00000000e-01 3.06161700e-17 3.06161700e-17 5.00000000e-01]]
+8.659560562354933e-17
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># diattenuator_azimuth_ellipticity_from_vector</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_azimuth_ellipticity_from_vector</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_azimuth_ellipticity_from_vector</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">135</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_azimuth_ellipticity_from_vector</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+0.0
+[[ 5.00000000e-01 -8.04061325e-17 -5.00000000e-01  6.12323400e-17]
+ [-8.04061325e-17  1.29302923e-32  8.04061325e-17 -9.84691128e-33]
+ [-5.00000000e-01  8.04061325e-17  5.00000000e-01 -6.12323400e-17]
+ [ 6.12323400e-17 -9.84691128e-33 -6.12323400e-17  7.49879891e-33]]
+2.021340703361228e-16
+[[5.00000000e-01 3.06161700e-17 3.06161700e-17 5.00000000e-01]
+ [3.06161700e-17 1.87469973e-33 1.87469973e-33 3.06161700e-17]
+ [3.06161700e-17 1.87469973e-33 1.87469973e-33 3.06161700e-17]
+ [5.00000000e-01 3.06161700e-17 3.06161700e-17 5.00000000e-01]]
+8.659560562354933e-17
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># diattenuator_from_vector</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="n">m00</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_from_vector</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">m00</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_from_vector</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">m00</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+<span class="n">m00</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_from_vector</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">m00</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.5 0.5 0.  0. ]
+ [0.5 0.5 0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]]
+0.0
+[[ 0.5  0.  -0.5  0. ]
+ [ 0.   0.   0.   0. ]
+ [-0.5  0.   0.5  0. ]
+ [ 0.   0.   0.   0. ]]
+0.0
+[[0.5 0.  0.  0.5]
+ [0.  0.  0.  0. ]
+ [0.  0.  0.  0. ]
+ [0.5 0.  0.  0.5]]
+0.0
+</pre></div></div>
+</div>
+<p><strong>Retarders</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># retarder_charac_angles_from_Jones</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_charac_angles_from_Jones</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">180</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_charac_angles_from_Jones</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_charac_angles_from_Jones</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 1.0000000e+00  0.0000000e+00  0.0000000e+00  0.0000000e+00]
+ [ 0.0000000e+00  1.0000000e+00  0.0000000e+00  0.0000000e+00]
+ [ 0.0000000e+00  0.0000000e+00 -1.0000000e+00  1.2246468e-16]
+ [ 0.0000000e+00  0.0000000e+00 -1.2246468e-16 -1.0000000e+00]]
+1.7319121124709866e-16
+[[ 1.          0.          0.          0.        ]
+ [ 0.          1.          0.          0.        ]
+ [ 0.          0.          0.70710678  0.70710678]
+ [ 0.          0.         -0.70710678  0.70710678]]
+1.5700924586837752e-16
+[[ 1.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00]
+ [ 0.00000000e+00  7.07106781e-01  7.07106781e-01  4.16749887e-17]
+ [ 0.00000000e+00 -7.07106781e-01  7.07106781e-01  2.23077003e-16]
+ [ 0.00000000e+00  1.28270594e-16 -1.87207929e-16  1.00000000e+00]]
+3.5728449608497014e-16
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># retarder_azimuth_ellipticity_from_Jones</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_azimuth_ellipticity_from_Jones</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">180</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_azimuth_ellipticity_from_Jones</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_azimuth_ellipticity_from_Jones</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 1.0000000e+00  0.0000000e+00  0.0000000e+00  0.0000000e+00]
+ [ 0.0000000e+00  1.0000000e+00  0.0000000e+00  0.0000000e+00]
+ [ 0.0000000e+00  0.0000000e+00 -1.0000000e+00  1.2246468e-16]
+ [ 0.0000000e+00  0.0000000e+00 -1.2246468e-16 -1.0000000e+00]]
+1.7319121124709866e-16
+[[ 1.          0.          0.          0.        ]
+ [ 0.          1.          0.          0.        ]
+ [ 0.          0.          0.70710678  0.70710678]
+ [ 0.          0.         -0.70710678  0.70710678]]
+1.5700924586837752e-16
+[[ 1.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00]
+ [ 0.00000000e+00  7.07106781e-01  7.07106781e-01 -4.32978028e-17]
+ [ 0.00000000e+00 -7.07106781e-01  7.07106781e-01  1.79345371e-17]
+ [ 0.00000000e+00  4.32978028e-17  1.79345371e-17  1.00000000e+00]]
+8.033319240475757e-16
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># retarder_charac_angles_from_vector</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_charac_angles_from_vector</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="mf">0.8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_charac_angles_from_vector</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 1.          0.          0.          0.        ]
+ [ 0.          1.          0.          0.        ]
+ [ 0.          0.          0.70710678  0.70710678]
+ [ 0.          0.         -0.70710678  0.70710678]]
+0.0
+[[ 8.00000000e-01  0.00000000e+00  0.00000000e+00  0.00000000e+00]
+ [ 0.00000000e+00  5.65685425e-01  5.65685425e-01 -2.02906125e-17]
+ [ 0.00000000e+00 -5.65685425e-01  5.65685425e-01  4.89858720e-17]
+ [ 0.00000000e+00  4.89858720e-17 -2.02906125e-17  8.00000000e-01]]
+7.498432648522078e-17
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># retarder_azimuth_ellipticity_from_vector</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_azimuth_ellipticity_from_vector</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="mf">0.8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_azimuth_ellipticity_from_vector</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 1.          0.          0.          0.        ]
+ [ 0.          1.          0.          0.        ]
+ [ 0.          0.          0.70710678  0.70710678]
+ [ 0.          0.         -0.70710678  0.70710678]]
+0.0
+[[ 8.00000000e-01  0.00000000e+00  0.00000000e+00  0.00000000e+00]
+ [ 0.00000000e+00  5.65685425e-01  5.65685425e-01 -2.02906125e-17]
+ [ 0.00000000e+00 -5.65685425e-01  5.65685425e-01  4.89858720e-17]
+ [ 0.00000000e+00  4.89858720e-17 -2.02906125e-17  8.00000000e-01]]
+7.498432648522078e-17
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># retarder_from_vector</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]))</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+    <span class="n">M1</span><span class="o">.</span><span class="n">retarder_from_vector</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">180</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ur</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_from_vector</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ur</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">m00</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+
+<span class="n">r2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="mf">0.8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">retarder_from_vector</span><span class="p">(</span><span class="n">D</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">ur</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">m00</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0.0
+[[ 1.          0.          0.          0.        ]
+ [ 0.          1.          0.          0.        ]
+ [ 0.          0.          0.70710678  0.70710678]
+ [ 0.          0.         -0.70710678  0.70710678]]
+0.0
+[[ 0.8         0.          0.          0.        ]
+ [ 0.          0.56568542  0.56568542  0.        ]
+ [ 0.         -0.56568542  0.56568542  0.        ]
+ [ 0.          0.          0.          0.8       ]]
+0.0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># diattenuator_retarder_linear</span>
+<span class="n">r3p2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.25</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.25</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">r3p2</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">r3p2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]]))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">)</span>
+<span class="n">M1</span><span class="o">.</span><span class="n">diattenuator_retarder_linear</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.25</span><span class="p">),</span> <span class="n">D</span><span class="o">=</span><span class="mi">60</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">proposal</span> <span class="o">=</span> <span class="n">M1</span><span class="o">.</span><span class="n">M</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">proposal</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">proposal</span> <span class="o">-</span> <span class="n">solution</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[ 0.625      0.375      0.         0.       ]
+ [ 0.375      0.625      0.         0.       ]
+ [ 0.         0.         0.25       0.4330127]
+ [ 0.         0.        -0.4330127  0.25     ]]
+7.850462293418876e-17
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+[autoreload of py_pol.mueller failed: Traceback (most recent call last):
+  File &#34;C:\Users\Jesus\Anaconda3\lib\site-packages\IPython\extensions\autoreload.py&#34;, line 244, in check
+    superreload(m, reload, self.old_objects)
+  File &#34;C:\Users\Jesus\Anaconda3\lib\site-packages\IPython\extensions\autoreload.py&#34;, line 376, in superreload
+    module = reload(module)
+  File &#34;C:\Users\Jesus\Anaconda3\lib\imp.py&#34;, line 314, in reload
+    return importlib.reload(module)
+  File &#34;C:\Users\Jesus\Anaconda3\lib\importlib\__init__.py&#34;, line 169, in reload
+    _bootstrap._exec(spec, module)
+  File &#34;&lt;frozen importlib._bootstrap&gt;&#34;, line 630, in _exec
+  File &#34;&lt;frozen importlib._bootstrap_external&gt;&#34;, line 724, in exec_module
+  File &#34;&lt;frozen importlib._bootstrap_external&gt;&#34;, line 860, in get_code
+  File &#34;&lt;frozen importlib._bootstrap_external&gt;&#34;, line 791, in source_to_code
+  File &#34;&lt;frozen importlib._bootstrap&gt;&#34;, line 219, in _call_with_frames_removed
+  File &#34;d:\codigo\py_pol\py_pol\mueller.py&#34;, line 563
+    self.M = matrix(D*np.identity(4)), dtype=real)
+                                                 ^
+SyntaxError: invalid syntax
+]
+[autoreload of py_pol.jones_matrix failed: Traceback (most recent call last):
+  File &#34;C:\Users\Jesus\Anaconda3\lib\site-packages\IPython\extensions\autoreload.py&#34;, line 244, in check
+    superreload(m, reload, self.old_objects)
+  File &#34;C:\Users\Jesus\Anaconda3\lib\site-packages\IPython\extensions\autoreload.py&#34;, line 376, in superreload
+    module = reload(module)
+  File &#34;C:\Users\Jesus\Anaconda3\lib\imp.py&#34;, line 314, in reload
+    return importlib.reload(module)
+  File &#34;C:\Users\Jesus\Anaconda3\lib\importlib\__init__.py&#34;, line 169, in reload
+    _bootstrap._exec(spec, module)
+  File &#34;&lt;frozen importlib._bootstrap&gt;&#34;, line 630, in _exec
+  File &#34;&lt;frozen importlib._bootstrap_external&gt;&#34;, line 724, in exec_module
+  File &#34;&lt;frozen importlib._bootstrap_external&gt;&#34;, line 860, in get_code
+  File &#34;&lt;frozen importlib._bootstrap_external&gt;&#34;, line 791, in source_to_code
+  File &#34;&lt;frozen importlib._bootstrap&gt;&#34;, line 219, in _call_with_frames_removed
+  File &#34;d:\codigo\py_pol\py_pol\jones_matrix.py&#34;, line 690
+    if global_phase % (2 * pi) != 0:
+                                   ^
+IndentationError: unindent does not match any outer indentation level
+]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0. 0. 0.]
+ [0. 0. 0.]
+ [0. 0. 0.]]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
+<span class="ansi-red-intense-fg ansi-bold">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-5-073840779474&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">      1</span> a <span class="ansi-yellow-intense-fg ansi-bold">=</span> np<span class="ansi-yellow-intense-fg ansi-bold">.</span>zeros<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-cyan-intense-fg ansi-bold">3</span><span class="ansi-yellow-intense-fg ansi-bold">,</span><span class="ansi-cyan-intense-fg ansi-bold">3</span><span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      2</span> print<span class="ansi-yellow-intense-fg ansi-bold">(</span>a<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">----&gt; 3</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>a<span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-cyan-intense-fg ansi-bold">0</span><span class="ansi-yellow-intense-fg ansi-bold">,</span><span class="ansi-cyan-intense-fg ansi-bold">0</span><span class="ansi-yellow-intense-fg ansi-bold">]</span> <span class="ansi-yellow-intense-fg ansi-bold">=</span> Mueller<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      4</span> print<span class="ansi-yellow-intense-fg ansi-bold">(</span>a<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+
+<span class="ansi-red-intense-fg ansi-bold">TypeError</span>: float() argument must be a string or a number, not &#39;Mueller&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="s2">&quot;hola&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span> <span class="p">,</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
+<span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[1, 2, 3, 4, 5, 6]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="n">list_of_objects</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">Mueller</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[  =
+  [ +0,  +0,  +0,  +0]
+  [ +0,  +0,  +0,  +0]
+  [ +0,  +0,  +0,  +0]
+  [ +0,  +0,  +0,  +0]
+,   =
+  [ +0,  +0,  +0,  +0]
+  [ +0,  +0,  +0,  +0]
+  [ +0,  +0,  +0,  +0]
+  [ +0,  +0,  +0,  +0]
+,   =
+  [ +0,  +0,  +0,  +0]
+  [ +0,  +0,  +0,  +0]
+  [ +0,  +0,  +0,  +0]
+  [ +0,  +0,  +0,  +0]
+]
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019, Luis Miguel Sanchez Brea / Jesus del Hoyo
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

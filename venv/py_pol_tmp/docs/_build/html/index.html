@@ -1,0 +1,431 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="English" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to Python polarization&#39;s documentation! &mdash; Python polarization 1.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="1. Python polarization" href="readme.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home" alt="Documentation Home"> Python polarization
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">1. Python polarization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">3. Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">4. py_pol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">5. Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">6. Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">7. History</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Python polarization</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Welcome to Python polarization's documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="welcome-to-python-polarization-s-documentation">
+<h1>Welcome to Python polarization's documentation!<a class="headerlink" href="#welcome-to-python-polarization-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">1. Python polarization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="readme.html#features">1.1. Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme.html#examples">1.2. Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="readme.html#jones-formalism">1.2.1. Jones formalism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="readme.html#stokes-mueller-formalism">1.2.2. Stokes-Mueller formalism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="readme.html#drawings">1.2.3. Drawings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="readme.html#authors">1.3. Authors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme.html#citing">1.4. Citing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme.html#references">1.5. References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme.html#acknowlegments">1.6. Acknowlegments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme.html#credits">1.7. Credits</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">2. Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#stable-release">2.1. Stable release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-sources">2.2. From sources</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">3. Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">4. py_pol</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="py_pol.html">4.1. py_pol package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="py_pol.html#submodules">4.1.1. Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="py_pol.html#module-py_pol.drawings">4.1.2. py_pol.drawings module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="py_pol.html#module-py_pol.jones_matrix">4.1.3. py_pol.jones_matrix module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="py_pol.html#module-py_pol.jones_vector">4.1.4. py_pol.jones_vector module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="py_pol.html#py-pol-mueller-module">4.1.5. py_pol.mueller module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="py_pol.html#module-py_pol.stokes">4.1.6. py_pol.stokes module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="py_pol.html#module-py_pol.utils">4.1.7. py_pol.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="py_pol.html#module-py_pol">4.1.8. Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="source/tutorial/tutorial.html">Tutorials</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Drawing.html">1. Draw</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Drawing.html#Polarization-ellipse">1.1. Polarization ellipse</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Drawing.html#Poincaré-sphere">1.2. Poincaré sphere</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Drawing.html#Other-considerations">1.3. Other considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Jones_matrix.html">2. Jones_matrix class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_matrix.html#Creating-an-instance">2.1. Creating an instance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_matrix.html#Jones_matrix-class-fields">2.2. Jones_matrix class fields</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_matrix.html#Generating-of-optical-elements">2.3. Generating of optical elements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_matrix.html#Basic-operations">2.4. Basic operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_matrix.html#Jones-matrix-manipulation">2.5. Jones matrix manipulation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Jones_matrix.html#Parameters-of-Jones_matrix">3. Parameters of Jones_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Jones_matrix.html#Checks-of-Jones_matrix">4. Checks of Jones_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Jones_matrix.html#Analysis-of-Jones_matrix">5. Analysis of Jones_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Jones_vector.html">6. Jones_vector class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_vector.html#Creating-an-instance">6.1. Creating an instance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_vector.html#Jones_vector-class-fields">6.2. Jones_vector class fields</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_vector.html#Generating-polarization-states">6.3. Generating polarization states</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_vector.html#Basic-operations">6.4. Basic operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Jones_vector.html#Jones-vector-manipulation">6.5. Jones vector manipulation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Jones_vector.html#Parameters-of-Jones_vector">7. Parameters of Jones_vector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Jones_vector.html#Checks-of-Jones_vector">8. Checks of Jones_vector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Mueller.html">9. Mueller class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Mueller.html#Creating-an-instance">9.1. Creating an instance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Mueller.html#Mueller-class-fields">9.2. Mueller class fields</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Mueller.html#Generating-polarization-devices">9.3. Generating polarization devices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Mueller.html#Basic-operations">9.4. Basic operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Mueller.html#Mueller-matrix-manipulation">9.5. Mueller matrix manipulation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Mueller.html#Parameters-of-Mueller-matrices">10. Parameters of Mueller matrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Mueller.html#Checks-on-Mueller-Matrices">11. Checks on Mueller Matrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Mueller.html#Analysis-of-Mueller-matrices">12. Analysis of Mueller matrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Stokes.html">13. Stokes class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Stokes.html#Creating-an-instance">13.1. Creating an instance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Stokes.html#Generating-polarization-states">13.2. Generating polarization states</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Stokes.html#Basic-operations">13.3. Basic operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/tutorial/Stokes.html#Stokes-vectors-manipulation">13.4. Stokes vectors manipulation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Stokes.html#Parameters-of-Stokes-vector">14. Parameters of Stokes vector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Stokes.html#Checks-of-Stokes-vectors">15. Checks of Stokes vectors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/tutorial/Stokes.html#Analysis-of-Stokes-vectors">16. Analysis of Stokes vectors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="source/examples/introductory/example.html">1. Introductory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="source/examples/introductory/Example_1_Malus_law.html">1.1. Example 1: Malus law</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/introductory/Example_1_Malus_law.html#Jones-formalism">1.1.1. Jones formalism</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/introductory/Example_1_Malus_law.html#Mueller-Stokes-formalism">1.1.2. Mueller-Stokes formalism</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/examples/introductory/Example_2_Classical_Zeno_effect.html">1.2. Example 2: Classic Zeno effect</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/introductory/Example_2_Classical_Zeno_effect.html#Jones-formalism">1.2.1. Jones formalism</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/introductory/Example_2_Classical_Zeno_effect.html#Mueller-Stokes-formalism">1.2.2. Mueller-Stokes formalism</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="source/examples/advanced/example.html">2. Advanced</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="source/examples/advanced/Example_3_Analysis.html">2.1. Example 3: Analysis</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/Example_3_Analysis.html#Analysis-of-light-waves">2.1.1. Analysis of light waves</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/Example_3_Analysis.html#Analysis-of-optical-elements">2.1.2. Analysis of optical elements</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/examples/advanced/Example_4_Light_polarimetry.html">2.2. Example 4: Light polarimetry</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/Example_4_Light_polarimetry.html#Jones-formalism">2.2.1. Jones formalism</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/Example_4_Light_polarimetry.html#Mueller-Stokes-formalism">2.2.2. Mueller-Stokes formalism</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/examples/advanced/Example_5_Optical_elements_polarimetry.html">2.3. Example 5: Optical elements polarimetry</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/Example_5_Optical_elements_polarimetry.html#Jones-formalism">2.3.1. Jones formalism</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/Example_5_Optical_elements_polarimetry.html#Mueller-Stokes-formalism">2.3.2. Mueller-Stokes formalism</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/examples/advanced/analysis of Mueller Matrix.html">2.4. Analysis of experimental Mueller Matrix</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/analysis of Mueller Matrix.html#Filtering">2.4.1. Filtering</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/analysis of Mueller Matrix.html#Behavior-analysis">2.4.2. Behavior analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/analysis of Mueller Matrix.html#Decomposition">2.4.3. Decomposition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source/examples/advanced/polarimeter.html">2.5. Polarimeter</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/polarimeter.html#Introduction">2.5.1. Introduction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/polarimeter.html#Import-required-Modules">2.5.2. Import required Modules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/polarimeter.html#Definition-of-elements">2.5.3. Definition of elements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/polarimeter.html#Definition-of-polarimeter">2.5.4. Definition of polarimeter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/polarimeter.html#Example">2.5.5. Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/examples/advanced/polarimeter.html#Measure-the-Mueller-matrix">2.5.6. Measure the Mueller matrix</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">5. Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#types-of-contributions">5.1. Types of Contributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#report-bugs">5.1.1. Report Bugs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#fix-bugs">5.1.2. Fix Bugs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#implement-features">5.1.3. Implement Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#write-documentation">5.1.4. Write Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#submit-feedback">5.1.5. Submit Feedback</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#get-started">5.2. Get Started!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#pull-request-guidelines">5.3. Pull Request Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#tips">5.4. Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#deploying">5.5. Deploying</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">6. Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="authors.html#development-lead">6.1. Development Lead</a></li>
+<li class="toctree-l2"><a class="reference internal" href="authors.html#contributors">6.2. Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">7. History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="history.html#id1">7.1. 0.1.1 (2018-12-22)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="history.html#id2">7.2. 0.1.3 (2019-01-22)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="history.html#id3">7.3. 0.1.4 (2019-02-03)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="history.html#id4">7.4. 0.1.5 (2019-02-25)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="history.html#id5">7.5. 0.2.0 (2019-05-25)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="history.html#id6">7.6. 0.2.1 (2019-09-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="history.html#id7">7.7. 0.2.2 (2019-09-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="history.html#id8">7.8. 1.0.0 (2020-06-04)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="readme.html" class="btn btn-neutral float-right" title="1. Python polarization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019, Luis Miguel Sanchez Brea / Jesus del Hoyo
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,829 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="English" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2.5. Polarimeter &mdash; Python polarization 1.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="5. Contributing" href="../../../contributing.html" />
+    <link rel="prev" title="2.4. Analysis of experimental Mueller Matrix" href="analysis of Mueller Matrix.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> Python polarization
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">1. Python polarization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">3. Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">4. py_pol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../introductory/example.html">1. Introductory</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="example.html">2. Advanced</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Example_3_Analysis.html">2.1. Example 3: Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Example_4_Light_polarimetry.html">2.2. Example 4: Light polarimetry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Example_5_Optical_elements_polarimetry.html">2.3. Example 5: Optical elements polarimetry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="analysis of Mueller Matrix.html">2.4. Analysis of experimental Mueller Matrix</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.5. Polarimeter</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Introduction">2.5.1. Introduction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Import-required-Modules">2.5.2. Import required Modules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Definition-of-elements">2.5.3. Definition of elements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Definition-of-polarimeter">2.5.4. Definition of polarimeter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Example">2.5.5. Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Measure-the-Mueller-matrix">2.5.6. Measure the Mueller matrix</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">5. Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">6. Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../history.html">7. History</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Python polarization</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../examples.html">Examples</a> &raquo;</li>
+        
+          <li><a href="example.html">2. Advanced</a> &raquo;</li>
+        
+      <li>2.5. Polarimeter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/source/examples/advanced/polarimeter.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Polarimeter">
+<h1>2.5. Polarimeter<a class="headerlink" href="#Polarimeter" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Introduction">
+<h2>2.5.1. Introduction<a class="headerlink" href="#Introduction" title="Permalink to this headline">¶</a></h2>
+<p>A polarimeter is a device to determine de polarization state of a sample. The main components of a polarimeter are: * Light Source * Polarization states generator * Sample to measure * Polarization states analyzer * Detection system</p>
+<p>The States generator is formed by a linear polarizer and a <span class="math notranslate nohighlight">\(\lambda\)</span>/2 waveplate in order to generate any desired state.</p>
+<p>The States analyzer is also formed by a linear polarizer and a <span class="math notranslate nohighlight">\(\lambda\)</span>/2 waveplate, but in reverse order.</p>
+<p>The polarimetric properties of the sample, polarizers of the generator and analyzer moves in order to determine the polarimetric propierties of the sample, given by its 4x4 Mueller matrix. Also, the 2x2 Jones matrix can be determine, although not complete information is obtained.</p>
+<p>In is example, we will simulate the intensity distribution at the output of an ideal polarimeter given a certain sample.</p>
+</div>
+<div class="section" id="Import-required-Modules">
+<h2>2.5.2. Import required Modules<a class="headerlink" href="#Import-required-Modules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="Definition-of-elements">
+<h2>2.5.3. Definition of elements<a class="headerlink" href="#Definition-of-elements" title="Permalink to this headline">¶</a></h2>
+<p>Here we have to create the different elements that define our experiment: the light source, the polarimeter optical elements, and the sample which is going to be measured.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define the light source</span>
+<span class="n">source</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;s0&#39;</span><span class="p">)</span>
+<span class="n">source</span><span class="o">.</span><span class="n">circular_light</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define sample</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span>
+<span class="n">sample</span><span class="o">.</span><span class="n">diattenuator_charac_angles_from_vector</span><span class="p">(</span>
+    <span class="n">p1</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">p2</span><span class="o">=.</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+matrix([[4.10000000e-01, 2.44929360e-17, 2.82842712e-01, 2.82842712e-01],
+        [2.44929360e-17, 9.00000000e-02, 1.38552969e-17, 1.38552969e-17],
+        [2.82842712e-01, 1.38552969e-17, 2.50000000e-01, 1.60000000e-01],
+        [2.82842712e-01, 1.38552969e-17, 1.60000000e-01, 2.50000000e-01]])
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define polarimeter optical elements</span>
+<span class="n">pol_0</span><span class="o">=</span><span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;p0&#39;</span><span class="p">)</span>
+<span class="n">pol_0</span><span class="o">.</span><span class="n">diattenuator_perfect</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">pol_1</span><span class="o">=</span><span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;p1&#39;</span><span class="p">)</span>
+<span class="n">pol_1</span><span class="o">.</span><span class="n">quarter_waveplate</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">0</span> <span class="o">*</span> <span class="n">degrees</span><span class="p">)</span>
+
+<span class="n">pol_2</span><span class="o">=</span><span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;p2&#39;</span><span class="p">)</span>
+<span class="n">pol_2</span><span class="o">.</span><span class="n">quarter_waveplate</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">0</span> <span class="o">*</span> <span class="n">degrees</span><span class="p">)</span>
+
+<span class="n">pol_3</span><span class="o">=</span><span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;p3&#39;</span><span class="p">)</span>
+<span class="n">pol_3</span><span class="o">.</span><span class="n">diattenuator_perfect</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="n">elements</span> <span class="o">=</span> <span class="p">[</span><span class="n">pol_0</span><span class="p">,</span> <span class="n">pol_1</span><span class="p">,</span> <span class="n">pol_2</span><span class="p">,</span> <span class="n">pol_3</span><span class="p">]</span>
+
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Definition-of-polarimeter">
+<h2>2.5.4. Definition of polarimeter<a class="headerlink" href="#Definition-of-polarimeter" title="Permalink to this headline">¶</a></h2>
+<p>Here qe are going to create a function that mimics the behavior of the polarimeter experiment. We give it the illumination, the sample, the optical elements of the polarimeter, and a set of rotation angles for those elements. The output of the function will be the intensity corresponding to each set of angles.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">polarimeter</span><span class="p">(</span><span class="n">J0</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">angles_list</span><span class="p">):</span>
+
+    <span class="n">intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">angles_list</span><span class="p">),</span><span class="nb">float</span><span class="p">)</span>
+    <span class="c1">#J1s=[]</span>
+    <span class="c1">#systems=[]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">angles</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">angles_list</span><span class="p">):</span>
+
+        <span class="n">angle0</span><span class="p">,</span> <span class="n">angle1</span><span class="p">,</span> <span class="n">angle2</span><span class="p">,</span> <span class="n">angle3</span> <span class="o">=</span> <span class="n">angles</span>
+
+        <span class="c1"># Elements matrices</span>
+        <span class="n">pol_0</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle0</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">pol_1</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle1</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">pol_2</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle2</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">pol_3</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle3</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1">#System matrix</span>
+        <span class="n">system</span> <span class="o">=</span> <span class="n">pol_3</span><span class="o">*</span><span class="n">pol_2</span><span class="o">*</span><span class="n">sample</span><span class="o">*</span><span class="n">pol_1</span><span class="o">*</span><span class="n">pol_0</span>
+        <span class="n">system</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;System&#39;</span>
+
+        <span class="n">J1</span> <span class="o">=</span> <span class="n">system</span><span class="o">*</span><span class="n">J0</span>
+
+        <span class="n">intensities</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">J1</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">intensity</span><span class="p">()</span>
+        <span class="c1">#J1s.append(J1)</span>
+        <span class="c1">#systems.append(system)</span>
+
+    <span class="k">return</span> <span class="n">intensities</span><span class="c1"># , J1s, systems</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Example">
+<h2>2.5.5. Example<a class="headerlink" href="#Example" title="Permalink to this headline">¶</a></h2>
+<p>We are going to test the polarimeter function to see how they work.</p>
+<div class="section" id="Just-1-position">
+<h3>2.5.5.1. Just 1 position<a class="headerlink" href="#Just-1-position" title="Permalink to this headline">¶</a></h3>
+<p>Here we insert the function just a set of angles, corresponding to 1 measurement.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">angles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+<span class="n">intensities</span> <span class="o">=</span> <span class="n">polarimeter</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">angles</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[0.125]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Several-positions">
+<h3>2.5.5.2. Several positions<a class="headerlink" href="#Several-positions" title="Permalink to this headline">¶</a></h3>
+<p>Now we will make several measurements.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define a set of angles</span>
+<span class="n">angles_list</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="p">[</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">],</span>
+    <span class="p">[</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">],</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Perform the experiment</span>
+<span class="n">intensities</span> <span class="o">=</span> <span class="n">polarimeter</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">angles_list</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[0.125      0.17321068 0.08       0.08       0.17321068 0.30642136]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Rotate-waveplate-of-generator">
+<h3>2.5.5.3. Rotate waveplate of generator<a class="headerlink" href="#Rotate-waveplate-of-generator" title="Permalink to this headline">¶</a></h3>
+<p>We can investigate how the measured intensity changes as we rotate just one element, for example, a retarder.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define a set of angles</span>
+<span class="n">angle_0</span> <span class="o">=</span> <span class="mi">45</span><span class="o">*</span><span class="n">degrees</span>
+<span class="n">angle_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">360</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">91</span><span class="p">)</span>
+<span class="n">angle_2</span> <span class="o">=</span> <span class="mi">45</span><span class="o">*</span><span class="n">degrees</span>
+<span class="n">angle_3</span> <span class="o">=</span> <span class="mi">0</span><span class="o">*</span><span class="n">degrees</span>
+
+<span class="n">angles_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">angle_1</span><span class="p">),</span><span class="mi">4</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">angles_list</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">angle_0</span>
+<span class="n">angles_list</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">angle_1</span>
+<span class="n">angles_list</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">angle_2</span>
+<span class="n">angles_list</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span><span class="o">=</span><span class="n">angle_3</span>
+
+<span class="n">angles_list</span><span class="o">.</span><span class="n">tolist</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Perform the experiment</span>
+<span class="n">intensities</span> <span class="o">=</span> <span class="n">polarimeter</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">angles_list</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot the result</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">angle_1</span><span class="o">/</span><span class="n">degrees</span><span class="p">,</span> <span class="n">intensities</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$\phi_2\,\ (^0) $&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;intensity&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_examples_advanced_polarimeter_19_0.png" src="../../../_images/source_examples_advanced_polarimeter_19_0.png" />
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Measure-the-Mueller-matrix">
+<h2>2.5.6. Measure the Mueller matrix<a class="headerlink" href="#Measure-the-Mueller-matrix" title="Permalink to this headline">¶</a></h2>
+<p>Now, we will see how we can measure the Mueller matrix of the sample. Our case is very simple, as we have a polarimeter with ideal elements and a detector without errors. So, in our case, we only need 16 different measurements in order to determine the Mueller matrix of the sample.</p>
+<p>The procedure to calculate the Mueller matrix of the sample is described in detail in “Handbook of Optics”, M. Bass et al., Vol II, Chapter 22 section 18. Now we will implement it.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">calculate_Mueller</span><span class="p">(</span><span class="n">illum</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">intensities</span><span class="p">):</span>
+
+    <span class="c1"># Prealocate memory</span>
+    <span class="n">system</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">16</span><span class="p">,</span><span class="mi">16</span><span class="p">]))</span>
+
+    <span class="c1"># Loop along measurements</span>
+    <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">):</span>
+
+        <span class="n">angle0</span><span class="p">,</span> <span class="n">angle1</span><span class="p">,</span> <span class="n">angle2</span><span class="p">,</span> <span class="n">angle3</span> <span class="o">=</span> <span class="n">angles</span><span class="p">[</span><span class="n">ind</span><span class="p">,:]</span>
+
+        <span class="c1"># Elements matrices</span>
+        <span class="n">pol_0</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle0</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">pol_1</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle1</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">pol_2</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle2</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">pol_3</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle3</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Polarimeter matrices</span>
+        <span class="n">generator</span> <span class="o">=</span> <span class="n">pol_1</span> <span class="o">*</span> <span class="n">pol_0</span> <span class="o">*</span> <span class="n">illum</span>
+        <span class="n">generator</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Generator&#39;</span>
+        <span class="n">analyzer</span> <span class="o">=</span> <span class="n">pol_3</span> <span class="o">*</span> <span class="n">pol_2</span>
+        <span class="n">analyzer</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Analyzer&#39;</span>
+
+        <span class="c1"># System matrix</span>
+        <span class="n">a_vector</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">M</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span>
+        <span class="n">g_vector</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">M</span>
+        <span class="n">s_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">a_vector</span><span class="p">,</span> <span class="n">g_vector</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">system</span><span class="p">[</span><span class="n">ind</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">s_vector</span>
+
+    <span class="c1"># Calculate Mueller matrix</span>
+    <span class="n">m_vector</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">I</span> <span class="o">*</span> <span class="n">intensities</span>
+    <span class="n">Msample</span> <span class="o">=</span> <span class="n">m_vector</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">Msample</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Create a set of angles for measurements</span>
+<span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="n">pi</span>
+<span class="c1"># Calculate intensities measured by the polarimeter</span>
+<span class="n">intensities</span> <span class="o">=</span> <span class="n">polarimeter</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">angles</span><span class="p">)</span>
+<span class="n">intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="c1"># Calculate the Mueller matrix</span>
+<span class="n">Mcalculated</span> <span class="o">=</span> <span class="n">calculate_Mueller</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">intensities</span><span class="p">)</span>
+<span class="n">sampleC</span> <span class="o">=</span> <span class="n">Mueller</span><span class="p">(</span><span class="s1">&#39;Calculated&#39;</span><span class="p">)</span>
+<span class="n">sampleC</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">Mcalculated</span><span class="p">)</span>
+<span class="c1"># Print results</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The Mueller matrix of the sample is:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The calculated Mueller matrix is:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sampleC</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The Mueller matrix of the sample is:
+sample =
+  [+0.410, +0.000, +0.283, +0.283]
+  [+0.000, +0.090, +0.000, +0.000]
+  [+0.283, +0.000, +0.250, +0.160]
+  [+0.283, +0.000, +0.160, +0.250]
+
+The calculated Mueller matrix is:
+Calculated =
+  [+0.410, +0.000, +0.283, +0.283]
+  [+0.000, +0.090, -0.000, +0.000]
+  [+0.283, -0.000, +0.250, +0.160]
+  [+0.283, -0.000, +0.160, +0.250]
+
+</pre></div></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../../contributing.html" class="btn btn-neutral float-right" title="5. Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="analysis of Mueller Matrix.html" class="btn btn-neutral float-left" title="2.4. Analysis of experimental Mueller Matrix" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019, Luis Miguel Sanchez Brea / Jesus del Hoyo
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

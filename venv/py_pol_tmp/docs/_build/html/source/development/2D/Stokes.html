@@ -1,0 +1,2953 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="English" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Create arrays &mdash; Python polarization 1.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> Python polarization
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">1. Python polarization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">3. Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">4. py_pol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">5. Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">6. Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../history.html">7. History</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Python polarization</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Create arrays</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/source/development/2D/Stokes.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">py_pol</span> <span class="k">import</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">py_pol.stokes</span> <span class="k">import</span> <span class="n">Stokes</span><span class="p">,</span> <span class="n">create_Stokes</span>
+<span class="kn">from</span> <span class="nn">py_pol.jones_vector</span> <span class="k">import</span> <span class="n">Jones_vector</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Create-arrays">
+<h1>Create arrays<a class="headerlink" href="#Create-arrays" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Create several objectsat once</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">create_Stokes</span><span class="p">([</span><span class="s1">&#39;E1&#39;</span><span class="p">,</span> <span class="s1">&#39;E2&#39;</span><span class="p">,</span> <span class="s1">&#39;E3&#39;</span><span class="p">]))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">create_Stokes</span><span class="p">([</span><span class="s1">&#39;E1&#39;</span><span class="p">]))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">create_Stokes</span><span class="p">(</span><span class="s1">&#39;E1&#39;</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="n">E1</span><span class="p">,</span> <span class="n">E2</span><span class="p">,</span> <span class="n">E3</span> <span class="o">=</span> <span class="n">create_Stokes</span><span class="p">([</span><span class="s1">&#39;E1&#39;</span><span class="p">,</span> <span class="s1">&#39;E2&#39;</span><span class="p">,</span> <span class="s1">&#39;E3&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">E1</span><span class="p">,</span> <span class="n">E2</span><span class="p">,</span> <span class="n">E3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[E1 is empty
+, E2 is empty
+, E3 is empty
+]
+E1 is empty
+
+[E1 is empty
+, E1 is empty
+, E1 is empty
+]
+E1 is empty
+ E2 is empty
+ E3 is empty
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># From_matrix</span>
+<span class="n">M</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+<span class="n">E</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">E</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+
+
+<span class="n">M</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]</span>
+<span class="n">E</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+<span class="c1"># print(E.M)</span>
+
+<span class="n">M</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">E</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+<span class="c1"># print(E.M)</span>
+
+<span class="n">M</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span>
+    <span class="p">[[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]</span>
+<span class="n">E</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S =
+[+1.000]   [+0.500]   [+0.000]
+[+0.000]   [+0.500]   [+2.000]
+[+1.000]   [+0.500]   [+0.000]
+[+1.000]   [+0.500]   [+0.000]
+
+S =
+[+1.000]   [+0.000]   [+2.000]
+[+0.500]   [+0.500]   [+2.000]
+[+1.000]   [+2.000]   [+3.000]
+[+1.000]   [+2.000]   [+4.000]
+
+S =
+[+1.000]
+[+0.000]
+[+1.000]
+[+2.000]
+
+S S0 =
+[[1. 3.]
+ [5. 7.]]
+S S1 =
+[[2. 4.]
+ [6. 8.]]
+S S2 =
+[[2.5 4.5]
+ [6.5 8.5]]
+S S3 =
+[[1. 1.]
+ [1. 1.]]
+
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Operations">
+<h1>Operations<a class="headerlink" href="#Operations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Sum">
+<h2>Sum<a class="headerlink" href="#Sum" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Stokes + Stokes</span>
+<span class="n">S1</span><span class="p">,</span> <span class="n">S2</span> <span class="o">=</span> <span class="n">create_Stokes</span><span class="p">((</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;S2&#39;</span><span class="p">))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S2</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">S2</span><span class="p">)</span>
+
+<span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="n">S2</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">S2</span><span class="p">)</span>
+
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">S2</span><span class="p">)</span>
+
+<span class="n">S1</span><span class="p">,</span> <span class="n">S2</span> <span class="o">=</span> <span class="n">create_Stokes</span><span class="p">((</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="s1">&#39;S2&#39;</span><span class="p">))</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S2</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">S2</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">set_global_phase</span><span class="p">(</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="n">S2</span><span class="o">.</span><span class="n">set_global_phase</span><span class="p">(</span><span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">S2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S1 + S2 =
+[+2.000]
+[+1.000]
+[+1.000]
+[+0.000]
+
+S1 + S2 =
+[+2.000]   [+2.000]
+[+1.000]   [+1.000]
+[+1.000]   [+0.000]
+[+0.000]   [+1.000]
+
+S1 + S2 =
+[+3.000]   [+3.000]
+[+1.000]   [+0.000]
+[+2.000]   [+0.000]
+[+0.000]   [+2.000]
+
+S1 + S2 =
+[+2.000]
+[+1.000]
+[+0.000]
+[+1.000]
+
+S1 + S2 =
+[+3.414]
+[+2.414]
+[+0.000]
+[+2.414]
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Stokes + Jones</span>
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1 incoherent&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">E1</span> <span class="o">=</span> <span class="n">Jones_vector</span><span class="p">()</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="n">E1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">E1</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;S1 coherent&#39;</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">global_phase</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">E1</span><span class="p">)</span>
+
+
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1 incoherent&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">E1</span> <span class="o">=</span> <span class="n">Jones_vector</span><span class="p">()</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="n">j</span><span class="p">]])</span>
+<span class="n">E1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">E1</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;S1 coherent&#39;</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">global_phase</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">E1</span><span class="p">)</span>
+
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1 incoherent&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">E1</span> <span class="o">=</span> <span class="n">Jones_vector</span><span class="p">()</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="n">j</span><span class="p">]])</span>
+<span class="n">E1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">-</span><span class="n">E1</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;S1 coherent&#39;</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">global_phase</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">+</span><span class="n">E1</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S1 incoherent + E =
+[+2.000]
+[+0.000]
+[+0.000]
+[+0.000]
+
+S1 coherent + E =
+[+2.000]
+[+0.000]
+[+2.000]
+[+0.000]
+
+S1 incoherent + E =
+[+3.000]   [+3.000]
+[+0.000]   [+1.000]
+[+1.000]   [+0.000]
+[+2.000]   [+2.000]
+
+S1 coherent + E =
+[+4.414]   [+5.000]
+[+1.414]   [+3.000]
+[+2.414]   [+0.000]
+[+3.414]   [+4.000]
+
+S1 incoherent - E =
+[+3.000]   [+3.000]
+[+0.000]   [+1.000]
+[+1.000]   [+0.000]
+[+2.000]   [+2.000]
+
+S1 coherent + E =
+[+4.414]   [+5.000]
+[+1.414]   [+3.000]
+[+2.414]   [+0.000]
+[+3.414]   [+4.000]
+
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Multiplication">
+<h2>Multiplication<a class="headerlink" href="#Multiplication" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Number</span>
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1 incoherent&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">S1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span> <span class="n">S2</span><span class="o">.</span><span class="n">global_phase</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;S1 coherent&#39;</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">global_phase</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">S1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span> <span class="n">S2</span><span class="o">.</span><span class="n">global_phase</span><span class="p">)</span>
+
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="n">S1</span><span class="o">/</span><span class="mi">2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S2</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2 * S1 =
+[+2.000]
+[+2.000]
+[+0.000]
+[+0.000]
+
+-2 * S1 incoherent =
+[+2.000]
+[+2.000]
+[+0.000]
+[+0.000]
+ None
+-2 * S1 coherent =
+[+2.000]
+[+2.000]
+[+0.000]
+[+0.000]
+ [3.14]
+S1 / 2 =
+[+0.500]
+[+0.500]
+[+0.000]
+[+0.000]
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Array</span>
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">*</span><span class="n">a</span><span class="p">)</span>
+
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="n">j</span><span class="p">]])</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="n">a</span><span class="o">*</span><span class="n">S1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span> <span class="n">S2</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">global_phase</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S1 =
+[+2.000]   [+0.100]   [+5.000]
+[+2.000]   [+0.100]   [+5.000]
+[+0.000]   [+0.000]   [+0.000]
+[+0.000]   [+0.000]   [+0.000]
+
+S1 S0 =
+[[2.  0.1 5. ]
+ [3.  4.  5. ]]
+S1 S1 =
+[[2.  0.1 5. ]
+ [3.  4.  5. ]]
+S1 S2 =
+[[0. 0. 0.]
+ [0. 0. 0.]]
+S1 S3 =
+[[0. 0. 0.]
+ [0. 0. 0.]]
+ [[nan nan nan]
+ [nan nan nan]]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Getitems">
+<h2>Getitems<a class="headerlink" href="#Getitems" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">set_global_phase</span><span class="p">(</span><span class="n">M1</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.37 0.55 0.11 0.8  0.48 0.  ]
+ [0.19 0.29 0.67 0.92 0.53 0.19]
+ [0.05 0.23 0.49 0.52 0.83 0.59]
+ [0.84 0.59 0.9  0.46 0.89 0.44]]
+[3, 2]
+S1_picked =
+[+0.366]
+[+0.189]
+[+0.049]
+[+0.837]
+
+S1_picked =
+[+0.553]   [+0.113]
+[+0.291]   [+0.665]
+[+0.231]   [+0.487]
+[+0.588]   [+0.897]
+
+S1_picked =
+[+0.113]
+[+0.665]
+[+0.487]
+[+0.897]
+
+S1_picked S0 =
+[[0.11 0.8 ]
+ [0.48 0.  ]]
+S1_picked S1 =
+[[0.67 0.92]
+ [0.53 0.19]]
+S1_picked S2 =
+[[0.49 0.52]
+ [0.83 0.59]]
+S1_picked S3 =
+[[0.9  0.46]
+ [0.89 0.44]]
+
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Setitems">
+<h2>Setitems<a class="headerlink" href="#Setitems" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Stokes -&gt; Stokes</span>
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S2&#39;</span><span class="p">)</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">S2</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+
+<span class="n">S1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">S2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S1</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">S2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">S2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S1</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">S2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.56 0.85 0.39 0.21 0.55 0.3 ]
+ [0.27 0.61 0.29 0.69 0.08 0.01]
+ [0.38 0.32 0.01 0.24 0.61 0.08]
+ [0.59 0.93 0.65 1.   0.   0.05]]
+[[1.   0.85 0.39 0.21 0.55 0.3 ]
+ [1.   0.61 0.29 0.69 0.08 0.01]
+ [0.   0.32 0.01 0.24 0.61 0.08]
+ [0.   0.93 0.65 1.   0.   0.05]]
+[[1.   1.   0.39 0.21 0.55 0.3 ]
+ [1.   1.   0.29 0.69 0.08 0.01]
+ [0.   0.   0.01 0.24 0.61 0.08]
+ [0.   0.   0.65 1.   0.   0.05]]
+[[0.56 1.   0.39 0.21 0.55 0.3 ]
+ [0.27 1.   0.29 0.69 0.08 0.01]
+ [0.38 0.   0.01 0.24 0.61 0.08]
+ [0.59 0.   0.65 1.   0.   0.05]]
+[[0.56 1.   0.39 1.   0.55 0.3 ]
+ [0.27 1.   0.29 1.   0.08 0.01]
+ [0.38 0.   0.01 0.   0.61 0.08]
+ [0.59 0.   0.65 0.   0.   0.05]]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Jones -&gt; Stokes</span>
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="n">Jones_vector</span><span class="p">(</span><span class="s1">&#39;S2&#39;</span><span class="p">)</span>
+<span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">S2</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M2</span><span class="p">)</span>
+
+<span class="n">S1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">S2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S1</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">S2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">S2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="n">S1</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">S2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.7  0.28 0.83 0.13 0.91 0.54]
+ [0.69 0.38 0.87 0.96 0.04 0.91]
+ [0.52 0.33 0.28 0.73 0.42 0.61]
+ [0.15 0.02 0.98 0.05 0.26 0.92]]
+[[2.   0.28 0.83 0.13 0.91 0.54]
+ [0.   0.38 0.87 0.96 0.04 0.91]
+ [2.   0.33 0.28 0.73 0.42 0.61]
+ [0.   0.02 0.98 0.05 0.26 0.92]]
+[[2.   2.   0.83 0.13 0.91 0.54]
+ [0.   0.   0.87 0.96 0.04 0.91]
+ [2.   2.   0.28 0.73 0.42 0.61]
+ [0.   0.   0.98 0.05 0.26 0.92]]
+[[0.7  2.   0.83 0.13 0.91 0.54]
+ [0.69 0.   0.87 0.96 0.04 0.91]
+ [0.52 2.   0.28 0.73 0.42 0.61]
+ [0.15 0.   0.98 0.05 0.26 0.92]]
+[[0.7  2.   0.83 2.   0.91 0.54]
+ [0.69 0.   0.87 0.   0.04 0.91]
+ [0.52 2.   0.28 2.   0.42 0.61]
+ [0.15 0.   0.98 0.   0.26 0.92]]
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Manipulations">
+<h1>Manipulations<a class="headerlink" href="#Manipulations" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Sum</span>
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">M1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">M1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="c1"># print(S1.M)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">M1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[[0.55 0.13 0.95 0.41 0.48 0.84]
+ [0.78 0.36 0.85 0.58 0.8  0.47]
+ [0.32 0.21 0.71 0.21 0.86 0.68]
+ [0.53 0.46 0.72 0.17 0.21 0.14]]
+Sum of S1 =
+[+3.364]
+[+3.848]
+[+2.978]
+[+2.223]
+ [3.36 3.85 2.98 2.22]
+
+
+
+[[0.73 0.18 0.84 0.15 0.53 0.44]
+ [0.87 0.5  0.47 0.03 0.88 0.65]
+ [0.41 0.58 0.46 0.94 0.63 0.11]
+ [0.21 0.35 0.28 0.89 0.14 0.4 ]]
+Sum of S1 =
+[+2.109]   [+0.766]
+[+2.229]   [+1.177]
+[+1.504]   [+1.632]
+[+0.630]   [+1.642]
+ [[2.11 0.77]
+ [2.23 1.18]
+ [1.5  1.63]
+ [0.63 1.64]]
+
+
+
+Sum of S1 =
+[+2.889]   [+3.947]   [+3.404]   [+3.606]   [+3.020]
+[+3.648]   [+3.923]   [+3.652]   [+4.066]   [+2.743]
+[+3.847]   [+2.426]   [+3.524]   [+2.732]   [+3.224]
+[+2.572]   [+2.394]   [+4.230]   [+2.799]   [+1.526]
+ [[2.89 3.95 3.4  3.61 3.02]
+ [3.65 3.92 3.65 4.07 2.74]
+ [3.85 2.43 3.52 2.73 3.22]
+ [2.57 2.39 4.23 2.8  1.53]]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Rotation</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">angle</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">120</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">135</span><span class="o">*</span><span class="n">degrees</span><span class="p">]</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
+
+<span class="n">angle</span> <span class="o">=</span> <span class="mi">20</span><span class="o">*</span><span class="n">degrees</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># S2.name = &#39;S2&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">S2</span><span class="p">)</span>
+
+<span class="n">angle</span> <span class="o">=</span> <span class="mi">20</span><span class="o">*</span><span class="n">degrees</span>
+<span class="n">angle2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">90</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">120</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">135</span><span class="o">*</span><span class="n">degrees</span><span class="p">]</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">linear_light</span><span class="p">(</span><span class="n">azimuth</span><span class="o">=</span><span class="n">angle2</span><span class="p">)</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">S2</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;S2&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">S2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S1 S0 =
+[1. 1. 1. 1. 1.]
+S1 S1 =
+[ 1.   0.  -1.  -0.5 -0. ]
+S1 S2 =
+[ 0.    1.    0.   -0.87 -1.  ]
+S1 S3 =
+[0. 0. 0. 0. 0.]
+
+S1 =
+[+1.000]
+[+1.000]
+[+0.000]
+[+0.000]
+ S1 @ 20.00 deg =
+[+1.000]
+[+0.766]
+[+0.643]
+[+0.000]
+
+S1 =
+[+1.000]   [+1.000]   [+1.000]   [+1.000]   [+1.000]
+[+1.000]   [+0.000]   [-1.000]   [-0.500]   [-0.000]
+[+0.000]   [+1.000]   [+0.000]   [-0.866]   [-1.000]
+[+0.000]   [+0.000]   [+0.000]   [+0.000]   [+0.000]
+ S2 S0 =
+[1. 1. 1. 1. 1.]
+S2 S1 =
+[ 0.77 -0.64 -0.77  0.17  0.64]
+S2 S2 =
+[ 0.64  0.77 -0.64 -0.98 -0.77]
+S2 S3 =
+[0. 0. 0. 0. 0.]
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Depolarize</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">S</span><span class="o">.</span><span class="n">from_components</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)))</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">set_depolarization</span><span class="p">(</span><span class="n">degree_pol</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span> <span class="n">S2</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">degree_polarization</span><span class="p">())</span>
+
+<span class="n">S2</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">set_depolarization</span><span class="p">(</span><span class="n">degree_pol</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span> <span class="n">S2</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">degree_polarization</span><span class="p">())</span>
+
+<span class="n">S2</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">add_depolarization</span><span class="p">(</span><span class="n">degree_pol</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span> <span class="n">S2</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">degree_polarization</span><span class="p">())</span>
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S depolarized =
+[+3.000]
+[+0.866]
+[+0.866]
+[+0.866]
+ 0.5000000000000001
+S depolarized =
+[+3.000]
+[+0.000]
+[+0.671]
+[+1.342]
+ 0.5
+S depolarized =
+[+3.000]
+[+1.732]
+[+1.732]
+[+1.732]
+ 0.9999999999999999
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+E1 Ex = [ 1.    0.71  0.   -0.5  -0.71]
+   Ey = [0.   0.71 1.   0.87 0.71]
+
+E2 = [+0.940
+      +0.342]
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="p">(</span><span class="n">solutionX</span><span class="p">,</span> <span class="n">solutionY</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">j1</span> <span class="o">=</span> <span class="n">Jones_vector</span><span class="p">()</span>
+<span class="n">j1</span><span class="o">.</span><span class="n">elliptical_light</span><span class="p">(</span>
+    <span class="n">azimuth</span><span class="o">=</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;l&#39;</span><span class="p">)</span>
+<span class="n">proposalX</span><span class="p">,</span> <span class="n">proposalY</span> <span class="o">=</span> <span class="n">j1</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">ellipse_axes</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">solutionX</span><span class="p">,</span> <span class="n">proposalX</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">solutionY</span><span class="p">,</span> <span class="n">proposalY</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[0.73 0.92 0.34 0.63 0.11] [0.73 0.92 0.81 0.73 0.22]
+[0.57 0.82 0.81 0.73 0.22] [0.57 0.82 0.34 0.63 0.11]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Creation">
+<h1>Creation<a class="headerlink" href="#Creation" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[75]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># From components</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">S</span><span class="o">.</span><span class="n">from_components</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">S</span><span class="o">.</span><span class="n">from_components</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S =
+[+1.000]
+[+1.000]
+[+0.000]
+[+0.000]
+
+S =
+[+1.000]   [+1.000]   [+1.000]   [+1.000]   [+1.000]
+[+1.000]   [+1.000]   [+1.000]   [+1.000]   [+1.000]
+[+0.000]   [+0.000]   [+0.000]   [+0.000]   [+0.000]
+[+0.000]   [+0.000]   [+0.000]   [+0.000]   [+0.000]
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Linear light</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">S</span><span class="o">.</span><span class="n">linear_light</span><span class="p">(</span><span class="n">azimuth</span> <span class="o">=</span> <span class="n">angle</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">pd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">linear_light</span><span class="p">(</span><span class="n">azimuth</span> <span class="o">=</span> <span class="n">angle</span><span class="p">,</span> <span class="n">intensity</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pol_degree</span><span class="o">=</span><span class="n">pd</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S =
+[+1.000]   [+1.000]   [+1.000]
+[+1.000]   [+0.000]   [-1.000]
+[+0.000]   [+1.000]   [+0.000]
+[+0.000]   [+0.000]   [+0.000]
+
+S =
+[+2.000]   [+2.000]   [+2.000]
+[+0.000]   [+0.000]   [-2.000]
+[+0.000]   [+1.000]   [+0.000]
+[+0.000]   [+0.000]   [+0.000]
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Circular light</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">S</span><span class="o">.</span><span class="n">circular_light</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">pd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">circular_light</span><span class="p">(</span><span class="n">intensity</span> <span class="o">=</span> <span class="n">intensity</span><span class="p">,</span> <span class="n">pol_degree</span><span class="o">=</span><span class="n">pd</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;l&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S =
+[+1.000]
+[+0.000]
+[+0.000]
+[+1.000]
+
+S =
+[+0.500]   [+1.000]   [+2.000]
+[+0.000]   [+0.000]   [+0.000]
+[+0.000]   [+0.000]   [+0.000]
+[-0.000]   [-0.500]   [-2.000]
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[70]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Elliptical light</span>
+<span class="n">azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="p">(</span><span class="n">solutionX</span><span class="p">,</span> <span class="n">solutionY</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">S</span><span class="o">.</span><span class="n">elliptical_light</span><span class="p">(</span>
+    <span class="n">azimuth</span><span class="o">=</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;l&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+<span class="n">proposalX</span><span class="p">,</span> <span class="n">proposalY</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">ellipse_axes</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">solutionX</span><span class="p">,</span> <span class="n">proposalX</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">solutionY</span><span class="p">,</span> <span class="n">proposalY</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S =
+[+0.704]   [+0.393]   [+0.325]   [+1.386]   [+0.422]
+[-0.276]   [-0.174]   [-0.313]   [-0.030]   [+0.296]
+[-0.639]   [+0.055]   [-0.028]   [-0.001]   [+0.280]
+[-0.103]   [-0.348]   [-0.083]   [-1.385]   [-0.110]
+
+[0.06 0.54 0.57 0.84 0.64] [0.84 0.54 0.57 0.84 0.64]
+[0.84 0.32 0.07 0.82 0.09] [0.06 0.32 0.07 0.82 0.09]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+d:\codigo\py_pol\py_pol\jones_vector.py:1200: UserWarning: Non-pure Stokes vector transformed into a Jones vector
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># general_charac_angles</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_charac_angles</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+<span class="n">N</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">90</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">degree_pol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">global_phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_charac_angles</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">intensity</span><span class="o">=</span><span class="n">intensity</span><span class="p">,</span> <span class="n">degree_pol</span><span class="o">=</span><span class="n">degree_pol</span><span class="p">,</span> <span class="n">global_phase</span><span class="o">=</span><span class="n">global_phase</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+<span class="n">al</span><span class="p">,</span> <span class="n">delt</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">charac_angles</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">al</span><span class="p">,</span> <span class="n">delt</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S =
+[+1.000]   [+1.000]   [+1.000]
+[+1.000]   [+1.000]   [+1.000]
+[+0.000]   [+0.000]   [+0.000]
+[+0.000]   [+0.000]   [+0.000]
+
+S =
+[+0.258]   [+0.102]   [+0.975]   [+0.294]   [+0.046]
+[+0.178]   [-0.083]   [-0.354]   [-0.038]   [+0.034]
+[-0.075]   [-0.018]   [+0.146]   [-0.024]   [+0.000]
+[+0.069]   [-0.031]   [+0.131]   [-0.058]   [-0.009]
+
+[0.26 1.37 1.32 1.05 0.13] [2.39 4.18 0.73 4.32 4.76]
+[0.26 1.37 1.32 1.05 0.13] [2.39 4.18 0.73 4.32 4.76]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">45</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">Alpha</span><span class="p">,</span> <span class="n">Delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Initial Alpha&#39;</span><span class="p">,</span><span class="n">Alpha</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Initial Delay&#39;</span><span class="p">,</span><span class="n">Delay</span><span class="p">)</span>
+
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s2">&quot;Source 1&quot;</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_charac_angles</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">Alpha</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="n">Delay</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">draw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Initial Alpha [[0.79 0.79 0.79 0.79 0.79 0.79 0.79]
+ [0.79 0.79 0.79 0.79 0.79 0.79 0.79]
+ [0.79 0.79 0.79 0.79 0.79 0.79 0.79]
+ [0.79 0.79 0.79 0.79 0.79 0.79 0.79]
+ [0.79 0.79 0.79 0.79 0.79 0.79 0.79]
+ [0.79 0.79 0.79 0.79 0.79 0.79 0.79]
+ [0.79 0.79 0.79 0.79 0.79 0.79 0.79]]
+Initial Delay [[0.   0.   0.   0.   0.   0.   0.  ]
+ [1.05 1.05 1.05 1.05 1.05 1.05 1.05]
+ [2.09 2.09 2.09 2.09 2.09 2.09 2.09]
+ [3.14 3.14 3.14 3.14 3.14 3.14 3.14]
+ [4.19 4.19 4.19 4.19 4.19 4.19 4.19]
+ [5.24 5.24 5.24 5.24 5.24 5.24 5.24]
+ [6.28 6.28 6.28 6.28 6.28 6.28 6.28]]
+creation delta: [0.   0.   0.   0.   0.   0.   0.   1.05 1.05 1.05 1.05 1.05 1.05 1.05
+ 2.09 2.09 2.09 2.09 2.09 2.09 2.09 3.14 3.14 3.14 3.14 3.14 3.14 3.14
+ 4.19 4.19 4.19 4.19 4.19 4.19 4.19 5.24 5.24 5.24 5.24 5.24 5.24 5.24
+ 0.   0.   0.   0.   0.   0.   0.  ]
+delay: [[0.   0.   0.   0.   0.   0.   0.  ]
+ [1.05 1.05 1.05 1.05 1.05 1.05 1.05]
+ [5.24 5.24 5.24 5.24 5.24 5.24 5.24]
+ [3.14 3.14 3.14 3.14 3.14 3.14 3.14]
+ [1.05 1.05 1.05 1.05 1.05 1.05 1.05]
+ [5.24 5.24 5.24 5.24 5.24 5.24 5.24]
+ [0.   0.   0.   0.   0.   0.   0.  ]]
+The delay of Source 1 is (deg):
+[[  0.   0.   0.   0.   0.   0.   0.]
+ [ 60.  60.  60.  60.  60.  60.  60.]
+ [300. 300. 300. 300. 300. 300. 300.]
+ [180. 180. 180. 180. 180. 180. 180.]
+ [ 60.  60.  60.  60.  60.  60.  60.]
+ [300. 300. 300. 300. 300. 300. 300.]
+ [  0.   0.   0.   0.   0.   0.   0.]]
+The mean value is 128.57142857142858 +- 121.82288917330195
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_29_1.png" src="../../../_images/source_development_2D_Stokes_29_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">44</span><span class="o">*</span><span class="n">degrees</span>
+<span class="n">delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="o">*</span><span class="n">degrees</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Initial Alpha&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Initial Delay&#39;</span><span class="p">,</span><span class="n">delay</span><span class="p">)</span>
+
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s2">&quot;Source 1&quot;</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_charac_angles</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="n">delay</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">draw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Initial Alpha 0.767944870877505
+Initial Delay [0.   0.31 0.63 0.94 1.26 1.57 1.88 2.2  2.51 2.83 3.14 3.46 3.77 4.08
+ 4.4  4.71 5.03 5.34 5.65 5.97 6.28]
+creation delta: [0.   0.31 0.63 0.94 1.26 1.57 1.88 2.2  2.51 2.83 3.14 3.46 3.77 4.08
+ 4.4  4.71 5.03 5.34 5.65 5.97 0.  ]
+delay: [0.   0.31 0.63 0.94 1.26 1.57 1.88 2.2  2.51 2.83 0.   3.46 3.77 4.08
+ 4.4  4.71 5.03 5.34 5.65 5.97 0.  ]
+The delay of Source 1 is (deg):
+[  0.  18.  36.  54.  72.  90. 108. 126. 144. 162.   0. 198. 216. 234.
+ 252. 270. 288. 306. 324. 342.   0.]
+The mean value is 154.28571428571428 +- 112.9673964162281
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_30_1.png" src="../../../_images/source_development_2D_Stokes_30_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># general_azimuth_ellipticity</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_azimuth_ellipticity</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+<span class="n">N</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">ellipticity</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">90</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">degree_pol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">global_phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_azimuth_ellipticity</span><span class="p">(</span><span class="n">azimuth</span><span class="o">=</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="n">ellipticity</span><span class="p">,</span> <span class="n">intensity</span><span class="o">=</span><span class="n">intensity</span><span class="p">,</span> <span class="n">degree_pol</span><span class="o">=</span><span class="n">degree_pol</span><span class="p">,</span> <span class="n">global_phase</span><span class="o">=</span><span class="n">global_phase</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+<span class="n">az</span><span class="p">,</span> <span class="n">el</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">azimuth_ellipticity</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">ellipticity</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S =
+[+1.000]   [+1.000]   [+1.000]
+[+1.000]   [+1.000]   [+1.000]
+[+0.000]   [+0.000]   [+0.000]
+[+0.000]   [+0.000]   [+0.000]
+
+S =
+[+0.748]   [+0.722]   [+0.251]   [+0.556]   [+0.373]
+[+0.259]   [-0.211]   [-0.104]   [+0.046]   [+0.043]
+[-0.082]   [+0.396]   [-0.153]   [+0.109]   [-0.144]
+[+0.355]   [+0.214]   [+0.127]   [+0.072]   [-0.127]
+
+[2.99 1.03 2.06 0.58 2.5 ] [ 0.46  0.22  0.3   0.27 -0.35]
+[2.99 1.03 2.06 0.58 2.5 ] [ 0.46  0.22  0.3   0.27 -0.35]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># from_Jones / from_Stokes</span>
+<span class="n">N</span><span class="o">=</span><span class="mi">100</span>
+<span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="n">az</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">el</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">90</span> <span class="o">-</span> <span class="mi">45</span><span class="p">)</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_azimuth_ellipticity</span><span class="p">(</span><span class="n">intensity</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="n">az</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="n">el</span><span class="p">)</span>
+<span class="n">J</span> <span class="o">=</span> <span class="n">Jones_vector</span><span class="p">()</span>
+<span class="n">J</span><span class="o">.</span><span class="n">from_Stokes</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+<span class="n">S2</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">S2</span><span class="o">.</span><span class="n">from_Jones</span><span class="p">(</span><span class="n">J</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="o">==</span><span class="n">S2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S - S S0 = [ 0.  0.  0.  0.  0.  0. -0.  0.  0. -0.  0.  0.  0.  0. -0.  0.  0.  0.
+  0.  0.  0. -0. -0. -0.  0. -0.  0.  0. -0.  0. -0.  0. -0.  0.  0.  0.
+  0.  0. -0.  0. -0.  0.  0.  0.  0.  0.  0.  0.  0.  0. -0.  0.  0. -0.
+  0. -0.  0.  0.  0. -0. -0.  0. -0.  0.  0.  0. -0.  0. -0.  0.  0.  0.
+ -0.  0. -0.  0.  0.  0.  0.  0.  0.  0. -0.  0.  0.  0. -0.  0. -0.  0.
+  0. -0.  0.  0.  0. -0. -0. -0. -0. -0.]
+      S1 = [ 0.  0.  0.  0. -0.  0. -0.  0. -0. -0. -0. -0. -0. -0. -0. -0. -0.  0.
+ -0.  0.  0. -0. -0.  0. -0. -0.  0. -0.  0.  0. -0.  0. -0.  0. -0. -0.
+ -0.  0. -0.  0. -0.  0.  0.  0.  0. -0. -0. -0. -0.  0. -0.  0.  0.  0.
+  0. -0. -0. -0.  0.  0. -0. -0. -0. -0.  0. -0.  0.  0.  0. -0. -0.  0.
+ -0.  0.  0.  0.  0.  0. -0. -0.  0.  0.  0. -0.  0. -0. -0. -0. -0.  0.
+ -0. -0.  0.  0. -0. -0.  0. -0.  0.  0.]
+      S2 = [ 0.  0.  0.  0.  0. -0.  0. -0. -0.  0.  0. -0.  0.  0.  0.  0.  0.  0.
+  0.  0.  0.  0. -0. -0.  0.  0.  0.  0.  0. -0. -0.  0. -0.  0.  0. -0.
+ -0.  0.  0. -0.  0.  0. -0.  0.  0.  0. -0.  0.  0.  0.  0.  0.  0.  0.
+  0.  0. -0. -0.  0.  0. -0.  0.  0.  0.  0.  0. -0. -0. -0.  0.  0. -0.
+  0.  0. -0. -0. -0.  0.  0.  0.  0.  0.  0. -0. -0.  0. -0.  0. -0. -0.
+  0.  0.  0. -0.  0.  0. -0. -0. -0. -0.]
+      S3 = [-0.  0.  0.  0.  0.  0. -0.  0. -0.  0.  0.  0.  0. -0.  0.  0. -0.  0.
+  0. -0.  0.  0. -0. -0. -0.  0.  0.  0.  0.  0. -0.  0.  0. -0.  0.  0.
+  0. -0.  0.  0.  0. -0.  0. -0.  0. -0.  0. -0. -0. -0.  0.  0.  0.  0.
+  0. -0.  0.  0.  0.  0.  0. -0. -0. -0.  0.  0.  0.  0. -0.  0.  0.  0.
+ -0.  0. -0. -0. -0. -0.  0.  0.  0.  0.  0. -0.  0.  0. -0.  0. -0.  0.
+  0.  0.  0.  0. -0. -0.  0.  0. -0. -0.]
+ [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+ 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+ 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+ 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+ 0. 0. 0. 0.]
+[ True  True  True  True  True  True  True  True  True  True  True  True
+  True  True  True  True  True  True  True  True  True  True  True  True
+  True  True  True  True  True  True  True  True  True  True  True  True
+  True  True  True  True  True  True  True  True  True  True  True  True
+  True  True  True  True  True  True  True  True  True  True  True  True
+  True  True  True  True  True  True  True  True  True  True  True  True
+  True  True  True  True  True  True  True  True  True  True  True  True
+  True  True  True  True  True  True  True  True  True  True  True  True
+  True  True  True  True]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+d:\codigo_ucm\py_pol\py_pol\stokes.py:2012: RuntimeWarning: invalid value encountered in sqrt
+  DD = np.sqrt(1 - DOP**2)
+d:\codigo_ucm\py_pol\py_pol\jones_vector.py:1199: RuntimeWarning: invalid value encountered in greater
+  if np.any(DOP &gt; tol_default):
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Parameters">
+<h1>Parameters<a class="headerlink" href="#Parameters" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[94]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Components</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">ellipticity</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">90</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">azimuth</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">degree_pol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">global_phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_azimuth_ellipticity</span><span class="p">(</span><span class="n">azimuth</span><span class="o">=</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="n">ellipticity</span><span class="p">,</span> <span class="n">intensity</span><span class="o">=</span><span class="n">intensity</span><span class="p">,</span>
+                              <span class="n">degree_pol</span><span class="o">=</span><span class="n">degree_pol</span><span class="p">,</span> <span class="n">global_phase</span><span class="o">=</span><span class="n">global_phase</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+<span class="n">az</span><span class="p">,</span> <span class="n">el</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">azimuth_ellipticity</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">ellipticity</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S =
+[+0.580]   [+0.601]   [+0.712]   [+0.453]   [+0.555]
+[+0.171]   [-0.361]   [-0.078]   [+0.078]   [+0.000]
+[+0.346]   [+0.078]   [+0.149]   [-0.038]   [+0.000]
+[-0.089]   [-0.215]   [+0.554]   [+0.026]   [+0.000]
+
+[0.56 1.46 1.03 2.91  nan] [-0.11 -0.26  0.64  0.14   nan]
+[0.56 1.46 1.03 2.91  nan] [-0.11 -0.26  0.64  0.14  0.67]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Polarized unpolarized</span>
+<span class="n">S1</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)</span>
+<span class="n">M1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">S1</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">polarized_unpolarized</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(1.0, 1, 0, 0)
+(0.0, 0, 0, 0)
+(Polarized S1 =
+[+1.000]
+[+1.000]
+[+0.000]
+[+0.000]
+, Unpolarized S1 =
+[+0.000]
+[+0.000]
+[+0.000]
+[+0.000]
+)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># All</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">90</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">degree_pol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">global_phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_charac_angles</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">intensity</span><span class="o">=</span><span class="n">intensity</span><span class="p">,</span> <span class="n">degree_pol</span><span class="o">=</span><span class="n">degree_pol</span><span class="p">,</span> <span class="n">global_phase</span><span class="o">=</span><span class="n">global_phase</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get_all</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">draw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The intensity of S is (a.u.):
+[[0.3  0.05 0.24 ... 0.67 0.11 0.65]
+ [0.91 0.1  0.85 ... 0.19 0.77 0.94]
+ [0.41 0.93 0.56 ... 0.76 0.31 0.13]
+ ...
+ [0.32 0.65 0.08 ... 0.68 0.19 0.89]
+ [0.91 0.98 0.03 ... 0.41 0.47 0.34]
+ [0.84 0.02 0.81 ... 0.9  0.26 0.86]]
+The mean value is 0.495290613147764 +- 0.2888025732260311
+
+alpha: self = [100, 100]; az = (100, 100)
+alpha: alpha = (100, 100);
+The elctric field amplitudes of S are (V/m):
+  Ex (V/m)
+[[0.16 0.04 0.04 ... 0.03 0.01 0.43]
+ [0.12 0.01 0.33 ... 0.08 0.28 0.37]
+ [0.   0.22 0.01 ... 0.35 0.06 0.  ]
+ ...
+ [0.01 0.09 0.02 ... 0.27 0.01 0.17]
+ [0.15 0.8  0.   ... 0.   0.33 0.06]
+ [0.14 0.   0.06 ... 0.2  0.04 0.05]]
+  Ey (V/m)
+[[0.09 0.   0.01 ... 0.04 0.02 0.11]
+ [0.19 0.01 0.3  ... 0.09 0.59 0.56]
+ [0.18 0.05 0.03 ... 0.33 0.02 0.04]
+ ...
+ [0.07 0.23 0.01 ... 0.15 0.01 0.25]
+ [0.28 0.32 0.   ... 0.06 0.21 0.27]
+ [0.17 0.01 0.29 ... 0.16 0.04 0.07]]
+  Eu (V/m)
+[[0.34 0.04 0.45 ... 0.79 0.29 0.46]
+ [0.83 0.29 0.64 ... 0.26 0.36 0.51]
+ [0.49 0.84 0.73 ... 0.53 0.49 0.29]
+ ...
+ [0.5  0.64 0.23 ... 0.61 0.42 0.77]
+ [0.77 0.34 0.17 ... 0.59 0.29 0.25]
+ [0.79 0.1  0.71 ... 0.8  0.44 0.88]]
+The mean value of param Ex (V/m) is 0.15678287141730324 +- 0.1721125161000326
+The mean value of param Ey (V/m) is 0.15843503742721257 +- 0.17447304193203275
+The mean value of param Eu (V/m) is 0.4421060905742679 +- 0.22887235353259203
+
+The global phase of S is (deg):
+[[339.41   0.7  253.48 ...  96.74 175.07  63.64]
+ [331.54 231.83 350.34 ... 160.77  39.95 135.37]
+ [137.86 242.04   5.63 ... 229.7  353.53 128.25]
+ ...
+ [125.21  22.53  69.28 ...  79.23 326.63   0.59]
+ [ 95.5    8.65 333.8  ...  86.12 268.8   16.4 ]
+ [266.95  78.83 160.02 ...  66.4  253.32  91.14]]
+The mean value is 178.95725521104563 +- 104.30194197512238
+
+The degree of depolarization of S is:
+[[0.79 0.28 0.99 ... 1.   0.97 0.74]
+ [0.97 0.99 0.85 ... 0.76 0.55 0.7 ]
+ [0.9  0.97 1.   ... 0.78 0.98 0.95]
+ ...
+ [0.98 0.93 0.94 ... 0.89 1.   0.94]
+ [0.94 0.47 1.   ... 0.99 0.57 0.59]
+ [0.96 0.81 0.93 ... 0.96 0.97 1.  ]]
+The mean value is 0.7846204499182302 +- 0.2230555104230709
+
+The degree of polarization of S is:
+[[0.61 0.96 0.17 ... 0.07 0.24 0.68]
+ [0.25 0.13 0.52 ... 0.65 0.84 0.72]
+ [0.43 0.24 0.06 ... 0.63 0.21 0.32]
+ ...
+ [0.21 0.37 0.33 ... 0.45 0.07 0.34]
+ [0.35 0.88 0.06 ... 0.16 0.82 0.81]
+ [0.26 0.59 0.37 ... 0.28 0.24 0.1 ]]
+The mean value is 0.5013118774279132 +- 0.2886232672355406
+
+The degree of linear polarization of S is:
+[[0.58 0.96 0.17 ... 0.07 0.23 0.64]
+ [0.11 0.08 0.38 ... 0.56 0.83 0.71]
+ [0.43 0.23 0.05 ... 0.46 0.21 0.32]
+ ...
+ [0.2  0.29 0.3  ... 0.24 0.03 0.15]
+ [0.2  0.68 0.06 ... 0.16 0.73 0.8 ]
+ [0.26 0.59 0.34 ... 0.07 0.09 0.08]]
+The mean value is 0.4224137243379612 +- 0.26889129160953706
+
+The degree of circular polarization of S is:
+[[0.2  0.02 0.03 ... 0.01 0.06 0.22]
+ [0.22 0.11 0.36 ... 0.32 0.1  0.11]
+ [0.01 0.04 0.03 ... 0.43 0.01 0.03]
+ ...
+ [0.05 0.23 0.13 ... 0.38 0.06 0.3 ]
+ [0.28 0.56 0.02 ... 0.01 0.37 0.08]
+ [0.   0.05 0.14 ... 0.28 0.22 0.05]]
+The mean value is 0.20282397452111203 +- 0.20674511599301307
+
+alpha: self = [100, 100]; az = (100, 100)
+alpha: alpha = (100, 100);
+The alpha of S is (deg):
+[[30.33  0.76 19.81 ... 45.89 61.52 14.17]
+ [58.5  28.42 43.05 ... 47.67 64.82 56.47]
+ [89.38 14.05 74.45 ... 42.91 20.27 85.07]
+ ...
+ [79.9  68.76 34.36 ... 29.62 31.23 56.1 ]
+ [61.58 21.87 26.93 ... 86.44 32.7  77.61]
+ [49.79 87.37 78.96 ... 38.42 46.44 53.9 ]]
+The mean value is 45.315411635208555 +- 25.980430803222294
+
+The delay of S is (deg):
+[[338.3  288.76 194.82 ... 170.85 196.93 316.38]
+ [ 94.27 280.07 136.38 ...  29.69 351.27 170.78]
+ [234.56 159.33 282.76 ... 317.13 355.61 323.94]
+ ...
+ [ 45.52  67.39 334.87 ... 258.61 100.89  76.52]
+ [ 77.12 247.5  336.7  ... 335.28 150.29 165.84]
+ [  0.99 303.15  81.6  ...  92.21 292.08 213.3 ]]
+The mean value is 181.6203333185376 +- 103.77306339369778
+
+The ellipticity parameter of S is:
+[[-0.17 -0.01 -0.08 ...  0.08 -0.12 -0.17]
+ [ 0.61 -0.53  0.4  ...  0.26 -0.06  0.07]
+ [-0.01  0.08 -0.27 ... -0.39 -0.02 -0.05]
+ ...
+ [ 0.13  0.35 -0.21 ... -0.55  0.58  0.63]
+ [ 0.52 -0.36 -0.16 ... -0.03  0.24  0.05]
+ [ 0.01 -0.04  0.19 ...  0.79 -0.67 -0.28]]
+The mean value is -0.006132872778151635 +- 0.3171563423977576
+
+The ellipticity angle of S is (deg):
+[[ -9.4   -0.72  -4.69 ...   4.57  -7.07  -9.56]
+ [ 31.35 -27.76  21.75 ...  14.78  -3.36   4.24]
+ [ -0.51   4.79 -15.12 ... -21.36  -1.43  -2.89]
+ ...
+ [  7.13  19.28 -11.65 ... -28.7   30.27  32.1 ]
+ [ 27.35 -19.85  -9.31 ...  -1.49  13.39   2.94]
+ [  0.49  -2.2   10.91 ...  38.33 -33.87 -15.76]]
+The mean value is -0.3115215907017493 +- 16.643465149640765
+
+The azimuth of S is (deg):
+[[ 29.42   0.24 160.67 ... 134.1  117.89  10.66]
+ [ 94.15   7.49 137.69 ...  48.08  64.98 123.39]
+ [ 90.36 166.73  86.2  ...  42.15  20.22  86.  ]
+ ...
+ [ 82.78  80.3   33.36 ... 170.82 170.04  75.13]
+ [ 80.58 169.94  25.76 ...  86.76 148.89 102.05]
+ [ 49.79  88.56  88.31 ... 175.32  48.8  124.49]]
+The mean value is 90.17511767716516 +- 54.301148293797496
+
+The eccentricity of S is:
+[[0.99 1.   1.   ... 1.   0.99 0.99]
+ [0.79 0.85 0.92 ... 0.96 1.   1.  ]
+ [1.   1.   0.96 ... 0.92 1.   1.  ]
+ ...
+ [0.99 0.94 0.98 ... 0.84 0.81 0.78]
+ [0.86 0.93 0.99 ... 1.   0.97 1.  ]
+ [1.   1.   0.98 ... 0.61 0.74 0.96]]
+The mean value is 0.9439377349083207 +- 0.0914100375479207
+
+Polarized S S0 =
+[[0.18 0.04 0.04 ... 0.05 0.03 0.44]
+ [0.23 0.01 0.45 ... 0.12 0.65 0.67]
+ [0.18 0.22 0.03 ... 0.48 0.07 0.04]
+ ...
+ [0.07 0.24 0.03 ... 0.31 0.01 0.3 ]
+ [0.32 0.87 0.   ... 0.06 0.39 0.27]
+ [0.22 0.01 0.3  ... 0.25 0.06 0.08]]
+Polarized S S1 =
+[[ 0.09  0.04  0.03 ... -0.   -0.01  0.39]
+ [-0.1   0.01  0.03 ... -0.01 -0.41 -0.26]
+ [-0.18  0.2  -0.03 ...  0.03  0.05 -0.04]
+ ...
+ [-0.06 -0.18  0.01 ...  0.16  0.01 -0.11]
+ [-0.17  0.63  0.   ... -0.06  0.16 -0.25]
+ [-0.04 -0.01 -0.28 ...  0.06 -0.   -0.03]]
+Polarized S S2 =
+[[ 0.15  0.   -0.03 ... -0.05 -0.02  0.15]
+ [-0.02  0.   -0.32 ...  0.11  0.49 -0.61]
+ [-0.   -0.1   0.   ...  0.35  0.04  0.01]
+ ...
+ [ 0.02  0.06  0.02 ... -0.05 -0.    0.06]
+ [ 0.06 -0.23  0.   ...  0.01 -0.31 -0.11]
+ [ 0.22  0.    0.02 ... -0.01  0.02 -0.07]]
+Polarized S S3 =
+[[-0.06 -0.   -0.01 ...  0.01 -0.01 -0.14]
+ [ 0.2  -0.01  0.31 ...  0.06 -0.08  0.1 ]
+ [-0.    0.04 -0.02 ... -0.33 -0.   -0.  ]
+ ...
+ [ 0.02  0.15 -0.01 ... -0.26  0.01  0.27]
+ [ 0.26 -0.55 -0.   ... -0.    0.17  0.03]
+ [ 0.   -0.    0.11 ...  0.25 -0.06 -0.04]]
+ Unpolarized S S0 =
+[[0.11 0.   0.2  ... 0.62 0.09 0.21]
+ [0.69 0.08 0.41 ... 0.07 0.13 0.26]
+ [0.24 0.71 0.53 ... 0.28 0.24 0.08]
+ ...
+ [0.25 0.41 0.05 ... 0.37 0.18 0.59]
+ [0.59 0.12 0.03 ... 0.35 0.08 0.06]
+ [0.62 0.01 0.51 ... 0.64 0.2  0.78]]
+Unpolarized S S1 =
+[[0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ ...
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]]
+Unpolarized S S2 =
+[[0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ ...
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]]
+Unpolarized S S3 =
+[[0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ ...
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]]
+
+The norm of S is (a.u.):
+[[0.35 0.06 0.25 ... 0.67 0.12 0.79]
+ [0.94 0.1  0.96 ... 0.23 1.01 1.15]
+ [0.45 0.96 0.56 ... 0.9  0.32 0.13]
+ ...
+ [0.32 0.69 0.08 ... 0.75 0.19 0.94]
+ [0.96 1.31 0.03 ... 0.42 0.61 0.43]
+ [0.87 0.03 0.86 ... 0.93 0.27 0.87]]
+The mean value is 0.5684573543777748 +- 0.3395909958196828
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;intensity&#39;: array([[0.3 , 0.05, 0.24, ..., 0.67, 0.11, 0.65],
+        [0.91, 0.1 , 0.85, ..., 0.19, 0.77, 0.94],
+        [0.41, 0.93, 0.56, ..., 0.76, 0.31, 0.13],
+        ...,
+        [0.32, 0.65, 0.08, ..., 0.68, 0.19, 0.89],
+        [0.91, 0.98, 0.03, ..., 0.41, 0.47, 0.34],
+        [0.84, 0.02, 0.81, ..., 0.9 , 0.26, 0.86]]),
+ &#39;E0x&#39;: array([[0.16, 0.04, 0.04, ..., 0.03, 0.01, 0.43],
+        [0.12, 0.01, 0.33, ..., 0.08, 0.28, 0.37],
+        [0.  , 0.22, 0.01, ..., 0.35, 0.06, 0.  ],
+        ...,
+        [0.01, 0.09, 0.02, ..., 0.27, 0.01, 0.17],
+        [0.15, 0.8 , 0.  , ..., 0.  , 0.33, 0.06],
+        [0.14, 0.  , 0.06, ..., 0.2 , 0.04, 0.05]]),
+ &#39;E0y&#39;: array([[0.09, 0.  , 0.01, ..., 0.04, 0.02, 0.11],
+        [0.19, 0.01, 0.3 , ..., 0.09, 0.59, 0.56],
+        [0.18, 0.05, 0.03, ..., 0.33, 0.02, 0.04],
+        ...,
+        [0.07, 0.23, 0.01, ..., 0.15, 0.01, 0.25],
+        [0.28, 0.32, 0.  , ..., 0.06, 0.21, 0.27],
+        [0.17, 0.01, 0.29, ..., 0.16, 0.04, 0.07]]),
+ &#39;E0u&#39;: array([[0.34, 0.04, 0.45, ..., 0.79, 0.29, 0.46],
+        [0.83, 0.29, 0.64, ..., 0.26, 0.36, 0.51],
+        [0.49, 0.84, 0.73, ..., 0.53, 0.49, 0.29],
+        ...,
+        [0.5 , 0.64, 0.23, ..., 0.61, 0.42, 0.77],
+        [0.77, 0.34, 0.17, ..., 0.59, 0.29, 0.25],
+        [0.79, 0.1 , 0.71, ..., 0.8 , 0.44, 0.88]]),
+ &#39;global_phase&#39;: array([[5.92, 0.01, 4.42, ..., 1.69, 3.06, 1.11],
+        [5.79, 4.05, 6.11, ..., 2.81, 0.7 , 2.36],
+        [2.41, 4.22, 0.1 , ..., 4.01, 6.17, 2.24],
+        ...,
+        [2.19, 0.39, 1.21, ..., 1.38, 5.7 , 0.01],
+        [1.67, 0.15, 5.83, ..., 1.5 , 4.69, 0.29],
+        [4.66, 1.38, 2.79, ..., 1.16, 4.42, 1.59]]),
+ &#39;degree_depol&#39;: array([[0.79, 0.28, 0.99, ..., 1.  , 0.97, 0.74],
+        [0.97, 0.99, 0.85, ..., 0.76, 0.55, 0.7 ],
+        [0.9 , 0.97, 1.  , ..., 0.78, 0.98, 0.95],
+        ...,
+        [0.98, 0.93, 0.94, ..., 0.89, 1.  , 0.94],
+        [0.94, 0.47, 1.  , ..., 0.99, 0.57, 0.59],
+        [0.96, 0.81, 0.93, ..., 0.96, 0.97, 1.  ]]),
+ &#39;degree_pol&#39;: array([[0.61, 0.96, 0.17, ..., 0.07, 0.24, 0.68],
+        [0.25, 0.13, 0.52, ..., 0.65, 0.84, 0.72],
+        [0.43, 0.24, 0.06, ..., 0.63, 0.21, 0.32],
+        ...,
+        [0.21, 0.37, 0.33, ..., 0.45, 0.07, 0.34],
+        [0.35, 0.88, 0.06, ..., 0.16, 0.82, 0.81],
+        [0.26, 0.59, 0.37, ..., 0.28, 0.24, 0.1 ]]),
+ &#39;degree_linear_pol&#39;: array([[0.58, 0.96, 0.17, ..., 0.07, 0.23, 0.64],
+        [0.11, 0.08, 0.38, ..., 0.56, 0.83, 0.71],
+        [0.43, 0.23, 0.05, ..., 0.46, 0.21, 0.32],
+        ...,
+        [0.2 , 0.29, 0.3 , ..., 0.24, 0.03, 0.15],
+        [0.2 , 0.68, 0.06, ..., 0.16, 0.73, 0.8 ],
+        [0.26, 0.59, 0.34, ..., 0.07, 0.09, 0.08]]),
+ &#39;degree_circular_pol&#39;: array([[0.2 , 0.02, 0.03, ..., 0.01, 0.06, 0.22],
+        [0.22, 0.11, 0.36, ..., 0.32, 0.1 , 0.11],
+        [0.01, 0.04, 0.03, ..., 0.43, 0.01, 0.03],
+        ...,
+        [0.05, 0.23, 0.13, ..., 0.38, 0.06, 0.3 ],
+        [0.28, 0.56, 0.02, ..., 0.01, 0.37, 0.08],
+        [0.  , 0.05, 0.14, ..., 0.28, 0.22, 0.05]]),
+ &#39;alpha&#39;: array([[0.53, 0.01, 0.35, ..., 0.8 , 1.07, 0.25],
+        [1.02, 0.5 , 0.75, ..., 0.83, 1.13, 0.99],
+        [1.56, 0.25, 1.3 , ..., 0.75, 0.35, 1.48],
+        ...,
+        [1.39, 1.2 , 0.6 , ..., 0.52, 0.54, 0.98],
+        [1.07, 0.38, 0.47, ..., 1.51, 0.57, 1.35],
+        [0.87, 1.52, 1.38, ..., 0.67, 0.81, 0.94]]),
+ &#39;delay&#39;: array([[5.9 , 5.04, 3.4 , ..., 2.98, 3.44, 5.52],
+        [1.65, 4.89, 2.38, ..., 0.52, 6.13, 2.98],
+        [4.09, 2.78, 4.94, ..., 5.54, 6.21, 5.65],
+        ...,
+        [0.79, 1.18, 5.84, ..., 4.51, 1.76, 1.34],
+        [1.35, 4.32, 5.88, ..., 5.85, 2.62, 2.89],
+        [0.02, 5.29, 1.42, ..., 1.61, 5.1 , 3.72]]),
+ &#39;ellipticity_param&#39;: array([[-0.17, -0.01, -0.08, ...,  0.08, -0.12, -0.17],
+        [ 0.61, -0.53,  0.4 , ...,  0.26, -0.06,  0.07],
+        [-0.01,  0.08, -0.27, ..., -0.39, -0.02, -0.05],
+        ...,
+        [ 0.13,  0.35, -0.21, ..., -0.55,  0.58,  0.63],
+        [ 0.52, -0.36, -0.16, ..., -0.03,  0.24,  0.05],
+        [ 0.01, -0.04,  0.19, ...,  0.79, -0.67, -0.28]]),
+ &#39;ellipticity_angle&#39;: array([[-0.16, -0.01, -0.08, ...,  0.08, -0.12, -0.17],
+        [ 0.55, -0.48,  0.38, ...,  0.26, -0.06,  0.07],
+        [-0.01,  0.08, -0.26, ..., -0.37, -0.02, -0.05],
+        ...,
+        [ 0.12,  0.34, -0.2 , ..., -0.5 ,  0.53,  0.56],
+        [ 0.48, -0.35, -0.16, ..., -0.03,  0.23,  0.05],
+        [ 0.01, -0.04,  0.19, ...,  0.67, -0.59, -0.27]]),
+ &#39;azimuth&#39;: array([[0.51, 0.  , 2.8 , ..., 2.34, 2.06, 0.19],
+        [1.64, 0.13, 2.4 , ..., 0.84, 1.13, 2.15],
+        [1.58, 2.91, 1.5 , ..., 0.74, 0.35, 1.5 ],
+        ...,
+        [1.44, 1.4 , 0.58, ..., 2.98, 2.97, 1.31],
+        [1.41, 2.97, 0.45, ..., 1.51, 2.6 , 1.78],
+        [0.87, 1.55, 1.54, ..., 3.06, 0.85, 2.17]]),
+ &#39;eccentricity&#39;: array([[0.99, 1.  , 1.  , ..., 1.  , 0.99, 0.99],
+        [0.79, 0.85, 0.92, ..., 0.96, 1.  , 1.  ],
+        [1.  , 1.  , 0.96, ..., 0.92, 1.  , 1.  ],
+        ...,
+        [0.99, 0.94, 0.98, ..., 0.84, 0.81, 0.78],
+        [0.86, 0.93, 0.99, ..., 1.  , 0.97, 1.  ],
+        [1.  , 1.  , 0.98, ..., 0.61, 0.74, 0.96]]),
+ &#39;S_p&#39;: Polarized S S0 =
+ [[0.18 0.04 0.04 ... 0.05 0.03 0.44]
+  [0.23 0.01 0.45 ... 0.12 0.65 0.67]
+  [0.18 0.22 0.03 ... 0.48 0.07 0.04]
+  ...
+  [0.07 0.24 0.03 ... 0.31 0.01 0.3 ]
+  [0.32 0.87 0.   ... 0.06 0.39 0.27]
+  [0.22 0.01 0.3  ... 0.25 0.06 0.08]]
+ Polarized S S1 =
+ [[ 0.09  0.04  0.03 ... -0.   -0.01  0.39]
+  [-0.1   0.01  0.03 ... -0.01 -0.41 -0.26]
+  [-0.18  0.2  -0.03 ...  0.03  0.05 -0.04]
+  ...
+  [-0.06 -0.18  0.01 ...  0.16  0.01 -0.11]
+  [-0.17  0.63  0.   ... -0.06  0.16 -0.25]
+  [-0.04 -0.01 -0.28 ...  0.06 -0.   -0.03]]
+ Polarized S S2 =
+ [[ 0.15  0.   -0.03 ... -0.05 -0.02  0.15]
+  [-0.02  0.   -0.32 ...  0.11  0.49 -0.61]
+  [-0.   -0.1   0.   ...  0.35  0.04  0.01]
+  ...
+  [ 0.02  0.06  0.02 ... -0.05 -0.    0.06]
+  [ 0.06 -0.23  0.   ...  0.01 -0.31 -0.11]
+  [ 0.22  0.    0.02 ... -0.01  0.02 -0.07]]
+ Polarized S S3 =
+ [[-0.06 -0.   -0.01 ...  0.01 -0.01 -0.14]
+  [ 0.2  -0.01  0.31 ...  0.06 -0.08  0.1 ]
+  [-0.    0.04 -0.02 ... -0.33 -0.   -0.  ]
+  ...
+  [ 0.02  0.15 -0.01 ... -0.26  0.01  0.27]
+  [ 0.26 -0.55 -0.   ... -0.    0.17  0.03]
+  [ 0.   -0.    0.11 ...  0.25 -0.06 -0.04]],
+ &#39;S_u&#39;: Unpolarized S S0 =
+ [[0.11 0.   0.2  ... 0.62 0.09 0.21]
+  [0.69 0.08 0.41 ... 0.07 0.13 0.26]
+  [0.24 0.71 0.53 ... 0.28 0.24 0.08]
+  ...
+  [0.25 0.41 0.05 ... 0.37 0.18 0.59]
+  [0.59 0.12 0.03 ... 0.35 0.08 0.06]
+  [0.62 0.01 0.51 ... 0.64 0.2  0.78]]
+ Unpolarized S S1 =
+ [[0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]
+  ...
+  [0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]]
+ Unpolarized S S2 =
+ [[0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]
+  ...
+  [0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]]
+ Unpolarized S S3 =
+ [[0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]
+  ...
+  [0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]
+  [0. 0. 0. ... 0. 0. 0.]],
+ &#39;norm&#39;: array([[0.35, 0.06, 0.25, ..., 0.67, 0.12, 0.79],
+        [0.94, 0.1 , 0.96, ..., 0.23, 1.01, 1.15],
+        [0.45, 0.96, 0.56, ..., 0.9 , 0.32, 0.13],
+        ...,
+        [0.32, 0.69, 0.08, ..., 0.75, 0.19, 0.94],
+        [0.96, 1.31, 0.03, ..., 0.42, 0.61, 0.43],
+        [0.87, 0.03, 0.86, ..., 0.93, 0.27, 0.87]])}
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_2.png" src="../../../_images/source_development_2D_Stokes_36_2.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_3.png" src="../../../_images/source_development_2D_Stokes_36_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_4.png" src="../../../_images/source_development_2D_Stokes_36_4.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_5.png" src="../../../_images/source_development_2D_Stokes_36_5.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_6.png" src="../../../_images/source_development_2D_Stokes_36_6.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_7.png" src="../../../_images/source_development_2D_Stokes_36_7.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_8.png" src="../../../_images/source_development_2D_Stokes_36_8.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_9.png" src="../../../_images/source_development_2D_Stokes_36_9.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_10.png" src="../../../_images/source_development_2D_Stokes_36_10.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_11.png" src="../../../_images/source_development_2D_Stokes_36_11.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_12.png" src="../../../_images/source_development_2D_Stokes_36_12.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_13.png" src="../../../_images/source_development_2D_Stokes_36_13.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_14.png" src="../../../_images/source_development_2D_Stokes_36_14.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_36_15.png" src="../../../_images/source_development_2D_Stokes_36_15.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Checks">
+<h1>Checks<a class="headerlink" href="#Checks" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># is_physicall</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">ellipticity</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">90</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">azimuth</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">degree_pol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">global_phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_azimuth_ellipticity</span><span class="p">(</span><span class="n">azimuth</span><span class="o">=</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="n">ellipticity</span><span class="p">,</span> <span class="n">intensity</span><span class="o">=</span><span class="n">intensity</span><span class="p">,</span>
+                              <span class="n">degree_pol</span><span class="o">=</span><span class="n">degree_pol</span><span class="p">,</span> <span class="n">global_phase</span><span class="o">=</span><span class="n">global_phase</span><span class="p">)</span>
+<span class="n">cond</span><span class="p">,</span> <span class="n">dic</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">is_physical</span><span class="p">(</span><span class="n">draw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">give_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dic</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S is physically realizable:
+8
+4 2
+The mean value of param Physicall (cond. 1, S0) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 1, S1) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 1, S2) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 1, S3) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 1) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 2) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 3) is 1.0 +- 0.0
+The mean value of param Physicall is 1.0 +- 0.0
+
+{&#39;cond1&#39;: array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True]]), &#39;cond1_0&#39;: array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True]]), &#39;cond1_1&#39;: array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True]]), &#39;cond1_2&#39;: array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True]]), &#39;cond1_3&#39;: array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True]]), &#39;cond2&#39;: array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True]]), &#39;S0&#39;: array([[0.25, 0.32, 0.17, 0.02, 0.54, 0.66, 0.38, 0.13, 0.67, 0.63],
+       [0.61, 0.1 , 0.83, 0.4 , 0.16, 0.93, 0.5 , 0.14, 0.8 , 0.82],
+       [0.73, 0.12, 0.85, 0.18, 0.17, 0.16, 0.71, 0.16, 0.82, 0.49],
+       [0.44, 0.98, 0.89, 0.33, 0.95, 0.3 , 0.23, 0.73, 0.99, 0.82],
+       [0.3 , 0.01, 0.25, 0.39, 0.27, 0.69, 0.33, 0.53, 0.37, 0.22],
+       [0.21, 0.54, 0.61, 0.1 , 0.03, 0.4 , 0.98, 0.71, 0.58, 0.55],
+       [0.67, 0.24, 0.71, 0.99, 0.54, 0.67, 0.22, 0.12, 0.72, 0.73],
+       [0.72, 0.23, 0.56, 0.48, 0.45, 0.53, 0.95, 0.05, 0.23, 0.73],
+       [0.12, 0.41, 0.86, 0.3 , 0.51, 0.91, 0.31, 0.25, 0.08, 0.82],
+       [0.58, 0.48, 0.91, 0.3 , 0.41, 0.4 , 0.3 , 0.81, 0.19, 0.64]]), &#39;cond3&#39;: array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True],
+       [ True,  True,  True,  True,  True,  True,  True,  True,  True,
+         True]])}
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_38_1.png" src="../../../_images/source_development_2D_Stokes_38_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">ellipticity</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">90</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">azimuth</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">degree_pol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">global_phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">degrees</span>
+<span class="n">S</span><span class="o">.</span><span class="n">general_azimuth_ellipticity</span><span class="p">(</span><span class="n">azimuth</span><span class="o">=</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">ellipticity</span><span class="o">=</span><span class="n">ellipticity</span><span class="p">,</span> <span class="n">intensity</span><span class="o">=</span><span class="n">intensity</span><span class="p">,</span>
+                              <span class="n">degree_pol</span><span class="o">=</span><span class="n">degree_pol</span><span class="p">,</span> <span class="n">global_phase</span><span class="o">=</span><span class="n">global_phase</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">checks</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+S is physically realizable:
+  Physicall (cond. 1, S0)
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]]
+  Physicall (cond. 1, S1)
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]]
+  Physicall (cond. 1, S2)
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]]
+  Physicall (cond. 1, S3)
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]]
+  Physicall (cond. 1)
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]]
+  Physicall (cond. 2)
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]]
+  Physicall (cond. 3)
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]]
+  Physicall
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]]
+The mean value of param Physicall (cond. 1, S0) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 1, S1) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 1, S2) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 1, S3) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 1) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 2) is 1.0 +- 0.0
+The mean value of param Physicall (cond. 3) is 1.0 +- 0.0
+The mean value of param Physicall is 1.0 +- 0.0
+
+S is linearly polarized:
+[[ 0.  0.  0. ...  0.  0.  0.]
+ [ 0.  0.  0. ...  0.  0.  0.]
+ [ 0.  0.  0. ...  0.  0.  0.]
+ ...
+ [ 0.  0.  0. ...  0.  0.  0.]
+ [ 0.  0.  0. ...  0. nan  0.]
+ [nan nan nan ... nan nan nan]]
+The mean value is nan +- nan
+
+S is circcularly polarized:
+[[ 0.  0.  0. ...  0.  0.  0.]
+ [ 0.  0.  0. ...  0.  0.  0.]
+ [ 0.  0.  0. ...  0.  0.  0.]
+ ...
+ [ 0.  0.  0. ...  0.  0.  0.]
+ [ 0.  0.  0. ...  0. nan  0.]
+ [nan nan nan ... nan nan nan]]
+The mean value is nan +- nan
+
+[False False False ... False False False]
+S is right handed:
+[[0. 0. 0. ... 0. 1. 0.]
+ [0. 1. 1. ... 1. 1. 0.]
+ [0. 1. 0. ... 0. 0. 0.]
+ ...
+ [0. 1. 1. ... 1. 0. 0.]
+ [0. 0. 1. ... 1. 1. 1.]
+ [0. 0. 0. ... 0. 0. 0.]]
+The mean value is 0.4894 +- 0.4998876273723925
+
+S is left handed:
+[[1. 1. 1. ... 1. 0. 1.]
+ [1. 0. 0. ... 0. 0. 1.]
+ [1. 0. 1. ... 1. 1. 1.]
+ ...
+ [1. 0. 0. ... 0. 1. 1.]
+ [1. 1. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+d:\codigo\py_pol\py_pol\utils.py:662: RuntimeWarning: invalid value encountered in less
+  # Check linear polarization case
+d:\codigo\py_pol\py_pol\utils.py:667: RuntimeWarning: invalid value encountered in less
+  # Check circular polarization case
+d:\codigo\py_pol\py_pol\utils.py:668: RuntimeWarning: invalid value encountered in less
+  cond2 = (~cond1) * ((np.abs(ellipticity + np.pi / 4) &lt; tol_default**2) +
+d:\codigo\py_pol\py_pol\utils.py:674: RuntimeWarning: invalid value encountered in arccos
+  alpha[cond3] = 0.5 * np.arccos(
+d:\codigo\py_pol\py_pol\utils.py:677: RuntimeWarning: invalid value encountered in sign
+  cond4 = cond3 * ((azimuth == 0) + (azimuth == np.pi))
+d:\codigo\py_pol\py_pol\utils.py:861: RuntimeWarning: invalid value encountered in greater
+  q = q - 1.5 * (angle == -np.pi / 4)
+d:\codigo\py_pol\py_pol\utils.py:861: RuntimeWarning: invalid value encountered in less
+  q = q - 1.5 * (angle == -np.pi / 4)
+d:\codigo\py_pol\py_pol\utils.py:862: RuntimeWarning: invalid value encountered in greater
+  q = q - 1 * (angle &gt; -np.pi / 4) * (angle &lt; 0)
+d:\codigo\py_pol\py_pol\utils.py:862: RuntimeWarning: invalid value encountered in less
+  q = q - 1 * (angle &gt; -np.pi / 4) * (angle &lt; 0)
+d:\codigo\py_pol\py_pol\utils.py:864: RuntimeWarning: invalid value encountered in greater
+  q = q + 1.5 * (angle == np.pi / 4)
+d:\codigo\py_pol\py_pol\utils.py:864: RuntimeWarning: invalid value encountered in less
+  q = q + 1.5 * (angle == np.pi / 4)
+d:\codigo\py_pol\py_pol\utils.py:866: RuntimeWarning: invalid value encountered in greater
+  q = q + 2.5 * (angle == np.pi / 2)
+d:\codigo\py_pol\py_pol\utils.py:866: RuntimeWarning: invalid value encountered in less
+  q = q + 2.5 * (angle == np.pi / 2)
+d:\codigo\py_pol\py_pol\utils.py:868: RuntimeWarning: invalid value encountered in greater
+  q = q + 3.5 * (angle == np.pi * 3 / 4)
+d:\codigo\py_pol\py_pol\utils.py:868: RuntimeWarning: invalid value encountered in less
+  q = q + 3.5 * (angle == np.pi * 3 / 4)
+d:\codigo\py_pol\py_pol\stokes.py:2939: RuntimeWarning: invalid value encountered in greater
+  cond2 = ~cond1 * (delay &gt; 0) * (delay &lt; np.pi)
+d:\codigo\py_pol\py_pol\stokes.py:2939: RuntimeWarning: invalid value encountered in less
+  cond2 = ~cond1 * (delay &gt; 0) * (delay &lt; np.pi)
+d:\codigo\py_pol\py_pol\utils.py:664: RuntimeWarning: invalid value encountered in greater
+  alpha[cond1] = azimuth[cond1]
+d:\codigo\py_pol\py_pol\stokes.py:2994: RuntimeWarning: invalid value encountered in greater
+  cond2 = ~cond1 * (delay &gt; np.pi) * (delay &lt; 2 * np.pi)
+d:\codigo\py_pol\py_pol\stokes.py:2994: RuntimeWarning: invalid value encountered in less
+  cond2 = ~cond1 * (delay &gt; np.pi) * (delay &lt; 2 * np.pi)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The mean value is 0.5006 +- 0.4999996399998704
+
+S is polarized:
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [False False False ... False False False]]
+The mean value is 0.99 +- 0.099498743710662
+
+S is totally polarized:
+[[False False False ... False False False]
+ [False False False ... False False False]
+ [False False False ... False False False]
+ ...
+ [False False False ... False False False]
+ [False False False ... False False False]
+ [False False False ... False False False]]
+The mean value is 0.0 +- 0.0
+
+S is depolarized:
+[[ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ ...
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]
+ [ True  True  True ...  True  True  True]]
+The mean value is 1.0 +- 0.0
+
+S is totally depolarized:
+[[False False False ... False False False]
+ [False False False ... False False False]
+ [False False False ... False False False]
+ ...
+ [False False False ... False False False]
+ [False False False ... False  True False]
+ [ True  True  True ...  True  True  True]]
+The mean value is 0.0112 +- 0.10523573537539424
+
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_39_3.png" src="../../../_images/source_development_2D_Stokes_39_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_39_4.png" src="../../../_images/source_development_2D_Stokes_39_4.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_39_5.png" src="../../../_images/source_development_2D_Stokes_39_5.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_39_6.png" src="../../../_images/source_development_2D_Stokes_39_6.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_39_7.png" src="../../../_images/source_development_2D_Stokes_39_7.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_39_8.png" src="../../../_images/source_development_2D_Stokes_39_8.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_39_9.png" src="../../../_images/source_development_2D_Stokes_39_9.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_39_10.png" src="../../../_images/source_development_2D_Stokes_39_10.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_39_11.png" src="../../../_images/source_development_2D_Stokes_39_11.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Analysis">
+<h1>Analysis<a class="headerlink" href="#Analysis" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">M</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">Stokes</span><span class="p">()</span>
+<span class="n">S</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">components</span><span class="p">(</span><span class="n">draw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">S</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">filter_physical_conditions</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">components</span><span class="p">(</span><span class="n">draw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">is_physical</span><span class="p">(</span><span class="n">draw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The intensity components of S are (a.u.):
+The mean value of param S0: (a.u.) is 0.00732585921943348 +- 0.5738362768435609
+The mean value of param S1: (a.u.) is 0.0027023689183885134 +- 0.5739687445423055
+The mean value of param S2: (a.u.) is -0.005823076875152242 +- 0.5746678283318901
+The mean value of param S3: (a.u.) is -0.0049241252611408595 +- 0.5749055580103019
+
+The intensity components of S are (a.u.):
+The mean value of param S0: (a.u.) is 0.49685465973314374 +- 0.2871884188759093
+The mean value of param S1: (a.u.) is 0.0028284346855875007 +- 0.3124980599821453
+The mean value of param S2: (a.u.) is -0.0026970426675723886 +- 0.31421133842167015
+The mean value of param S3: (a.u.) is -0.00020758641499460105 +- 0.3132756040500792
+
+S is physically realizable:
+The mean value is 1.0 +- 0.0
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_41_1.png" src="../../../_images/source_development_2D_Stokes_41_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_41_2.png" src="../../../_images/source_development_2D_Stokes_41_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/source_development_2D_Stokes_41_3.png" src="../../../_images/source_development_2D_Stokes_41_3.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[0. 0. 0. 0. 0.]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+No
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019, Luis Miguel Sanchez Brea / Jesus del Hoyo
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
