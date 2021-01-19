@@ -5,18 +5,19 @@ from multiprocessing import Process
 import os
 
 #시작 시간
-start_time = time.time()
 
 
 def count(name):
     s = 0
-    for i in range(1,10000001):
+    for i in range(1,100000010):
         #print(name,":", i)
         s = s+i
     proc = os.getpid()
     print(name,"s=",s, "by process id: ",proc)
 
+
 # 멀티쓰레드(멀티프로세싱) 사용
+start_time = time.time()
 
 if __name__ == '__main__':
     num_list = ['p1', 'p2', 'p3', 'p4']
@@ -29,8 +30,18 @@ if __name__ == '__main__':
 
     for proc in procs:
         proc.join()
+    print("--- %s seconds ---" % (time.time() - start_time))
 
-print("--- %s seconds ---" % (time.time() - start_time))
+    start_time = time.time()
+    s = 0
+    for i in range(1, 4 * 100000010):
+        # print(name,":", i)
+        s = s + i
+
+    print("s=", s)
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+
 
 '''
 p4 s= 1250025000
