@@ -26,11 +26,11 @@ import os
 
 
 # Matrix multiplication & result sharing with dictionary
-def Mat_MUL_JD(alpha, beta, gamma, V_q, num, Jdic):
+def Mat_MUL_JD(alpha, beta, gamma, q0, dq, n_Vq, num, Jdic):
     J = np.array([[1,0],[0,1]])
-
-    for kk in range(len(V_q)):
-        q = V_q[kk]
+    q=q0
+    for kk in range(n_Vq):
+        q = q+dq*kk
         '''
         J11 = alpha + 1j * beta * cos(2 * q)
         J12 = -gamma + 1j * beta * sin(2 * q)
@@ -59,7 +59,7 @@ Len_SF = 28  # length of sensing fiber 28 m
 I = 1  # Applied plasma current 1A for normalization
 V = 0.54  # Verdat constant 0.54 but in here 0.43
 rho_F = V * 4 * pi * 1e-7 / (Len_SF * I)  # Non reciprocal circular birefringence for unit ampare and unit length[rad/m·A]
-delta_L = 0.0003  # delta L [m]
+delta_L = 0.00003  # delta L [m]
 dq = 2 * pi / SR[0]
 q = 0
 #_______________________________Parameters#2____________________________________
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     Jdic = manager.dict()
 
     for num in range(num_processor):
-        proc = Process(target=Mat_MUL_JD, args=(alpha, beta, gamma, spl_V_q[num],num,Jdic,))
+        proc = Process(target=Mat_MUL_JD, args=(alpha, beta, gamma, spl_V_q[num][0],dq,len(spl_V_q[num]),num,Jdic,))
         procs.append(proc)
         proc.start()
 
