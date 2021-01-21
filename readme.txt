@@ -1,7 +1,5 @@
-1. Copy "Include" folder to anywhere
-2. Delete venv and make new one with same name
-3. Move Include folder to original directory
-4. copy requirements.txt to \venv\Scripts\
+1. Create same venv to configure files in venv.
+2. Install modules with requirements.txt
 
 get into cmd
 python -m venv venv
