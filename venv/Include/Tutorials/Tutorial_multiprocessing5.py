@@ -26,9 +26,11 @@ import os
 
 
 # Matrix multiplication & result sharing with dictionary
-def Mat_MUL_JD(alpha, beta, gamma, q0, dq, n_Vq, num, Jdic):
+def Mat_MUL_JD(alpha, beta, gamma, q0, dq, n_Vq, num, Jdic, JTdic):
     J = np.array([[1,0],[0,1]])
+    JT = np.array([[1,0],[0,1]])
     q=q0
+    qt = q0+dq*(n_Vq-1)
     for kk in range(n_Vq):
         q = q+dq*kk
         '''
@@ -38,11 +40,19 @@ def Mat_MUL_JD(alpha, beta, gamma, q0, dq, n_Vq, num, Jdic):
         J22 = alpha - 1j * beta * cos(2 * q)
         J = np.vstack((J11, J12, J21, J22)).T.reshape(2, 2) @ J
         '''
-        J = np.array([[alpha + 1j * beta * cos(2 * q), -gamma + 1j * beta * sin(2 * q)], [gamma + 1j * beta * sin(2 * q), alpha - 1j * beta * cos(2 * q)]]) @J
+        J = np.array([[alpha[0] + 1j * beta[0] * cos(2 * q), -gamma[0] + 1j * beta[0] * sin(2 * q)],
+                      [gamma[0] + 1j * beta[0] * sin(2 * q), alpha[0] - 1j * beta[0] * cos(2 * q)]]) @ J
+
+
+        qt = qt-dq*kk
+        JT = np.array([[alpha[1] + 1j * beta[1] * cos(2 * qt), -gamma[1] + 1j * beta[1] * sin(2 * qt)],
+                      [gamma[1] + 1j * beta[1] * sin(2 * qt), alpha[1] - 1j * beta[1] * cos(2 * qt)]]) @ JT
 
     Jdic[num] = J
+    JTdic[num] = JT
     proc = os.getpid()
     #print(num,"J=",J, "by process id: ",proc, ", ", len(V_q), "times calcuation")
+    #print(num, "JT=", JT, "by process id: ", proc, ", ", len(V_q), "times calcuation")
 
 # 멀티쓰레드(멀티프로세싱) 사용
 
@@ -68,19 +78,22 @@ q = 0
 
 rho = rho_C + rho_F * V_I
 delta_Beta = 2 * (rho ** 2 + (delta ** 2) / 4) ** 0.5
+alpha = [0,0]
+beta = [0,0]
+gamma = [0,0]
 
-alpha_1 = cos(delta_Beta / 2 * delta_L)
-beta_1= delta / delta_Beta * sin(delta_Beta / 2 * delta_L)
-gamma_1 = 2 * rho / delta_Beta * sin(delta_Beta / 2 * delta_L)
+alpha[0] = cos(delta_Beta / 2 * delta_L)
+beta[0]= delta / delta_Beta * sin(delta_Beta / 2 * delta_L)
+gamma[0] = 2 * rho / delta_Beta * sin(delta_Beta / 2 * delta_L)
 
 rho = rho_C - rho_F * V_I
 delta_Beta = 2 * (rho ** 2 + (delta ** 2) / 4) ** 0.5
 
-alpha_2 = cos(delta_Beta / 2 * delta_L)
-beta_2 = delta / delta_Beta * sin(delta_Beta / 2 * delta_L)
-gamma_2 = 2 * rho / delta_Beta * sin(delta_Beta / 2 * delta_L)
+alpha[1] = cos(delta_Beta / 2 * delta_L)
+beta[1] = delta / delta_Beta * sin(delta_Beta / 2 * delta_L)
+gamma[1] = 2 * rho / delta_Beta * sin(delta_Beta / 2 * delta_L)
 
-num_processor = 4
+num_processor = 8
 num_list = arange(0,num_processor,1)
 
 V_L = arange(delta_L, Len_SF + delta_L, delta_L)
@@ -89,27 +102,19 @@ spl_V_q = np.array_split(V_q,num_processor)
 start_time = time.time()
 
 if __name__ == '__main__':
-    procs1 = []
-    procs2 = []
+    procs = []
     manager = Manager()
     Jdic = manager.dict()
     JTdic = manager.dict()
 
     for num in range(num_processor):
-        proc1 = Process(target=Mat_MUL_JD, args=(alpha_1, beta_1, gamma_1, spl_V_q[num][0],dq,len(spl_V_q[num]),num,Jdic,))
-        procs1.append(proc1)
-        proc1.start()
-        proc2 = Process(target=Mat_MUL_JD, args=(alpha_2, beta_2, gamma_2, spl_V_q[num][-1], -dq, len(spl_V_q[num]), num, JTdic,))
-        procs2.append(proc2)
-        proc2.start()
+        proc = Process(target=Mat_MUL_JD,
+                       args=(alpha, beta, gamma, spl_V_q[num][0], dq, len(spl_V_q[num]), num, Jdic, JTdic,))
+        procs.append(proc)
+        proc.start()
 
-    for proc1 in procs1:
-        proc1.join()
-
-    for proc2 in procs2:
-        proc2.join()
-
-
+    for proc in procs:
+        proc.join()
 
     J = np.array([[1,0],[0,1]])
     JT = np.array([[1,0],[0,1]])
@@ -124,10 +129,10 @@ if __name__ == '__main__':
     for kk in range(len(V_q)):
         q = V_q[kk]
 
-        J11 = alpha_1 + 1j * beta_1 * cos(2 * q)
-        J12 = -gamma_1 + 1j * beta_1 * sin(2 * q)
-        J21 = gamma_1 + 1j * beta_1 * sin(2 * q)
-        J22 = alpha_1 - 1j * beta_1 * cos(2 * q)
+        J11 = alpha[0] + 1j * beta[0] * cos(2 * q)
+        J12 = -gamma[0] + 1j * beta[0] * sin(2 * q)
+        J21 = gamma[0] + 1j * beta[0] * sin(2 * q)
+        J22 = alpha[0] - 1j * beta[0] * cos(2 * q)
         #J2 = np.vstack((J11, J12, J21, J22)).T.reshape(2, 2) @ J2
 
         J2 = np.array([[J11, J12],
