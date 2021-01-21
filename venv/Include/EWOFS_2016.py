@@ -10,6 +10,8 @@ Created on Tue Nov 17 13:45:38 2020
 # Not matched to fig. 16!!!
 
 """
+import time
+
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,6 +31,8 @@ from py_pol.jones_vector import Jones_vector, degrees
 from py_pol.stokes import Stokes
 
 start = pd.Timestamp.now()
+start_time = time.time()
+
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
         self.oom = order
@@ -137,14 +141,18 @@ for mm in range(len(Temp_SF)):
             J12 = -gamma_1[nn] + 1j * beta_1[nn] * sin(2 * q)
             J21 = gamma_1[nn] + 1j * beta_1[nn] * sin(2 * q)
             J22 = alpha_1[nn] - 1j * beta_1[nn] * cos(2 * q)
-            J =  np.vstack((J11, J12, J21, J22)).T.reshape(2, 2) @ J
+            #J =  np.vstack((J11, J12, J21, J22)).T.reshape(2, 2) @ J
+            J = np.array([[J11, J12],
+                          [J21, J22]]) @ J
 
             J11 = alpha_2[nn] + 1j * beta_2[nn] * cos(2 * q)
             J12 = -gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
             J21 = gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
             J22 = alpha_2[nn] - 1j * beta_2[nn] * cos(2 * q)
-            JT = JT @ np.vstack((J11, J21, J12, J22)).T.reshape(2, 2)
+            #JT = JT @ np.vstack((J11, J21, J12, J22)).T.reshape(2, 2)
             #JT = np.vstack((J11, J12, J21, J22)).T.reshape(2, 2) @ JT
+            JT = JT @ np.array([[J11, J21],
+                                [J12, J22]])
 
         #JT= np.array([[1, 0], [0, -1]]) @ JT.T @ np.array([[1, 0], [0, -1]])
         #print(q)
@@ -159,9 +167,10 @@ for mm in range(len(Temp_SF)):
         rel_error[mm,nn] = abs_error[mm,nn]/V_I[nn]
         #print(error[nn])
         #axis, fig = E.draw_ellipse(draw_arrow=True, figsize=(5,5))
+        print("---  %s seconds for 1 time---" % (time.time() - start_time))
 
 Dataout = column_stack((V_I, rel_error[0:-1,:].T))
-savetxt('EWOFS_fig3_saved2.dat', Dataout)
+savetxt('EWOFS_fig3_saved3.dat', Dataout)
 
 fig = plt.figure()
 ax = fig.gca(projection='3d')
