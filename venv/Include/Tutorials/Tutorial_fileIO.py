@@ -23,3 +23,14 @@ savetxt('output3.dat', Dataout, fmt=('%3i', '%4.3f'))
 DataIN = loadtxt('input.dat')
 Dataout = column_stack((DataIN,DataIN[:,1]))
 savetxt('output4.dat',Dataout)
+
+f = open('output5.txt', 'a')
+for nn in range(4):
+    savetxt(f,p, newline="\t")
+    f.write("\n")
+f.close()
+
+DataIN = loadtxt('output5.txt')
+print(DataIN)
+
+

@@ -92,8 +92,8 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
             JT = JT @ np.array([[J11, J21],[J12, J22]])
 
         V_out[nn] = JT @ JF @ J @ V_in
-        print("---  %s seconds for %s A ---" % (time.time() - start_time, I[nn]))
-    print("---  %s seconds for total time---" % (time.time() - start_time))
+        #print("---  %s seconds for %s A ---" % (time.time() - start_time, I[nn]))
+    print("---  %s seconds for 1 process---" % (time.time() - start_time))
 
     Vout_dic[num] = V_out
 
@@ -108,16 +108,21 @@ if __name__ == '__main__':
     LB = [0.03042]
     SR = [0.003]
     LC = 1*2*pi* 1000000000000
-    Temp_SF = arange(90,110+2,2)
+    Temp_SF = arange(90,110+5,5)
     V = 0.54*(1+8.1e-5*Temp_SF)
     V0 = 0.54
     #V = 0.54
     Len_SF = 28
-    dL = 0.00003
-    V_I = arange(0.1e6, 17e6, 0.1e6)
+    dL = 0.0003
+    V_I = arange(0.1e6, 1.5e6+0.1e6, 0.1e6)
     # V_I = 0.1e6
 
     spl_I = np.array_split(V_I, num_processor)
+
+    f = open('EWOFS_fig3_saved4.txt', 'w')
+    savetxt(f, V_I, newline="\t")
+    f.write("\n")
+    f.close()
 
     procs = []
     manager = Manager()
@@ -127,6 +132,7 @@ if __name__ == '__main__':
     rel_error = zeros([len(Temp_SF), len(V_I)])
 
     #start_time = time.time()
+    f = open('EWOFS_fig3_saved4.txt', 'a')
 
     for mm in range(len(Temp_SF)):
         for num in range(num_processor):
@@ -159,8 +165,13 @@ if __name__ == '__main__':
             #abs_error[kk] = abs(Ip[kk] - V_I[kk])
             #rel_error[kk] = abs_error[kk] / V_I[kk]
 
-    Dataout = column_stack((V_I, rel_error[0:-1, :].T))
-    savetxt('EWOFS_fig3_saved4.dat', Dataout)
+        print(" %s degC was calcualated, (%s / %s)" % (Temp_SF[mm], mm,len(Temp_SF)))
+        savetxt(f, rel_error[mm], newline="\t")
+        f.write("\n")
+
+    f.close()
+    #Dataout = column_stack((V_I, rel_error[0:-1, :].T))
+    #savetxt('EWOFS_fig3_saved4.dat', Dataout)
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
