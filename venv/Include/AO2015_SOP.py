@@ -46,7 +46,7 @@ for mm in range(len(Len_LF)):
     V_L = arange(delta_L, Len_SF + delta_L, delta_L)        #sensing fiber
     V_LF = arange(delta_L, Len_LF[mm] + delta_L, delta_L)   #lead fiber
 
-    V_in = mat([[1],[1j]])
+    V_in = mat([[1],[0]])
 
     V_prop = np.einsum('...i,jk->ijk', ones(len(V_L)) * 1j, np.mat([[0], [0]]))
     V_prop1 = np.einsum('...i,jk->ijk', ones(len(V_LF)) * 1j, np.mat([[0], [0]]))
@@ -63,7 +63,7 @@ for mm in range(len(Len_LF)):
     gamma_1 = 2*rho_1/delta_Beta_1*sin(delta_Beta_1/2*delta_L)
 
     #------------------------------ Variable backward--------------
-    rho_2 = rho_C + rho_F*V_I
+    rho_2 = -rho_C - rho_F*V_I
     delta_Beta_2 = 2*(rho_2**2 + (delta**2)/4)**0.5
 
     alpha_2 = cos(delta_Beta_2/2*delta_L)
@@ -123,7 +123,7 @@ for mm in range(len(Len_LF)):
         J21 = gamma_2 + 1j * beta_2 * sin(2 * q)
         J22 = alpha_2 - 1j * beta_2 * cos(2 * q)
 
-        JT = np.array([[J11,J21],[J12,J22]]) @ JT #Trasposed
+        JT = np.array([[J11,J12],[J21,J22]]) @ JT # Not Trasposed
         V_prop3[kk] = JT @ JF @J @ J0 @ V_in
 
     # --------------- Backward propagation in lead fiber ----------
@@ -137,7 +137,7 @@ for mm in range(len(Len_LF)):
         J21 = 1j * beta_lf * sin(2 * q0)
         J22 = alpha_lf - 1j * beta_lf * cos(2 * q0)
 
-        JT0 = np.array([[J11,J21],[J12,J22]]) @ JT0 #Trasposed
+        JT0 = np.array([[J11,J12],[J21,J22]]) @ JT0 #Not Trasposed
         V_prop4[kk] =  JT0 @ JT @ JF @J @ J0 @ V_in
 
     # --------------- Drawing (overlap) ---------------

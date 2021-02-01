@@ -124,10 +124,8 @@ for nn in range(len(V_I)):
     GGG = np.einsum('...i,jk->ijk', R_z_f / 2, np.mat([[1, 0], [0, 1]]))
 
     #theta_R_laming_f_all = np.reshape((R_z_f / 2), (len(V_dz), 1,1)) * np.array([[1j *
-    theta_R_laming_f_all = GGG * np.array([[1j *
-                                                                                   cos(2 * phi_z_f), 1j * sin(2 * phi_z_f)],
-                                                                                  [1j * sin(2 * phi_z_f),
-                                                                                   -1j * cos(2 * phi_z_f)]]).transpose()
+    theta_R_laming_f_all = GGG * np.array([[1j * cos(2 * phi_z_f), 1j * sin(2 * phi_z_f)],
+                                          [1j * sin(2 * phi_z_f), -1j * cos(2 * phi_z_f)]]).transpose()
 
     # theta matrix of retarder for each element of the fibre in the forward direction
     # It should be noted that the matrix is arranged as [[a,c],[b,d]] and then
