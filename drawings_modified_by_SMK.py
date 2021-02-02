@@ -178,7 +178,7 @@ def draw_empty_sphere(ax, angle_view, axis_equal=True):
     # set_aspect_equal_3d(ax)
     if axis_equal:
         try:
-            ax.set_box_aspect([1,1,1])
+            ax.set_box_aspect([1, 1, 1])
         except:
             print(
                 'Axis equal not supported by your current version of Matplotlib'

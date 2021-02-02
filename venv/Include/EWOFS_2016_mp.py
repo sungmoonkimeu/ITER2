@@ -45,7 +45,7 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
     rho_F = V * 4 * pi * 1e-7 / (Len_SF)
     dq = 2*pi/SR
 
-    V_in = np.array([[1],[0]])
+    V_in = np.array([[0],[1]])
     V_L = arange(dL,Len_SF+dL,dL)
     V_out = np.einsum('...i,jk->ijk', ones(len(I))*1j, np.array([[0], [0]]))
     # ones*1j <-- for type casting
@@ -60,7 +60,7 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
     gamma_1 = 2 * rho_1 / delta_Beta_1 * sin(delta_Beta_1 / 2 * dL)
 
     # ------------------------------ Variable backward--------------
-    rho_2 = rho_C - rho_F * I
+    rho_2 = -rho_C + rho_F * I
     delta_Beta_2 = 2 * (rho_2 ** 2 + (delta ** 2) / 4) ** 0.5
 
     alpha_2 = cos(delta_Beta_2 / 2 * dL)
@@ -89,7 +89,7 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
             J12 = -gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
             J21 = gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
             J22 = alpha_2[nn] - 1j * beta_2[nn] * cos(2 * q)
-            JT = JT @ np.array([[J11, J21],[J12, J22]])
+            JT = JT @ np.array([[J11, J12],[J21, J22]])
 
         V_out[nn] = JT @ JF @ J @ V_in
         #print("---  %s seconds for %s A ---" % (time.time() - start_time, I[nn]))
@@ -104,22 +104,22 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
 #start_time = time.time()
 
 if __name__ == '__main__':
-    num_processor = 8
+    num_processor = 16
     LB = [0.03042]
     SR = [0.003]
     LC = 1*2*pi* 1000000000000
-    Temp_SF = arange(90,110+5,5)
+    Temp_SF = arange(90,110+2,2)
     V = 0.54*(1+8.1e-5*Temp_SF)
     V0 = 0.54
     #V = 0.54
     Len_SF = 28
-    dL = 0.0003
-    V_I = arange(0.1e6, 1.5e6+0.1e6, 0.1e6)
+    dL = 0.00003
+    V_I = arange(0.1e6, 17e6+0.2e6, 0.1e6)
     # V_I = 0.1e6
 
     spl_I = np.array_split(V_I, num_processor)
 
-    f = open('EWOFS_fig3_saved4.txt', 'w')
+    f = open('EWOFS_fig3_saved5.txt', 'w')
     savetxt(f, V_I, newline="\t")
     f.write("\n")
     f.close()
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     rel_error = zeros([len(Temp_SF), len(V_I)])
 
     #start_time = time.time()
-    f = open('EWOFS_fig3_saved4.txt', 'a')
+    f = open('EWOFS_fig3_saved5.txt', 'a')
 
     for mm in range(len(Temp_SF)):
         for num in range(num_processor):
