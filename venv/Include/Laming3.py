@@ -174,6 +174,7 @@ for mm in range(len(L_lf)):
     S2.from_Jones(E2)
 
     if mm == 0:
+        #fig, ax = S2.draw_poincare(figsize=(7, 7), angle_view=[29*pi/180, 46*pi/180], kind='line',
         fig, ax = S2.draw_poincare(figsize=(7, 7), angle_view=[0.2, 1.2], kind='line',
                                    color_line='b')
         draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
@@ -199,5 +200,5 @@ for mm in range(len(L_lf)):
     S2.from_Jones(E2)
     draw_stokes_points(fig[0], S2, kind='line', color_line='k')
     draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
-
+    print(V_prop3[-1])
 plt.show()

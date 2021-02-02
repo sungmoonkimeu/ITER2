@@ -171,6 +171,6 @@ for mm in range(len(Len_LF)):
     S2.from_Jones(E2)
     draw_stokes_points(fig[0], S2, kind='line', color_line='k')
     draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
+    print(E2[-1].parameters.azimuth(),"\t",E2[-1].parameters.ellipticity_angle())
 
 plt.show()
-
