@@ -91,7 +91,6 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
 
         q = q0
         J = mat([[1, 0], [0, 1]])
-        JB = mat([[1, 0], [0, 1]])
         for kk in range(len(V_L)):
             q = q + dq * dL
 
@@ -101,12 +100,16 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
             J22 = alpha_1[nn] - 1j * beta_1[nn] * cos(2 * q)
             J = np.array([[J11, J12],[J21, J22]]) @ J
 
+        JB = mat([[1, 0], [0, 1]])
+        for kk in range(len(V_L)):
+            q = q - dq * dL
             J11 = alpha_2[nn] + 1j * beta_2[nn] * cos(2 * q)
             J12 = -gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
             J21 = gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
             J22 = alpha_2[nn] - 1j * beta_2[nn] * cos(2 * q)
-            JB = JB @ np.array([[J11, J12],[J21, J22]])
+            JB = np.array([[J11, J12],[J21, J22]]) @    JB
 
+        q0 = q
         JB0 = np.array([[1, 0], [0, 1]])
         for kk in range(len(V_LF)):
             q0 = q0 - dq * dL
@@ -119,6 +122,7 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
 
         V_out[nn] = JB0 @ JB @ JF @ J @ J0 @ V_in
         #print("---  %s seconds for %s A ---" % (time.time() - start_time, I[nn]))
+
     print("---  %s seconds for 1 process---" % (time.time() - start_time))
 
     Vout_dic[num] = V_out
@@ -131,7 +135,7 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
 
 if __name__ == '__main__':
     num_processor = 8
-    Temp_SF = [110]
+    Temp_SF = [0]
     #Temp_LF = [-193, -150, -40, 100]
     Temp_LF = [-193]
 
@@ -147,7 +151,7 @@ if __name__ == '__main__':
     Len_SF = 5
     Len_LF = 1
     dL = 0.00003
-    V_I = arange(0.2e6, 17e6+0.2e6, 0.2e6)
+    V_I = arange(0.2e6, 4e6+0.2e6, 0.2e6)
     # V_I = 0.1e6
 
     spl_I = np.array_split(V_I, num_processor)
@@ -170,7 +174,7 @@ if __name__ == '__main__':
     for mm in range(len(Temp_LF)):
         for num in range(num_processor):
             proc = Process(target=Cal_Rotation,
-                           args=(LB_lf[mm], LB_sf[0], LC, SR[0], V[0], Len_LF, Len_SF, dL, spl_I[num], num, Vout_dic))
+                           args=(LB_lf[mm], LB_sf[0], LC, SR[0], V0, Len_LF, Len_SF, dL, spl_I[num], num, Vout_dic))
             procs.append(proc)
             proc.start()
 
