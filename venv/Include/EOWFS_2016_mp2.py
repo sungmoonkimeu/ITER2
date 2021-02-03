@@ -134,10 +134,10 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
 #start_time = time.time()
 
 if __name__ == '__main__':
-    num_processor = 8
-    Temp_SF = [0]
+    num_processor = 16
+    Temp_SF = [110]
     #Temp_LF = [-193, -150, -40, 100]
-    Temp_LF = [-193]
+    Temp_LF = [-193, 100]
 
     LB_lf= [0.03042] * ones(len(Temp_LF)) + Temp_LF*ones(len(Temp_LF))*3e-5
     LB_sf= [0.03042]
@@ -148,8 +148,8 @@ if __name__ == '__main__':
     V = 0.54*(1+8.1e-5*ones(len(Temp_SF))*Temp_SF)
     V0 = 0.54
     #V = 0.54
-    Len_SF = 5
-    Len_LF = 1
+    Len_SF = 28
+    Len_LF = 100
     dL = 0.00003
     V_I = arange(0.2e6, 17e6+0.2e6, 0.2e6)
     # V_I = 0.1e6
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     for mm in range(len(Temp_LF)):
         for num in range(num_processor):
             proc = Process(target=Cal_Rotation,
-                           args=(LB_lf[mm], LB_sf[0], LC, SR[0], V0, Len_LF, Len_SF, dL, spl_I[num], num, Vout_dic))
+                           args=(LB_lf[mm], LB_sf[0], LC, SR[0], V[0], Len_LF, Len_SF, dL, spl_I[num], num, Vout_dic))
             procs.append(proc)
             proc.start()
 
