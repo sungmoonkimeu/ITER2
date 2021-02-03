@@ -239,7 +239,7 @@ if __name__ == '__main__':
     ax.set_ylabel(r'Relative error on $I_{P}$')
 
     # plt.title('Output power vs Plasma current')
-    ax.set(xlim=(0, 18e6), ylim=(0, 2))
+    ax.set(xlim=(0, 18e6), ylim=(0, 0.02))
     ax.yaxis.set_major_locator(MaxNLocator(4))
     ax.xaxis.set_major_locator(MaxNLocator(10))
 
