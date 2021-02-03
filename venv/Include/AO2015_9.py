@@ -205,6 +205,7 @@ ax[0].xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
 ax[0].ticklabel_format(axis='both', style= 'sci' ,useMathText=True, scilimits=(-3,5))
 ax[0].grid(ls='--',lw=0.5)
 #ax = plt.axes()
+
 for i in range(len(Ang_V_in)):
    ax[1].plot(V_I,rel_error[i,:],lw='1')
 ax[1].plot(V_I,relErrorlimit,'r', label='ITER specification',lw='1')

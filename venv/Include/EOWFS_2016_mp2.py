@@ -61,7 +61,7 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
     gamma_lf = 0
 
     # ------------------------------ Variable forward--------------
-    rho_1 = rho_C - rho_F * I
+    rho_1 = rho_C + rho_F * I
     delta_Beta_1 = 2 * (rho_1 ** 2 + (delta ** 2) / 4) ** 0.5
 
     alpha_1 = cos(delta_Beta_1 / 2 * dL)
@@ -69,7 +69,7 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
     gamma_1 = 2 * rho_1 / delta_Beta_1 * sin(delta_Beta_1 / 2 * dL)
 
     # ------------------------------ Variable backward--------------
-    rho_2 = -rho_C - rho_F * I
+    rho_2 = -rho_C + rho_F * I
     delta_Beta_2 = 2 * (rho_2 ** 2 + (delta ** 2) / 4) ** 0.5
 
     alpha_2 = cos(delta_Beta_2 / 2 * dL)
@@ -151,7 +151,7 @@ if __name__ == '__main__':
     Len_SF = 5
     Len_LF = 1
     dL = 0.00003
-    V_I = arange(0.2e6, 4e6+0.2e6, 0.2e6)
+    V_I = arange(0.2e6, 17e6+0.2e6, 0.2e6)
     # V_I = 0.1e6
 
     spl_I = np.array_split(V_I, num_processor)
@@ -210,6 +210,18 @@ if __name__ == '__main__':
     #Dataout = column_stack((V_I, rel_error[0:-1, :].T))
     #savetxt('EWOFS_fig3_saved4.dat', Dataout)
 
+    ## Requirement specificaion for ITER
+    absErrorlimit = zeros(len(V_I))
+    relErrorlimit = zeros(len(V_I))
+
+    # Calcuation ITER specification
+    for nn in range(len(V_I)):
+        if V_I[nn] < 1e6:
+            absErrorlimit[nn] = 10e3
+        else:
+            absErrorlimit[nn] = V_I[nn] * 0.01
+        relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
+
     ## Ploting graph
     fig, ax = plt.subplots(figsize=(6, 3))
 
@@ -218,8 +230,8 @@ if __name__ == '__main__':
         print(str_legend)
         ax.plot(V_I, rel_error[i], lw='1', label=str_legend)
 
-    # ax.plot(V_I,relErrorlimit,'r', label='ITER specification',lw='1')
-    # ax.legend(loc="upper right", prop={'family': 'monospace'})
+    ax.plot(V_I,relErrorlimit,'r', label='ITER specification',lw='1')
+    ax.legend(loc="upper right", prop={'family': 'monospace'})
     ax.legend(loc="upper right")
 
     plt.rc('text', usetex=True)
@@ -248,10 +260,10 @@ if __name__ == '__main__':
 
     for i in range(len(Temp_LF)):
         str_legend = str(Temp_LF[i])
-        print(str_legend)
+        #print(str_legend)
         ax2.plot(V_I, abs_error[i], lw='1', label=str_legend)
 
-    # ax.plot(V_I,relErrorlimit,'r', label='ITER specification',lw='1')
+    ax2.plot(V_I,absErrorlimit,'r', label='ITER specification',lw='1')
     # ax.legend(loc="upper right", prop={'family': 'monospace'})
     ax2.legend(loc="upper right")
 
