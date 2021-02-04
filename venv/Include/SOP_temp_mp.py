@@ -17,24 +17,32 @@ from py_pol.stokes import Stokes, create_Stokes
 from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
 
 # _______________________________Parameters#1___________________________________#
-LB = [0.132]    # Linear beatlength [m]
+Temp_LF = [0, 50, 100]
+#Temp_LF = [0]
+Temp_SF = [0, 50, 100]
+
+LB = 0.132
+LB_lf = LB* ones(len(Temp_LF)) + Temp_LF*ones(len(Temp_LF))*3e-5     # Linear beatlength of lead fiber [m]
+LB_sf = LB* ones(len(Temp_SF)) + Temp_SF*ones(len(Temp_SF))*3e-5     # Linear beatlength of sensing fiber[m]
 SR = [0.03]     # Spin ratio
 
 V_I = 10e5       # Aplied current 500kA
+V0 = 0.43  # Verdat constant 0.54 but in here 0.43
 
 JF = mat([[0, 1], [-1, 0]]) # Faraday mirror
-Len_LF = [0.153, 0.156, 0.159, 0.162, 0.165]    #Length of Lead fiber [m]
+Len_LF = [0.2]    #Length of Lead fiber [m]
 
 cstm_color = ['c','m','y','k','r']
 
-for mm in range(len(Len_LF)):
+for mm in range(len(Temp_SF)):
     print("mm = ",mm)
-    delta = 2*pi/LB[0]                     # Linear birefringence [rad/m]
+    delta_sf = 2*pi/LB_sf[0]                     # Linear birefringence [rad/m]
+    delta_lf = 2*pi/LB_lf[mm]                     # Linear birefringence [rad/m]
     LC = 1*2*pi*10000000000000             # Reciprocal circular beatlength [m]
     rho_C = 2*pi/LC                     # Reciprocal circular birefringence [rad/m]
-    Len_SF = 10                        # length of sensing fiber 28 m
+    Len_SF = 0.5                        # length of sensing fiber 28 m
     I = 1                               # Applied plasma current 1A for normalization
-    V = 0.43                         # Verdat constant 0.54 but in here 0.43
+    V = V0*(1+8.1e-5*Temp_SF[0])
     rho_F = V*4*pi*1e-7/(Len_SF*I)   # Non reciprocal circular birefringence for unit ampare and unit length[rad/m·A]
     delta_L = 0.00001                   # delta L [m]
     dq = 2*pi/SR[0]                     # delta q from spin ratio
@@ -44,7 +52,7 @@ for mm in range(len(Len_LF)):
     # ones*1j <-- for type casting (complex number)
 
     V_L = arange(delta_L, Len_SF + delta_L, delta_L)        #sensing fiber
-    V_LF = arange(delta_L, Len_LF[mm] + delta_L, delta_L)   #lead fiber
+    V_LF = arange(delta_L, Len_LF[0] + delta_L, delta_L)   #lead fiber
 
     V_in = mat([[1],[0]])
 
@@ -56,25 +64,25 @@ for mm in range(len(Len_LF)):
 
     #------------------------------ Variable forward--------------
     rho_1 = rho_C - rho_F*V_I
-    delta_Beta_1 = 2*(rho_1**2 + (delta**2)/4)**0.5
+    delta_Beta_1 = 2*(rho_1**2 + (delta_sf**2)/4)**0.5
 
     alpha_1 = cos(delta_Beta_1/2*delta_L)
-    beta_1 = delta/delta_Beta_1*sin(delta_Beta_1/2*delta_L)
+    beta_1 = delta_sf/delta_Beta_1*sin(delta_Beta_1/2*delta_L)
     gamma_1 = 2*rho_1/delta_Beta_1*sin(delta_Beta_1/2*delta_L)
 
     #------------------------------ Variable backward--------------
     rho_2 = -rho_C - rho_F*V_I
-    delta_Beta_2 = 2*(rho_2**2 + (delta**2)/4)**0.5
+    delta_Beta_2 = 2*(rho_2**2 + (delta_sf**2)/4)**0.5
 
     alpha_2 = cos(delta_Beta_2/2*delta_L)
-    beta_2 = delta/delta_Beta_2*sin(delta_Beta_2/2*delta_L)
+    beta_2 = delta_sf/delta_Beta_2*sin(delta_Beta_2/2*delta_L)
     gamma_2 = 2*rho_2/delta_Beta_2*sin(delta_Beta_2/2*delta_L)
 
     # ------------------------------ Variable lead fiber --------------------------
     # ------------No Farday effect (rho = 0)--> (forward α, β, γ  = backward α, β, γ) ------
 
-    alpha_lf = cos(delta/2*delta_L)
-    beta_lf = sin(delta/2*delta_L)
+    alpha_lf = cos(delta_lf/2*delta_L)
+    beta_lf = sin(delta_lf/2*delta_L)
     gamma_lf = 0
 
     # -------------- Variables for analysing Jones/Stokes parameter--------
