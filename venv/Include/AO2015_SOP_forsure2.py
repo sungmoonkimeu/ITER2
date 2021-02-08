@@ -26,24 +26,28 @@ JF = mat([[0, 1], [-1, 0]]) # Faraday mirror
 #Len_LF = [0.1, 0.5, 1, 5, 10]    #Length of Lead fiber [m]
 #Len_LF = arange(0.1, 10, 0.1)
 #Len_LF = [0.153, 0.156, 0.159, 0.162, 0.165]    #Length of Lead fiber [m]
+Len_LF = [0.153]    #Length of Lead fiber [m]
+#Len_SF = [0.500, 0.503, 0.506, 0.509, 0.512]    #Length of sensing fiber [m]
 #Len_LF = np.hstack((arange(0.0001, 0.01, 0.0001), arange(0.01,1, 0.01), arange(1, 100, 1)))
-Len_LF = np.hstack((arange(0.0005, 0.030, 0.001), arange(0.03, 0.9,0.05),  arange(1,1.018,0.003)))
-Materr = zeros(len(Len_LF))*(1j)
-J0_V = np.einsum('...i,jk->ijk', ones(len(Len_LF)) * 1j, np.mat([[0,0], [0,0]]))
-JT0_V = np.einsum('...i,jk->ijk', ones(len(Len_LF)) * 1j, np.mat([[0,0], [0,0]]))
+#Len_LF = np.hstack((arange(0.0005, 0.030, 0.001), arange(0.03, 0.9,0.05),  arange(1,1.018,0.003)))
+Len_SF = np.hstack((arange(0.0005, 0.030, 0.001), arange(0.03, 0.9,0.05),  arange(1,1.018,0.003)))
+Materr = zeros(len(Len_SF))*(1j)
+J0_V = np.einsum('...i,jk->ijk', ones(len(Len_SF)) * 1j, np.mat([[0,0], [0,0]]))
+JT0_V = np.einsum('...i,jk->ijk', ones(len(Len_SF)) * 1j, np.mat([[0,0], [0,0]]))
 
 
 cstm_color = ['c','m','y','k','r']
 
-for mm in range(len(Len_LF)):
+for mm in range(len(Len_SF)):
     print("mm = ",mm)
     delta = 2*pi/LB[0]                     # Linear birefringence [rad/m]
+    delta = 0
     LC = 1*2*pi*10000000000000             # Reciprocal circular beatlength [m]
     rho_C = 2*pi/LC                     # Reciprocal circular birefringence [rad/m]
-    Len_SF = 0.5                        # length of sensing fiber 28 m
+    #Len_SF = 0.5                        # length of sensing fiber 28 m
     I = 1                               # Applied plasma current 1A for normalization
     V = 0.43                         # Verdat constant 0.54 but in here 0.43
-    rho_F = V*4*pi*1e-7/(Len_SF*I)   # Non reciprocal circular birefringence for unit ampare and unit length[rad/m·A]
+    rho_F = V*4*pi*1e-7/(Len_SF[mm]*I)   # Non reciprocal circular birefringence for unit ampare and unit length[rad/m·A]
     delta_L = 0.000005                   # delta L [m]
     dq = 2*pi/SR[0]                     # delta q from spin ratio
     q = 0
@@ -51,8 +55,8 @@ for mm in range(len(Len_LF)):
     #_______________________________ in/out variables preparation ____________________________________
     # ones*1j <-- for type casting (complex number)
 
-    V_L = arange(delta_L, Len_SF + delta_L, delta_L)        #sensing fiber
-    V_LF = arange(delta_L, Len_LF[mm] + delta_L, delta_L)   #lead fiber
+    V_L = arange(delta_L, Len_SF[mm] + delta_L, delta_L)        #sensing fiber
+    V_LF = arange(delta_L, Len_LF[0] + delta_L, delta_L)   #lead fiber
     V_q_LF = V_LF * dq
     V_q_L = V_q_LF[-1] + V_L * dq
 
@@ -166,20 +170,20 @@ for mm in range(len(Len_LF)):
     print("J0 = \n", J0)
     print("JT0 = \n", JT0)
 
-    J0_V[mm] = J0
-    JT0_V[mm] = JT0
+    J0_V[mm] = J
+    JT0_V[mm] = JT
 
-AA = zeros(len(Len_LF))
+AA = zeros(len(Len_SF))
 
 for mm in range(len(AA)):
-    AA[mm] = np.linalg.norm(J0_V[mm].T-JT0_V[mm])
+    AA[mm] = np.linalg.norm(J0_V[mm]-JT0_V[mm])
 
 fig, ax = plt.subplots(figsize=(5,4))
-ax.scatter(Len_LF,AA)
-ax.set_xlabel('Lead fibre length [m]')
+ax.scatter(Len_SF,AA)
+ax.set_xlabel('Sensing fibre length [m]')
 plt.rc('text', usetex=True)
 ax.set_ylabel(r'$||\,A\,||$')
-fig.suptitle(r'$ A = \,\overrightarrow{J_{LF}}\,^{T} - \overleftarrow{J_{LF}}$')
+fig.suptitle(r'$ A = \,\overrightarrow{J_{SF}} - \overleftarrow{J_{SF}}$')
 plt.rc('text', usetex=False)
 fig.subplots_adjust(left = 0.17,bottom=0.133)
 ax.set(ylim=(0, 0.0000000001))

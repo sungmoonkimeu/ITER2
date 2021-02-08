@@ -25,6 +25,9 @@ V_I = 10e5       # Aplied current 500kA
 JF = mat([[0, 1], [-1, 0]]) # Faraday mirror
 Len_LF = [0.153, 0.156, 0.159, 0.162, 0.165]    #Length of Lead fiber [m]
 
+J0_V = np.einsum('...i,jk->ijk', ones(len(Len_LF)) * 1j, np.mat([[0,0], [0,0]]))
+JT0_V = np.einsum('...i,jk->ijk', ones(len(Len_LF)) * 1j, np.mat([[0,0], [0,0]]))
+
 cstm_color = ['c','m','y','k','r']
 
 for mm in range(len(Len_LF)):
@@ -45,6 +48,8 @@ for mm in range(len(Len_LF)):
 
     V_L = arange(delta_L, Len_SF + delta_L, delta_L)        #sensing fiber
     V_LF = arange(delta_L, Len_LF[mm] + delta_L, delta_L)   #lead fiber
+    V_q_LF = V_LF * dq
+    V_q_L = V_q_LF[-1] + V_L * dq
 
     V_in = mat([[1],[0]])
 
@@ -86,10 +91,11 @@ for mm in range(len(Len_LF)):
     S2.linear_light(azimuth=0*(V_L))
 
     # --------------- Forward propagation in Lead fiber ----------
-    q0 = 0
+    #q0 = 0
     J0 = mat([[1, 0], [0, 1]])
     for kk in range(len(V_LF)):
-        q0 = q0 + dq * delta_L
+        #q0 = q0 + dq * delta_L
+        q0 = V_q_LF[kk]
 
         J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
         J12 = 1j * beta_lf * sin(2 * q0)
@@ -101,10 +107,11 @@ for mm in range(len(Len_LF)):
         if kk == 0:
             print("q0 =",q0)
     # --------------- Forward propagation in sensing fiber ----------
-    q = q0
+    #q = q0
     J = mat([[1, 0], [0, 1]])
     for kk in range(len(V_L)):
-        q = q + dq * delta_L
+        #q = q + dq * delta_L
+        q = V_q_L[kk]
 
         J11 = alpha_1 + 1j * beta_1 * cos(2 * q)
         J12 = -gamma_1 + 1j * beta_1 * sin(2 * q)
@@ -118,7 +125,8 @@ for mm in range(len(Len_LF)):
     # --------------- Backward propagation in sensing fiber ----------
     JT = mat([[1, 0], [0, 1]])
     for kk in range(len(V_L)):
-        q = q - dq * delta_L
+        #q = q - dq * delta_L
+        q = V_q_L[-1-kk]
 
         J11 = alpha_2 + 1j * beta_2 * cos(2 * q)
         J12 = -gamma_2 + 1j * beta_2 * sin(2 * q)
@@ -130,10 +138,11 @@ for mm in range(len(Len_LF)):
         if kk == 0:
             print("q = ",q)
     # --------------- Backward propagation in lead fiber ----------
-    q0 = q
+    #q0 = q
     JT0 = mat([[1, 0], [0, 1]])
     for kk in range(len(V_LF)):
-        q0 = q0 - dq * delta_L
+        #q0 = q0 - dq * delta_L
+        q0 = V_q_LF[-1-kk]
 
         J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
         J12 = 1j * beta_lf * sin(2 * q0)
@@ -176,6 +185,9 @@ for mm in range(len(Len_LF)):
     S2.from_Jones(E2)
     draw_stokes_points(fig[0], S2, kind='line', color_line='k')
     draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
+
+    print("azimuth= ", E2[-1].parameters.azimuth()*180/pi)
+    print("ellipticity= ", E2[-1].parameters.ellipticity_angle() * 180/pi)
 
 plt.show()
 

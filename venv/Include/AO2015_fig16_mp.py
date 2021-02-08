@@ -121,7 +121,7 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
             JB0 = np.array([[J11, J12], [J21, J22]]) @ JB0
 
         V_out[nn] = JB0 @ JB @ JF @ J @ J0 @ V_in
-        print("---  %s seconds for %s A ---" % (time.time() - start_time, I[nn]))
+        #print("---  %s seconds for %s A ---" % (time.time() - start_time, I[nn]))
 
     print("---  %s seconds for 1 process---" % (time.time() - start_time))
 
@@ -146,9 +146,9 @@ if __name__ == '__main__':
 
     Len_SF = 28
     #Len_LF = [100,100.003,100.006,100.009,100.012]
-    Len_LF = [0.003, 0.006, 0.009, 0.012, 0.015]
+    Len_LF = [100.003, 100.006, 100.009, 100.012, 100.015]
     dL = 0.0001
-    V_I = arange(0.2e6, 2e6+0.2e6, 0.2e6)
+    V_I = arange(0.2e6, 5e6+0.2e6, 0.2e6)
     # V_I = 0.1e6
 
     spl_I = np.array_split(V_I, num_processor)
