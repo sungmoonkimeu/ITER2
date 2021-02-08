@@ -23,7 +23,13 @@ SR = [0.03]     # Spin ratio
 V_I = 10e5       # Aplied current 500kA
 
 JF = mat([[0, 1], [-1, 0]]) # Faraday mirror
+#Len_LF = [0.1, 0.5, 1, 5, 10]    #Length of Lead fiber [m]
+#Len_LF = arange(0.1, 10, 0.1)
 Len_LF = [0.153, 0.156, 0.159, 0.162, 0.165]    #Length of Lead fiber [m]
+Materr = zeros(len(Len_LF))*(1j)
+J0_V = np.einsum('...i,jk->ijk', ones(len(Len_LF)) * 1j, np.mat([[0,0], [0,0]]))
+JT0_V = np.einsum('...i,jk->ijk', ones(len(Len_LF)) * 1j, np.mat([[0,0], [0,0]]))
+
 
 cstm_color = ['c','m','y','k','r']
 
@@ -36,7 +42,7 @@ for mm in range(len(Len_LF)):
     I = 1                               # Applied plasma current 1A for normalization
     V = 0.43                         # Verdat constant 0.54 but in here 0.43
     rho_F = V*4*pi*1e-7/(Len_SF*I)   # Non reciprocal circular birefringence for unit ampare and unit length[rad/m·A]
-    delta_L = 0.00001                   # delta L [m]
+    delta_L = 0.000005                   # delta L [m]
     dq = 2*pi/SR[0]                     # delta q from spin ratio
     q = 0
 
@@ -45,6 +51,8 @@ for mm in range(len(Len_LF)):
 
     V_L = arange(delta_L, Len_SF + delta_L, delta_L)        #sensing fiber
     V_LF = arange(delta_L, Len_LF[mm] + delta_L, delta_L)   #lead fiber
+    V_q_LF = V_LF * dq
+    V_q_L = V_q_LF[-1] + V_L * dq
 
     V_in = mat([[1],[0]])
 
@@ -89,8 +97,8 @@ for mm in range(len(Len_LF)):
     q0 = 0
     J0 = mat([[1, 0], [0, 1]])
     for kk in range(len(V_LF)):
-        q0 = q0 + dq * delta_L
-
+        #q0 = q0 + dq * delta_L
+        q0 = V_q_LF[kk]
         J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
         J12 = 1j * beta_lf * sin(2 * q0)
         J21 = 1j * beta_lf * sin(2 * q0)
@@ -99,13 +107,15 @@ for mm in range(len(Len_LF)):
         J0 = np.array([[J11,J12],[J21,J22]]) @ J0
         V_prop1[kk] =  J0 @ V_in
         if kk == 0:
-            print("q0 =",q0)
+            print("q0 [0]=",q0)
+        if kk == len(V_LF)-1:
+            print("q0 [-1]=", q0)
     # --------------- Forward propagation in sensing fiber ----------
     q = q0
     J = mat([[1, 0], [0, 1]])
     for kk in range(len(V_L)):
-        q = q + dq * delta_L
-
+        #q = q + dq * delta_L
+        q = V_q_L[kk]
         J11 = alpha_1 + 1j * beta_1 * cos(2 * q)
         J12 = -gamma_1 + 1j * beta_1 * sin(2 * q)
         J21 = gamma_1 + 1j * beta_1 * sin(2 * q)
@@ -114,12 +124,14 @@ for mm in range(len(Len_LF)):
         J = np.array([[J11,J12],[J21,J22]]) @ J
         V_prop2[kk] = J @ J0 @ V_in
         if kk == 0:
-            print("q = ",q)
+            print("q [0]=",q)
+        if kk == len(V_L)-1:
+            print("q [-1]=", q)
     # --------------- Backward propagation in sensing fiber ----------
     JT = mat([[1, 0], [0, 1]])
     for kk in range(len(V_L)):
-        q = q - dq * delta_L
-
+        #q = q - dq * delta_L
+        q = V_q_L[-1-kk]
         J11 = alpha_2 + 1j * beta_2 * cos(2 * q)
         J12 = -gamma_2 + 1j * beta_2 * sin(2 * q)
         J21 = gamma_2 + 1j * beta_2 * sin(2 * q)
@@ -128,13 +140,15 @@ for mm in range(len(Len_LF)):
         JT = np.array([[J11,J12],[J21,J22]]) @ JT #Not trasnposed!
         V_prop3[kk] = JT @ JF @J @ J0 @ V_in
         if kk == 0:
-            print("q = ",q)
+            print("qT [0]=",q)
+        if kk == len(V_L)-1:
+            print("qT [-1]=", q)
     # --------------- Backward propagation in lead fiber ----------
     q0 = q
     JT0 = mat([[1, 0], [0, 1]])
     for kk in range(len(V_LF)):
-        q0 = q0 - dq * delta_L
-
+        #q0 = q0 - dq * delta_L
+        q0 = V_q_LF[-1-kk]
         J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
         J12 = 1j * beta_lf * sin(2 * q0)
         J21 = 1j * beta_lf * sin(2 * q0)
@@ -143,10 +157,22 @@ for mm in range(len(Len_LF)):
         JT0 = np.array([[J11,J12],[J21,J22]]) @ JT0 #Not transposed!
         V_prop4[kk] =  JT0 @ JT @ JF @J @ J0 @ V_in
         if kk == 0:
-            print("q0 =",q0)
+            print("qT0 [0]=",q0)
+        if kk == len(V_LF)-1:
+            print("qT0 [-1]=", q0)
+
+    print("J0 = \n", J0)
+    print("JT0 = \n", JT0)
+
+    J0_V[mm] = J0
+    JT0_V[mm] = JT0
+    Materr[mm]=J0.T[0,1] -JT0[0,1]
 
     # --------------- Drawing (overlap) ---------------
+    #fig, ax = plt.subplots(figsize=(7, 4))
+    #ax.plot(Len_LF, Materr.imag, lw='1')
 
+'''
     # SOP evolution in Lead fiber (Forward)
     E2.from_matrix(V_prop1)
     S2.from_Jones(E2)
@@ -178,4 +204,4 @@ for mm in range(len(Len_LF)):
     draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
 
 plt.show()
-
+'''

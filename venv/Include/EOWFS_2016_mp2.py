@@ -136,8 +136,8 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
 if __name__ == '__main__':
     num_processor = 16
     Temp_SF = [110]
-    #Temp_LF = [-193, -150, -40, 100]
-    Temp_LF = [-193, 100]
+    Temp_LF = [-193, -150, -40, 100]
+    #Temp_LF = [-193, 100]
 
     LB_lf= [0.03042] * ones(len(Temp_LF)) + Temp_LF*ones(len(Temp_LF))*3e-5
     LB_sf= [0.03042]
