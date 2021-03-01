@@ -73,11 +73,11 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
     JF = np.array([[0, 1], [-1, 0]])
 
     q0 = 0
-    for nn in tqdm(range(len(I)),"ALL", ncols = 80, position = 0):
+    for nn in range(len(I)):
         q= q0
         J = J0
         JT= JT0
-        for kk in tqdm(range(len(V_L)),"sub", ncols= 80, position = 1, leave = False):
+        for kk in range(len(V_L)):
             q = q + dq * dL
 
             J11 = alpha_1[nn] + 1j * beta_1[nn] * cos(2 * q)
