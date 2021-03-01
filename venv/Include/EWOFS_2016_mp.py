@@ -45,8 +45,9 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
     rho_F = V * 4 * pi * 1e-7 / (Len_SF)
     dq = 2*pi/SR
 
-    V_in = np.array([[0],[1]])
+    V_in = np.array([[1],[0]])
     V_L = arange(dL,Len_SF+dL,dL)
+    V_q_L = V_L * dq
     V_out = np.einsum('...i,jk->ijk', ones(len(I))*1j, np.array([[0], [0]]))
     # ones*1j <-- for type casting
 
@@ -69,15 +70,16 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
 
     J0 = np.array([[1, 0], [0, 1]])
     JT0 = np.array([[1, 0], [0, 1]])
-    JF = np.array([[0, 1], [-1, 0]])
+    JF = np.array([[0, -1], [1, 0]])
 
-    q0 = 0
+    #q0 = 0
     for nn in range(len(I)):
-        q= q0
+        #q= q0
         J = J0
         JT= JT0
         for kk in range(len(V_L)):
-            q = q + dq * dL
+            #q = q + dq * dL
+            q = V_q_L[kk]
 
             J11 = alpha_1[nn] + 1j * beta_1[nn] * cos(2 * q)
             J12 = -gamma_1[nn] + 1j * beta_1[nn] * sin(2 * q)
@@ -105,16 +107,16 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
 
 if __name__ == '__main__':
     num_processor = 16
-    LB = [0.03042]
+    LB = [0.0304]
     SR = [0.003]
     LC = 1*2*pi* 1000000000000
-    Temp_SF = arange(90,110+2,2)
+    Temp_SF = arange(90,110+5,10)
     V = 0.54*(1+8.1e-5*Temp_SF)
     V0 = 0.54
     #V = 0.54
     Len_SF = 28
-    dL = 0.00003
-    V_I = arange(0.1e6, 17e6+0.2e6, 0.1e6)
+    dL = 0.0002
+    V_I = arange(0.1e6, 17e6+0.2e6, 0.2e6)
     # V_I = 0.1e6
 
     spl_I = np.array_split(V_I, num_processor)
@@ -136,8 +138,9 @@ if __name__ == '__main__':
 
     for mm in range(len(Temp_SF)):
         for num in range(num_processor):
+            LB_t = LB[0]+0.03e-3*Temp_SF[mm]
             proc = Process(target=Cal_Rotation,
-                           args=(LB[0], LC, SR[0], V[mm], Len_SF, dL, spl_I[num], num, Vout_dic))
+                           args=(LB_t, LC, SR[0], V[mm], Len_SF, dL, spl_I[num], num, Vout_dic))
             procs.append(proc)
             proc.start()
 

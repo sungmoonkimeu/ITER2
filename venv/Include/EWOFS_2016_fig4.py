@@ -49,29 +49,41 @@ Y = np.array([-193, -150, -40, 100])
 
 
 ## Ploting graph
-fig, ax = plt.subplots(figsize=(6,3))
+fig, ax = plt.subplots(figsize=(6,5))
 
 for i in range(len(Y)):
     str_legend = str(Y[i])
     print(str_legend)
-    ax.plot(V_I,DataIN[:,i],lw='1', label=str_legend)
+    ax.plot(V_I,DataIN[:,i]*100,lw='1', label=str_legend)
 
-#ax.plot(V_I,relErrorlimit,'r', label='ITER specification',lw='1')
+
+## Requirement specificaion for ITER
+absErrorlimit = zeros(len(V_I))
+relErrorlimit = zeros(len(V_I))
+#Calcuation ITER specification
+for nn in range(len(V_I)):
+    if V_I[nn] < 1e6:
+        absErrorlimit[nn] = 10e3
+    else:
+        absErrorlimit[nn] = V_I[nn]*0.01
+    relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
+
+ax.plot(V_I,relErrorlimit*100,'r', label='ITER specification',lw='1')
 #ax.legend(loc="upper right", prop={'family': 'monospace'})
 ax.legend(loc="upper right")
 
 plt.rc('text',usetex = True)
 ax.set_xlabel(r'Plasma current $I_{p}(A)$')
-ax.set_ylabel(r'Relative error on $I_{P}$')
+ax.set_ylabel('Relative error [%]')
 
 
 #plt.title('Output power vs Plasma current')
-ax.set(xlim = (0,18e6), ylim = (0,0.1))
-ax.yaxis.set_major_locator(MaxNLocator(4))
+ax.set(xlim = (0,18e6), ylim = (0,2))
+ax.yaxis.set_major_locator(MaxNLocator(10))
 ax.xaxis.set_major_locator(MaxNLocator(10))
 
 ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
-ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+ax.yaxis.set_major_formatter(OOMFormatter(0, "%2.1f"))
 
 ax.ticklabel_format(axis='x', style= 'sci' ,useMathText=True, scilimits=(-3,5))
 ax.grid(ls='--',lw=0.5)

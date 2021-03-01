@@ -1,7 +1,9 @@
 '''Drawing figuer_16 of AO2015
 '''
 
+import os
 #os.chdir('C:/Users/Iter/PycharmProjects/pythonProject/venv/Include')
+os.chdir('C:/Users/SMK/PycharmProjects/ITER2/venv/Include')
 import time
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
@@ -50,9 +52,8 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
             self.format = r'$\mathdefault{%s}$' % self.format
 
 #V_I = loadtxt('EWOFS_fig3_saved.dat',unpack=True, usecols=[0])
-DataIN = loadtxt('EWOFS_fig3_saved4.txt',unpack=True)
+DataIN = loadtxt('EWOFS_fig3_saved5.txt',unpack=True)
 V_I = DataIN.T[0,:]
-
 
 fig = plt.figure()
 ax = fig.gca(projection='3d')
@@ -65,15 +66,17 @@ ax.xaxis._axinfo["grid"]['color'] =  (0,0,0,0.2)
 ax.yaxis._axinfo["grid"]['color'] =  (0,0,0,0.2)
 ax.zaxis._axinfo["grid"]['color'] =  (0,0,0,0.2)
 X = V_I
-Y = arange(90,110+2,2) # Temperature of sensing fiber
-#Y =  arange(100,110+5,5) # Temperature of sensing fiber
+#Y = arange(90,110,2) # Temperature of sensing fiber
+Y =  arange(100,110+5,5) # Temperature of sensing fiber
 
-
+print(X)
+print(Y)
 X,Y = np.meshgrid(X,Y)
 Z = DataIN.T[1:,:]*100
 
+
 #surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,linewidth=0, antialiased=False)
-surf = ax.plot_surface(X, Y, Z, cmap = 'viridis', rstride=1, cstride=1, alpha = None, edgecolor=(0,0,0,0.5))
+surf = ax.plot_surface(X,Y, Z, cmap = 'viridis', rstride=1, cstride=1, alpha = None, edgecolor=(0,0,0,0.5))
 fig.colorbar(surf, ax=ax, shrink=0.8, aspect=25)
 ax.view_init(elev=15, azim= -125)
 
@@ -121,5 +124,4 @@ fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom= 0.2)
 #fig.set_size_inches(6,4)
 plt.rc('text',usetex = False)
 '''
-
 plt.show()
