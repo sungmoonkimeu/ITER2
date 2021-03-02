@@ -68,8 +68,6 @@ ax.plot(V_I, DataIN[:, 1] * 100, lw='1', label='previous python result(SM)')
 DataIN2 = loadtxt('EWOFS_fig3_saved_corr.dat',unpack=True)
 V_I = DataIN2[0,:]
 ax.plot(V_I, DataIN2[1,:] * 100, lw='1', label='python result2(SM)')
-
-
 ax.legend(loc="upper right")
 
 plt.show()

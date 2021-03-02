@@ -3,7 +3,7 @@
 
 import os
 #os.chdir('C:/Users/Iter/PycharmProjects/pythonProject/venv/Include')
-os.chdir('C:/Users/SMK/PycharmProjects/ITER2/venv/Include')
+#os.chdir('C:/Users/SMK/PycharmProjects/ITER2/venv/Include')
 import time
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
@@ -67,12 +67,13 @@ ax.yaxis._axinfo["grid"]['color'] =  (0,0,0,0.2)
 ax.zaxis._axinfo["grid"]['color'] =  (0,0,0,0.2)
 X = V_I
 #Y = arange(90,110,2) # Temperature of sensing fiber
-Y =  arange(100,110+5,5) # Temperature of sensing fiber
+#Y =  arange(100,110+2,2) # Temperature of sensing fiber
+Y = arange(90, 110 + 1, 2)
 
 print(X)
 print(Y)
 X,Y = np.meshgrid(X,Y)
-Z = DataIN.T[1:,:]*100
+Z = DataIN.T[1:-2,:]*100
 
 
 #surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,linewidth=0, antialiased=False)

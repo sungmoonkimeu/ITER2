@@ -46,7 +46,7 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
     dq = 2*pi/SR
 
     V_in = np.array([[1],[0]])
-    V_L = arange(dL,Len_SF+dL,dL)
+    V_L = arange(0,Len_SF+dL,dL)
     V_q_L = V_L * dq
     V_out = np.einsum('...i,jk->ijk', ones(len(I))*1j, np.array([[0], [0]]))
     # ones*1j <-- for type casting
@@ -106,11 +106,11 @@ def Cal_Rotation(LB, LC, SR, V, Len_SF, dL, I, num, Vout_dic):
 #start_time = time.time()
 
 if __name__ == '__main__':
-    num_processor = 16
+    num_processor = 8
     LB = [0.0304]
     SR = [0.003]
     LC = 1*2*pi* 1000000000000
-    Temp_SF = arange(90,110+5,10)
+    Temp_SF = arange(90,110+2,2)
     V = 0.54*(1+8.1e-5*Temp_SF)
     V0 = 0.54
     #V = 0.54

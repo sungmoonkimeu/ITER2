@@ -49,7 +49,7 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 LB = [0.0304]
 SR = [0.003]
 
-V_I = arange(0.1e6, 17e6, 0.5e6)
+V_I = arange(0.1e6, 17e6, 0.2e6)
 abs_error = zeros([len(V_I)])
 rel_error = zeros([len(V_I)])
 ''
