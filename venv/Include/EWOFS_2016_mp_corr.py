@@ -111,6 +111,7 @@ if __name__ == '__main__':
     SR = [0.003]
     LC = 1*2*pi* 1000000000000
     Temp_SF = arange(90,110+5,10)
+    #Temp_SF = arange(90,91,10)
     V = 0.54*(1+8.1e-5*Temp_SF)
     V0 = 0.54
     #V = 0.54
@@ -121,7 +122,7 @@ if __name__ == '__main__':
 
     spl_I = np.array_split(V_I, num_processor)
 
-    f = open('EWOFS_fig3_saved5.txt', 'w')
+    f = open('EWOFS_fig3_saved_corr.txt', 'w')
     savetxt(f, V_I, newline="\t")
     f.write("\n")
     f.close()
@@ -134,7 +135,7 @@ if __name__ == '__main__':
     rel_error = zeros([len(Temp_SF), len(V_I)])
 
     #start_time = time.time()
-    f = open('EWOFS_fig3_saved5.txt', 'a')
+    f = open('EWOFS_fig3_saved_corr.txt', 'a')
 
     for mm in range(len(Temp_SF)):
         for num in range(num_processor):
@@ -158,7 +159,13 @@ if __name__ == '__main__':
         V_ang = zeros(len(V_I))
         Ip = zeros(len(V_I))
         m = 0
+        '''
         for kk in range(len(V_I)):
+            V_ang[kk] = E[kk].parameters.azimuth()
+        V_ang = np.unwrap(V_ang)
+        '''
+        for kk in range(len(V_I)):
+
             if kk>2 and E[kk].parameters.azimuth()+m*pi - V_ang[kk-1] < -pi*0.8:
                 m= m+1
             V_ang[kk] = E[kk].parameters.azimuth()+m*pi

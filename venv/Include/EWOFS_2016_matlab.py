@@ -22,9 +22,9 @@ from multiprocessing import Process, Queue, Manager,Lock
 import os
 
 IP_debut        = 0e3
-IP_pas          = 5e5
+IP_pas          = 1e5
 IP_fin          = 17e6
-division        = 1  # precision from 0->1MA
+division        = 4  # precision from 0->1MA
 IP_0_to_1       = arange(IP_debut,1e6+(IP_pas/division),(IP_pas/division))
 IP_1_to_17      = arange(1e6+IP_pas,IP_fin+IP_pas, IP_pas)
 IP_vector       = np.hstack((IP_0_to_1,IP_1_to_17))
@@ -174,11 +174,23 @@ for c in range (len(IP_vector)):
 fig, ax = plt.subplots(figsize=(6,3))
 ax.plot(IP_vector,phi_calc1)
 
+f = open('EWOFS_fig3comp.txt', 'w')
+savetxt(f, IP_vector, newline="\t")
+f.write("\n")
+f.close()
+
+f = open('EWOFS_fig3comp.txt', 'a')
+savetxt(f, phi_calc1, newline="\t")
+f.write("\n")
+f.close()
+
 V_I = loadtxt('result_fromMat2.txt',unpack=True)
 Data = loadtxt('result_fromMat.txt',unpack=True)
 #DataIN = loadtxt('result_fromMat.txt',unpack=True, usecols=[1,2,3,4,5])
 
 ## Ploting graph
 ax.plot(V_I,Data,lw='1')
+
+
 
 plt.show()
