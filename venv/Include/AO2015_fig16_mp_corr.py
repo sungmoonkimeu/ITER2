@@ -48,8 +48,13 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
     dq = 2*pi/SR
 
     V_in = np.array([[1],[0]])
-    V_L = arange(0,Len_SF+dL,dL)
+
     V_LF = arange(0,Len_LF+dL,dL)
+    V_q_LF = V_LF * dq
+    V_L = arange(0, Len_SF + dL, dL)
+    V_q_L = V_L * dq
+
+
     V_out = np.einsum('...i,jk->ijk', ones(len(I))*1j, np.array([[0], [0]]))
     # ones*1j <-- for type casting
 
@@ -78,10 +83,11 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
 
     JF = np.array([[0, 1], [-1, 0]])
     for nn in range(len(I)):
-        q0 = 0
+        #q0 = 0
         J0 = np.array([[1, 0], [0, 1]])
         for kk in range(len(V_LF)):
-            q0= q0 + dq *dL
+            #q0= q0 + dq *dL
+            q0 = V_q_LF[kk]
 
             J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
             J12 = 1j * beta_lf * sin(2 * q0)
@@ -89,10 +95,11 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
             J22 = alpha_lf - 1j * beta_lf * cos(2 * q0)
             J0 = np.array([[J11, J12], [J21, J22]]) @ J0
 
-        q = q0
+        #q = q0
         J = mat([[1, 0], [0, 1]])
         for kk in range(len(V_L)):
-            q = q + dq * dL
+            #q = q + dq * dL
+            q = V_q_LF[-1] + V_q_L[kk]
 
             J11 = alpha_1[nn] + 1j * beta_1[nn] * cos(2 * q)
             J12 = -gamma_1[nn] + 1j * beta_1[nn] * sin(2 * q)
@@ -102,17 +109,19 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
 
         JB = mat([[1, 0], [0, 1]])
         for kk in range(len(V_L)):
-            q = q - dq * dL
+            #q = q - dq * dL
+            q = V_q_LF[-1] + V_q_L[-1-kk]
             J11 = alpha_2[nn] + 1j * beta_2[nn] * cos(2 * q)
             J12 = -gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
             J21 = gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
             J22 = alpha_2[nn] - 1j * beta_2[nn] * cos(2 * q)
             JB = np.array([[J11, J12],[J21, J22]]) @    JB
 
-        q0 = q
+        #q0 = q
         JB0 = np.array([[1, 0], [0, 1]])
         for kk in range(len(V_LF)):
-            q0 = q0 - dq * dL
+            #q0 = q0 - dq * dL
+            q0 = V_q_LF[-1-kk]
 
             J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
             J12 = 1j * beta_lf * sin(2 * q0)
@@ -120,7 +129,7 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
             J22 = alpha_lf - 1j * beta_lf * cos(2 * q0)
             JB0 = np.array([[J11, J12], [J21, J22]]) @ JB0
 
-        V_out[nn] = JB0 @ JB @ JF @ J @ J0 @ V_in
+        V_out[nn] = J0.T @ JB @ JF @ J @ J0 @ V_in
         #print("---  %s seconds for %s A ---" % (time.time() - start_time, I[nn]))
 
     print("---  %s seconds for 1 process---" % (time.time() - start_time))
@@ -153,7 +162,7 @@ if __name__ == '__main__':
 
     spl_I = np.array_split(V_I, num_processor)
 
-    f = open('AO2015_fig16_mp.txt', 'w')
+    f = open('AO2015_fig16_mp_corr.txt', 'w')
     savetxt(f, V_I, newline="\t")
     f.write("\n")
     f.close()
@@ -166,7 +175,7 @@ if __name__ == '__main__':
     rel_error = zeros([len(Len_LF), len(V_I)])
 
     #start_time = time.time()
-    f = open('AO2015_fig16_mp.txt', 'a')
+    f = open('AO2015_fig16_mp_corr.txt', 'a')
 
     for mm in range(len(Len_LF)):
         for num in range(num_processor):

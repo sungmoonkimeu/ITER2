@@ -17,7 +17,7 @@ from py_pol.stokes import Stokes, create_Stokes
 from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
 
 # _______________________________Parameters#1___________________________________#
-LB = [0.132]    # Linear beatlength [m]
+LB = [0.132]    # Linear beatlength [m] 0.132
 SR = [0.03]     # Spin ratio
 
 V_I = 10e5       # Aplied current 500kA
@@ -46,8 +46,8 @@ for mm in range(len(Len_LF)):
     #_______________________________ in/out variables preparation ____________________________________
     # ones*1j <-- for type casting (complex number)
 
-    V_L = arange(delta_L, Len_SF + delta_L, delta_L)        #sensing fiber
-    V_LF = arange(delta_L, Len_LF[mm] + delta_L, delta_L)   #lead fiber
+    V_L = arange(0, Len_SF + delta_L, delta_L)        #sensing fiber
+    V_LF = arange(0, Len_LF[mm] + delta_L, delta_L)   #lead fiber
     V_q_LF = V_LF * dq
     V_q_L = V_q_LF[-1] + V_L * dq
 
