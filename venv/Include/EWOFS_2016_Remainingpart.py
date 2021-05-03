@@ -83,6 +83,14 @@ for mm in range(len(Len_LF)):
     # ------------------------------ Variable lead fiber --------------------------
     # ------------No Farday effect (rho = 0)--> (forward α, β, γ  = backward α, β, γ) ------
 
+    #V_LF = arange(0, Len_LF[mm], delta_L)  # lead fiber
+    #V_L = arange(Len_LF[mm], Len_LF[mm] + Len_SF, delta_L)  # sensing fiber
+
+    if (V_LF[-1] + delta_L) != V_L[0] :
+        delta_Lrem = V_L[0]-V_LF[-1]
+        alpha_lfrem = cos(delta/2*delta_Lrem)
+        beta_lfrem = sin(delta / 2 * delta_Lrem)
+
     alpha_lf = cos(delta/2*delta_L)
     beta_lf = sin(delta/2*delta_L)
     gamma_lf = 0
@@ -102,10 +110,16 @@ for mm in range(len(Len_LF)):
         #q0 = q0 + dq * delta_L
         q0 = V_q_LF[kk]
 
-        J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
-        J12 = 1j * beta_lf * sin(2 * q0)
-        J21 = 1j * beta_lf * sin(2 * q0)
-        J22 = alpha_lf - 1j * beta_lf * cos(2 * q0)
+        if kk == len(V_LF)-1:
+            J11 = alpha_lfrem + 1j * beta_lfrem * cos(2 * q0)
+            J12 = 1j * beta_lfrem * sin(2 * q0)
+            J21 = 1j * beta_lfrem * sin(2 * q0)
+            J22 = alpha_lfrem - 1j * beta_lfrem * cos(2 * q0)
+        else:
+            J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
+            J12 = 1j * beta_lf * sin(2 * q0)
+            J21 = 1j * beta_lf * sin(2 * q0)
+            J22 = alpha_lf - 1j * beta_lf * cos(2 * q0)
 
         J0 = np.array([[J11,J12],[J21,J22]]) @ J0
         V_prop1[kk] =  J0 @ V_in
@@ -149,10 +163,16 @@ for mm in range(len(Len_LF)):
         #q0 = q0 - dq * delta_L
         q0 = V_q_LF[-1-kk]
 
-        J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
-        J12 = 1j * beta_lf * sin(2 * q0)
-        J21 = 1j * beta_lf * sin(2 * q0)
-        J22 = alpha_lf - 1j * beta_lf * cos(2 * q0)
+        if kk == 0:
+            J11 = alpha_lfrem + 1j * beta_lfrem * cos(2 * q0)
+            J12 = 1j * beta_lfrem * sin(2 * q0)
+            J21 = 1j * beta_lfrem * sin(2 * q0)
+            J22 = alpha_lfrem - 1j * beta_lfrem * cos(2 * q0)
+        else:
+            J11 = alpha_lf + 1j * beta_lf * cos(2 * q0)
+            J12 = 1j * beta_lf * sin(2 * q0)
+            J21 = 1j * beta_lf * sin(2 * q0)
+            J22 = alpha_lf - 1j * beta_lf * cos(2 * q0)
 
         JT0 = np.array([[J11,J12],[J21,J22]]) @ JT0 #Not transposed!
         V_prop4[kk] =  JT0 @ JT @ JF @J @ J0 @ V_in
