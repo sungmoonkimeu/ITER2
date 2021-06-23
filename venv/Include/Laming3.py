@@ -27,7 +27,8 @@ start = pd.Timestamp.now()
 # _______________________________Parameters___________________________________#
 #r = 1
 L = .5
-L_lf = [0.153, 0.156, 0.159, 0.162, 0.165]    #Length of Lead fiber [m]
+L_lf = [0.153, 0.156, 0.159, 0.162, 0.165]     #Length of Lead fiber [m]
+L_lf = L_lf + ones(len(L_lf))*100
 
 LB = 0.132
 SP = 0.03
@@ -137,10 +138,11 @@ for mm in range(len(L_lf)):
 
     N_i_b_all = theta_R_laming_b_all + theta_omg_laming_b_all
     # N-matrix of each fibre element considering the local effects acting along the fibre in backward direction
-
+    print("end of define J-Matrix" + str(mm))
     M_i_f = eigen_expm(N_i_f_all)  # Matrix exponential of N_i_f
     M_i_b = eigen_expm(N_i_b_all)  # Matrix exponential of N_i_b
 
+    print("end of eigen value calculation" + str(mm))
     M_f = mat([[1, 0], [0, 1]])
     M_b = mat([[1, 0], [0, 1]])
     M_FR = mat([[0, 1], [-1, 0]])

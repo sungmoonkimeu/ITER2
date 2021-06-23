@@ -12,7 +12,6 @@ def square(input_list):
     return y
 
 
-
 if __name__ == '__main__':
     data = list(range(1, 25000000))
     splited_data = np.array_split(data, num_cores*100)

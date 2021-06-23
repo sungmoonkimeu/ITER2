@@ -49,10 +49,10 @@ def Cal_Rotation(LB_lf, LB_sf, LC, SR, V, Len_LF, Len_SF,  dL, I, num, Vout_dic)
 
     V_in = np.array([[1],[0]])
 
-    V_LF = arange(0,Len_LF+dL,dL)
+    V_LF = arange(0,Len_LF,dL)
     V_q_LF = V_LF * dq
-    V_L = arange(0, Len_SF + dL, dL)
-    V_q_L = V_L * dq
+    V_L = arange(0, Len_SF, dL)
+    V_q_L = V_L * dq+dL
 
 
     V_out = np.einsum('...i,jk->ijk', ones(len(I))*1j, np.array([[0], [0]]))
@@ -153,10 +153,10 @@ if __name__ == '__main__':
 
     V = 0.43
 
-    Len_SF = 28
+    Len_SF = 1
     #Len_LF = [100,100.003,100.006,100.009,100.012]
-    Len_LF = [100.003, 100.006, 100.009, 100.012, 100.015]
-    dL = 0.0003
+    Len_LF = [0.003, 0.006, 0.009, 0.012, 0.015]
+    dL = 0.00001
     V_I = arange(0.2e6, 2e6+0.2e6, 0.2e6)
     # V_I = 0.1e6
 
@@ -245,7 +245,8 @@ if __name__ == '__main__':
     ax.set_ylabel(r'Relative error on $I_{P}$')
 
     # plt.title('Output power vs Plasma current')
-    ax.set(xlim=(0, 18e6), ylim=(0, 0.1))
+    #ax.set(xlim=(0, 18e6), ylim=(0, 0.1))
+    ax.set(xlim=(0, 2e6), ylim=(0.006, 0.015))
     ax.yaxis.set_major_locator(MaxNLocator(4))
     ax.xaxis.set_major_locator(MaxNLocator(10))
 
