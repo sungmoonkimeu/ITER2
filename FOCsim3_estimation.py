@@ -43,13 +43,13 @@ start = pd.Timestamp.now()
 
 # _______________________________Parameters___________________________________#
 # r = 1
-L = 0.5  # sensing fiber
+L = 1  # sensing fiber
 # L_lf = [0.153, 0.156, 0.159, 0.162, 0.165]      # lead fiber
 # L_lf = L_lf + ones(len(L_lf))*100
 L_lf = [1]
 
 LB = 0.132
-SP = 0.03
+SP = 0.003
 # dz = SP / 1000
 dz = 0.00001
 q = 0
@@ -57,7 +57,7 @@ I = 10e5
 V = 0.43 * 4 * pi * 1e-7
 # H = I / (2 * pi * r)
 # H = I/L
-STR = (2 * pi) / SP
+#STR = (2 * pi) / SP
 A_P = 0
 V_in = np.array([[cos(A_P)], [sin(A_P)]])
 M_P = mat([[(cos(A_P)) ** 2, (sin(A_P) * cos(A_P))], [(sin(A_P) * cos(A_P)), (sin(A_P)) ** 2]])
@@ -84,31 +84,20 @@ def eigen_expm(A):
 
 
 n = int(L / dz)
-delta = (2 * pi) / LB  # Intrinsic linear birefringence
+V_delta = [(2 * pi) / LB*0.95, (2 * pi) / LB, (2 * pi) / LB*1.05]  # Intrinsic linear birefringence
+V_STR = [2*pi/SP*0.95, 2*pi/SP, 2*pi/SP*1.05]
 
 V_plasmaCurrent = arange(1e5, 1e6, 1e5)
 V_plasmaCurrent = np.append(V_plasmaCurrent, arange(1e6, 18e6, 5e5))
 
-V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
+#V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
+iter_I = 0
 
-# Requirement specificaion for ITER
-absErrorlimit = zeros(len(V_out))
-relErrorlimit = zeros(len(V_out))
-
-# Calcuation ITER specification
-for nn in range(len(V_plasmaCurrent)):
-    if V_plasmaCurrent[nn] < 1e6:
-        absErrorlimit[nn] = 10e3
-    else:
-        absErrorlimit[nn] = V_plasmaCurrent[nn] * 0.01
-
-    if V_plasmaCurrent[nn] == 0:
-        relErrorlimit[nn] = 100
-    else:
-        relErrorlimit[nn] = absErrorlimit[nn] / V_plasmaCurrent[nn]
-
+V_out = np.einsum('...i,jk->ijk', ones(len(V_delta)) * 1j, np.mat([[0], [0]]))
 mm = 0
-for iter_I in V_plasmaCurrent:
+#for delta in V_delta:
+delta = 2*pi/LB
+for STR in V_STR:
     H = iter_I / L
     # print(H)
     rho = V * H  # Faraday effect induced birefringence
@@ -117,7 +106,6 @@ for iter_I in V_plasmaCurrent:
     n = 0
     m = 0
     # --------Laming: orientation of the local slow axis ------------
-
 
     V_L = arange(0, L + dz, dz)
     V_theta = V_L * STR
@@ -159,17 +147,7 @@ for iter_I in V_plasmaCurrent:
         N_integral = eigen_expm(N)
         M_f = N_integral @ M_f
 
-    for nn in range(len(V_theta) - 1):
-        phi = ((STR * dz) - omega_z_b) / 2 + m * (pi / 2) + V_theta[-1 - nn]
-        N11 = R_z_b / 2 * 1j * cos(2 * phi)
-        N12 = R_z_b / 2 * 1j * sin(2 * phi) - omega_z_b
-        N21 = R_z_b / 2 * 1j * sin(2 * phi) + omega_z_b
-        N22 = R_z_b / 2 * -1j * cos(2 * phi)
-        N = np.array([[N11, N12], [N21, N22]])
-        N_integral = eigen_expm(N)
-        M_b = N_integral @ M_b
-
-    V_out[mm] = M_b @ M_FR @ M_f @ V_in
+    V_out[mm] = M_f @ V_in
     mm = mm + 1
 
 # -------------- Using py_pol module -----------------------------------
@@ -183,50 +161,8 @@ S.linear_light(azimuth=0 * abs(V_out))
 E.from_matrix(V_out)
 S.from_Jones(E)
 fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[0.2, 1.2], kind='line', color_line='b')
-
-abs_error = zeros([len(V_out)])
-rel_error = zeros([len(V_out)])
-Ip = zeros(len(V_out))
-V_ang = zeros(len(V_out))
-
-m = 0
-for nn in range(len(V_out)):
-    if nn > 2 and E[nn].parameters.azimuth() + m * pi - V_ang[nn - 1] < -pi * 0.5:
-        m = m + 1
-    elif nn > 2 and E[nn].parameters.azimuth() + m * pi - V_ang[nn - 1] > pi * 0.5:
-        m = m - 1
-    V_ang[nn] = E[nn].parameters.azimuth() + m * pi
-    Ip[nn] = -(V_ang[nn] - pi / 2) / (2 * V)
-    abs_error[nn] = abs(Ip[nn] - V_plasmaCurrent[nn])
-    if V_plasmaCurrent[nn] == 0:
-        rel_error[nn] = 100
-    else:
-        rel_error[nn] = abs_error[nn] / V_plasmaCurrent[nn]
-
-# Ploting graph
-fig, ax = plt.subplots(figsize=(6, 3))
-
-ax.plot(V_plasmaCurrent, rel_error, lw='1')
-ax.plot(V_plasmaCurrent, relErrorlimit, 'r', label='ITER specification', lw='1')
-ax.legend(loc="upper right")
-
-plt.rc('text', usetex=True)
-ax.set_xlabel(r'Plasma current $I_{p}(A)$')
-ax.set_ylabel(r'Relative error on $I_{P}$')
-
-# plt.title('Output power vs Plasma current')
-ax.set(xlim=(0, 18e6), ylim=(0, 0.1))
-ax.yaxis.set_major_locator(MaxNLocator(4))
-ax.xaxis.set_major_locator(MaxNLocator(10))
-
-ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
-ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
-
-ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
-ax.grid(ls='--', lw=0.5)
-
-#fig.align_ylabels(ax)
-fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom= 0.2)
-#fig.set_size_inches(6,4)
+azi = E.parameters.azimuth() *180/pi
+ellip = E.parameters.ellipticity_angle()*180/pi
+print(azi.max() - azi.min(), ellip.max() - ellip.min())
 
 plt.show()

@@ -7,7 +7,6 @@ Created on Tue JUL 1 15:00:00 2021
 Spun fibre model with laming matrix
 """
 
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,7 +20,8 @@ from py_pol.stokes import Stokes, create_Stokes
 from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
 import matplotlib.ticker
 from matplotlib.ticker import (MaxNLocator,
-                               FormatStrFormatter,ScalarFormatter)
+                               FormatStrFormatter, ScalarFormatter)
+
 
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
@@ -38,7 +38,6 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
             self.format = r'$\mathdefault{%s}$' % self.format
 
 
-
 start = pd.Timestamp.now()
 
 # _______________________________Parameters___________________________________#
@@ -51,7 +50,7 @@ L_lf = [1]
 LB = 0.132
 SP = 0.03
 # dz = SP / 1000
-dz = 0.00001
+dz = 0.0001
 q = 0
 I = 10e5
 V = 0.43 * 4 * pi * 1e-7
@@ -118,12 +117,29 @@ for iter_I in V_plasmaCurrent:
     m = 0
     # --------Laming: orientation of the local slow axis ------------
 
+    V_L_lf = arange(0, L_lf[0] + dz, dz)
+    V_theta_lf = V_L_lf * STR
 
     V_L = arange(0, L + dz, dz)
-    V_theta = V_L * STR
+    V_theta = V_theta_lf[-1]+V_L * STR
 
     # -----------------------------------------------------------------------------
     # The following parameters are defined as per Laming (1989) paper
+
+    # lead fiber
+    qu_f_lf = 2 * STR / delta
+    qu_b_lf = 2 * -STR / delta
+
+    gma_f_lf = 0.5 * (delta ** 2 + 4 * (STR ** 2)) ** 0.5
+    gma_b_lf = 0.5 * (delta ** 2 + 4 * ((-STR) ** 2)) ** 0.5
+
+    omega_z_f_lf = STR * dz + arctan((-qu_f_lf / ((1 + qu_f_lf ** 2) ** 0.5)) * tan(gma_f_lf * dz)) + n * pi
+    omega_z_b_lf = -STR * dz + arctan((-qu_b_lf / ((1 + qu_b_lf ** 2) ** 0.5)) * tan(gma_b_lf * dz)) + n * pi
+
+    R_z_f_lf = 2 * arcsin(sin(gma_f_lf * dz) / ((1 + qu_f_lf ** 2) ** 0.5))
+    R_z_b_lf = 2 * arcsin(sin(gma_b_lf * dz) / ((1 + qu_b_lf ** 2) ** 0.5))
+
+    # sensing fiber
     qu_f = 2 * (STR + rho) / delta
     qu_b = 2 * (-STR + rho) / delta
 
@@ -136,8 +152,6 @@ for iter_I in V_plasmaCurrent:
     R_z_f = 2 * arcsin(sin(gma_f * dz) / ((1 + qu_f ** 2) ** 0.5))
     R_z_b = 2 * arcsin(sin(gma_b * dz) / ((1 + qu_b ** 2) ** 0.5))
 
-    # phi_z_f = ((STR * dz) - omega_z_f) / 2 + m * (pi / 2) + t_s_f
-    # phi_z_b = ((-STR * dz) - omega_z_b) / 2 + m * (pi / 2) + t_s_b
 
     # N-matrix of each fibre element considering the local effects acting along the fibre in backward direction
     print("end of define J-Matrix")
@@ -145,9 +159,22 @@ for iter_I in V_plasmaCurrent:
     # V_L = arange(0, L+dz, dz)
     # V_theta = V_L * STR
 
+    M_lf_f = np.array([[1, 0], [0, 1]])
+    M_lf_b = np.array([[1, 0], [0, 1]])
     M_f = np.array([[1, 0], [0, 1]])
     M_b = np.array([[1, 0], [0, 1]])
     M_FR = np.array([[0, 1], [-1, 0]])
+
+    for nn in range(len(V_theta_lf)-1):
+        phi = ((STR * dz) - omega_z_f_lf) / 2 + m * (pi / 2) + V_theta_lf[nn]
+        N11 = R_z_f_lf / 2 * 1j * cos(2 * phi)
+        N12 = R_z_f_lf / 2 * 1j * sin(2 * phi) - omega_z_f_lf
+        N21 = R_z_f_lf / 2 * 1j * sin(2 * phi) + omega_z_f_lf
+        N22 = R_z_f_lf / 2 * -1j * cos(2 * phi)
+        N = np.array([[N11, N12], [N21, N22]])
+        N_integral = eigen_expm(N)
+        M_lf_f = N_integral @ M_lf_f
+
 
     for nn in range(len(V_theta) - 1):
         phi = ((STR * dz) - omega_z_f) / 2 + m * (pi / 2) + V_theta[nn]
@@ -169,7 +196,17 @@ for iter_I in V_plasmaCurrent:
         N_integral = eigen_expm(N)
         M_b = N_integral @ M_b
 
-    V_out[mm] = M_b @ M_FR @ M_f @ V_in
+    for nn in range(len(V_theta_lf)-1):
+        phi = ((STR * dz) - omega_z_b_lf) / 2 + m * (pi / 2) + V_theta_lf[-1 - nn]
+        N11 = R_z_b_lf / 2 * 1j * cos(2 * phi)
+        N12 = R_z_b_lf / 2 * 1j * sin(2 * phi) - omega_z_b_lf
+        N21 = R_z_b_lf / 2 * 1j * sin(2 * phi) + omega_z_b_lf
+        N22 = R_z_b_lf / 2 * -1j * cos(2 * phi)
+        N = np.array([[N11, N12], [N21, N22]])
+        N_integral = eigen_expm(N)
+        M_lf_b = N_integral @ M_lf_b
+
+    V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
     mm = mm + 1
 
 # -------------- Using py_pol module -----------------------------------
@@ -225,8 +262,8 @@ ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
 ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
 ax.grid(ls='--', lw=0.5)
 
-#fig.align_ylabels(ax)
-fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom= 0.2)
-#fig.set_size_inches(6,4)
+# fig.align_ylabels(ax)
+fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
+# fig.set_size_inches(6,4)
 
 plt.show()
