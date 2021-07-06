@@ -7,6 +7,7 @@ Created on Tue JUL 1 15:00:00 2021
 Spun fibre model with laming matrix
 """
 
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,31 +19,50 @@ import concurrent.futures as cf
 from py_pol.jones_vector import Jones_vector, degrees
 from py_pol.stokes import Stokes, create_Stokes
 from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
+import matplotlib.ticker
+from matplotlib.ticker import (MaxNLocator,
+                               FormatStrFormatter,ScalarFormatter)
+
+class OOMFormatter(matplotlib.ticker.ScalarFormatter):
+    def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
+        self.oom = order
+        self.fformat = fformat
+        matplotlib.ticker.ScalarFormatter.__init__(self, useOffset=offset, useMathText=mathText)
+
+    def _set_order_of_magnitude(self):
+        self.orderOfMagnitude = self.oom
+
+    def _set_format(self, vmin=None, vmax=None):
+        self.format = self.fformat
+        if self._useMathText:
+            self.format = r'$\mathdefault{%s}$' % self.format
+
+
 
 start = pd.Timestamp.now()
 
 # _______________________________Parameters___________________________________#
-#r = 1
-L = 1                                         # sensing fiber
-#L_lf = [0.153, 0.156, 0.159, 0.162, 0.165]      # lead fiber
-#L_lf = L_lf + ones(len(L_lf))*100
+# r = 1
+L = 0.5  # sensing fiber
+# L_lf = [0.153, 0.156, 0.159, 0.162, 0.165]      # lead fiber
+# L_lf = L_lf + ones(len(L_lf))*100
 L_lf = [1]
 
 LB = 0.132
 SP = 0.03
-#dz = SP / 1000
+# dz = SP / 1000
 dz = 0.00001
 q = 0
 I = 10e5
 V = 0.43 * 4 * pi * 1e-7
-#H = I / (2 * pi * r)
-#H = I/L
+# H = I / (2 * pi * r)
+# H = I/L
 STR = (2 * pi) / SP
 A_P = 0
-V_in = mat([[cos(A_P)], [sin(A_P)]])
+V_in = np.array([[cos(A_P)], [sin(A_P)]])
 M_P = mat([[(cos(A_P)) ** 2, (sin(A_P) * cos(A_P))], [(sin(A_P) * cos(A_P)), (sin(A_P)) ** 2]])
 
-cstm_color = ['c','m','y','k','r']
+cstm_color = ['c', 'm', 'y', 'k', 'r']
 
 
 def eigen_expm(A):
@@ -63,130 +83,149 @@ def eigen_expm(A):
                   vects, np.exp(vals), np.linalg.inv(vects))
 
 
-for mm in range(len(L_lf)):
-    n1 = int(L / dz)
-    V_dz = dz * ones(n1)
+n = int(L / dz)
+delta = (2 * pi) / LB  # Intrinsic linear birefringence
 
-    delta = (2 * pi) / LB       # Intrinsic linear birefringence
-    V_delta = delta * ones(n1)
+V_plasmaCurrent = arange(1e5, 1e6, 1e5)
+V_plasmaCurrent = np.append(V_plasmaCurrent, arange(1e6, 18e6, 5e5))
 
-    H = I/L
-    rho = V * H                 # Faraday effect induced birefringence
-    V_rho = rho * ones(n1)
+V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
+
+# Requirement specificaion for ITER
+absErrorlimit = zeros(len(V_out))
+relErrorlimit = zeros(len(V_out))
+
+# Calcuation ITER specification
+for nn in range(len(V_plasmaCurrent)):
+    if V_plasmaCurrent[nn] < 1e6:
+        absErrorlimit[nn] = 10e3
+    else:
+        absErrorlimit[nn] = V_plasmaCurrent[nn] * 0.01
+
+    if V_plasmaCurrent[nn] == 0:
+        relErrorlimit[nn] = 100
+    else:
+        relErrorlimit[nn] = absErrorlimit[nn] / V_plasmaCurrent[nn]
+
+mm = 0
+for iter_I in V_plasmaCurrent:
+    H = iter_I / L
+    # print(H)
+    rho = V * H  # Faraday effect induced birefringence
 
     ###----------------------Laming parameters---------------------------------###
     n = 0
     m = 0
     # --------Laming: orientation of the local slow axis ------------
-    t_s_f = 0
-    t_s_b = 0
 
-    t_f = STR * V_dz
-    t_f[0] = 0  # for the first section the azimuth doesn't change, it remains same as that at the entrance.
-    t_s_f = np.cumsum(t_f)  # initial orientation of the local fast axis in forward direction
-    t_b = STR * V_dz
-    t_s_b = np.cumsum(t_b)  # initial orientation of the local fast axis in backward direction
+    V_L = arange(0, L + dz, dz)
+    V_theta = V_L * STR
+
     # -----------------------------------------------------------------------------
     # The following parameters are defined as per Laming (1989) paper
-    qu_f = 2 * (STR + V_rho) / V_delta
-    qu_b = 2 * (-STR + V_rho) / V_delta
+    qu_f = 2 * (STR + rho) / delta
+    qu_b = 2 * (-STR + rho) / delta
 
-    gma_f = 0.5 * ((V_delta) ** 2 + 4 * ((STR + V_rho) ** 2)) ** 0.5
-    gma_b = 0.5 * ((V_delta) ** 2 + 4 * ((-STR + V_rho) ** 2)) ** 0.5
+    gma_f = 0.5 * (delta ** 2 + 4 * ((STR + rho) ** 2)) ** 0.5
+    gma_b = 0.5 * (delta ** 2 + 4 * ((-STR + rho) ** 2)) ** 0.5
 
-    omega_z_f = STR * V_dz + arctan((-qu_f / ((1 + qu_f ** 2) ** 0.5)) * tan(gma_f * V_dz)) + n * pi
-    omega_z_b = -STR * V_dz + arctan((-qu_b / ((1 + qu_b ** 2) ** 0.5)) * tan(gma_b * V_dz)) + n * pi
+    omega_z_f = STR * dz + arctan((-qu_f / ((1 + qu_f ** 2) ** 0.5)) * tan(gma_f * dz)) + n * pi
+    omega_z_b = -STR * dz + arctan((-qu_b / ((1 + qu_b ** 2) ** 0.5)) * tan(gma_b * dz)) + n * pi
 
-    R_z_f = 2 * arcsin(sin(gma_f * V_dz) / ((1 + qu_f ** 2) ** 0.5))
-    R_z_b = 2 * arcsin(sin(gma_b * V_dz) / ((1 + qu_b ** 2) ** 0.5))
+    R_z_f = 2 * arcsin(sin(gma_f * dz) / ((1 + qu_f ** 2) ** 0.5))
+    R_z_b = 2 * arcsin(sin(gma_b * dz) / ((1 + qu_b ** 2) ** 0.5))
 
-    phi_z_f = ((STR * V_dz) - omega_z_f) / 2 + m * (pi / 2) + t_s_f
-    phi_z_b = ((-STR * V_dz) - omega_z_b) / 2 + m * (pi / 2) + t_s_b
+    # phi_z_f = ((STR * dz) - omega_z_f) / 2 + m * (pi / 2) + t_s_f
+    # phi_z_b = ((-STR * dz) - omega_z_b) / 2 + m * (pi / 2) + t_s_b
 
-    # -----------------------------Forward propagation-----------------------------#
-    theta_R_laming_f_all = np.reshape((R_z_f / 2), (len(V_dz), 1,1)) * np.array([[1j * cos(2 * phi_z_f), 1j * sin(2 * phi_z_f)],[1j * sin(2 * phi_z_f), -1j * cos(2 * phi_z_f)]]).T
-
-    #theta_R_laming_f_all = GGG * np.array([[1j * cos(2 * phi_z_f), 1j * sin(2 * phi_z_f)],[1j * sin(2 * phi_z_f), -1j * cos(2 * phi_z_f)]]).T
-    theta_omg_laming_f_all = np.einsum('...i,jk->ijk', omega_z_f, np.mat([[0, -1], [1, 0]]))
-
-    # theta matrix of rotator for each element of the fibre in the forward direction
-    N_i_f_all = theta_R_laming_f_all + theta_omg_laming_f_all
-    # N-matrix of each fibre element considaering the local effects acting along the fibre in forward direction
-
-    # --------------------Backward propagation--------------------------
-    theta_R_laming_b_all = np.reshape((R_z_b / 2), (len(V_dz), 1, 1)) * np.array([[1j * cos(2 * phi_z_b), 1j * sin(2 * phi_z_b)],
-                                                                                  [1j * sin(2 * phi_z_b),-1j * cos(2 * phi_z_b)]]).T
-    # (5600,1,1) * (2,2,5600).T = (5600,1,1) * (5600,2,2)
-    # theta matrix of retarder for each element of the fibre in the backward direction
-
-    theta_omg_laming_b_all = np.einsum('...i,jk->ijk', omega_z_b, np.mat([[0, -1], [1, 0]]))
-    # theta matrix of rotator for each element of the fibre in the backward direction
-
-    N_i_b_all = theta_R_laming_b_all + theta_omg_laming_b_all
     # N-matrix of each fibre element considering the local effects acting along the fibre in backward direction
-    print("end of define J-Matrix" + str(mm))
-    M_i_f = eigen_expm(N_i_f_all)  # Matrix exponential of N_i_f
-    M_i_b = eigen_expm(N_i_b_all)  # Matrix exponential of N_i_b
+    print("end of define J-Matrix")
 
-    print("end of eigen value calculation" + str(mm))
-    M_f = mat([[1, 0], [0, 1]])
-    M_b = mat([[1, 0], [0, 1]])
-    M_FR = mat([[0, 1], [-1, 0]])
-    #PB = zeros(len(V_L))
+    # V_L = arange(0, L+dz, dz)
+    # V_theta = V_L * STR
 
-    V_prop = np.einsum('...i,jk->ijk', ones(len(V_L)) * 1j, np.mat([[0], [0]]))
-    #V_prop1 = np.einsum('...i,jk->ijk', ones(len(V_LF)) * 1j, np.mat([[0], [0]]))
-    V_prop2 = np.einsum('...i,jk->ijk', ones(len(V_L)) * 1j, np.mat([[0], [0]]))
-    V_prop3 = np.einsum('...i,jk->ijk', ones(len(V_L)) * 1j, np.mat([[0], [0]]))
-    #V_prop4 = np.einsum('...i,jk->ijk', ones(len(V_LF)) * 1j, np.mat([[0], [0]]))
+    M_f = np.array([[1, 0], [0, 1]])
+    M_b = np.array([[1, 0], [0, 1]])
+    M_FR = np.array([[0, 1], [-1, 0]])
 
-    for i in range(len(V_L)):
-        M_f = M_i_f[i] * M_f  # forward jones matrix
-        #M_b = M_b * M_i_b[i]  # backward jones matrix
-        V_prop2[i] = M_f *  V_in  # o/p SOP
+    for nn in range(len(V_theta) - 1):
+        phi = ((STR * dz) - omega_z_f) / 2 + m * (pi / 2) + V_theta[nn]
+        N11 = R_z_f / 2 * 1j * cos(2 * phi)
+        N12 = R_z_f / 2 * 1j * sin(2 * phi) - omega_z_f
+        N21 = R_z_f / 2 * 1j * sin(2 * phi) + omega_z_f
+        N22 = R_z_f / 2 * -1j * cos(2 * phi)
+        N = np.array([[N11, N12], [N21, N22]])
+        N_integral = eigen_expm(N)
+        M_f = N_integral @ M_f
 
-    for i in range(len(V_L)):
-        M_b =  M_i_b[-1-i] * M_b # backward jones matrix
-        V_prop3[i] = M_b * M_FR * V_prop2[-1]
-    #   PB[i] = (norm(Vout)) ** 2
+    for nn in range(len(V_theta) - 1):
+        phi = ((STR * dz) - omega_z_b) / 2 + m * (pi / 2) + V_theta[-1 - nn]
+        N11 = R_z_b / 2 * 1j * cos(2 * phi)
+        N12 = R_z_b / 2 * 1j * sin(2 * phi) - omega_z_b
+        N21 = R_z_b / 2 * 1j * sin(2 * phi) + omega_z_b
+        N22 = R_z_b / 2 * -1j * cos(2 * phi)
+        N = np.array([[N11, N12], [N21, N22]])
+        N_integral = eigen_expm(N)
+        M_b = N_integral @ M_b
 
-    # -------------- Using py_pol module -----------------------------------
-    E2 = Jones_vector('Output_J')
-    S2 = create_Stokes('Output_S')
+    V_out[mm] = M_b @ M_FR @ M_f @ V_in
+    mm = mm + 1
 
-    E2.linear_light(azimuth=0*(V_L))
-    S2.linear_light(azimuth=0*(V_L))
+# -------------- Using py_pol module -----------------------------------
+E = Jones_vector('Output_J')
+S = create_Stokes('Output_S')
 
-    # SOP evolution in Lead fiber (Forward)
-    E2.from_matrix(V_prop2[0:n_lf])
-    S2.from_Jones(E2)
+E.linear_light(azimuth=0 * abs(V_out))
+S.linear_light(azimuth=0 * abs(V_out))
 
-    if mm == 0:
-        #fig, ax = S2.draw_poincare(figsize=(7, 7), angle_view=[29*pi/180, 46*pi/180], kind='line',
-        fig, ax = S2.draw_poincare(figsize=(7, 7), angle_view=[0.2, 1.2], kind='line',
-                                   color_line='b')
-        draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
+# SOP evolution in Lead fiber (Forward)
+E.from_matrix(V_out)
+S.from_Jones(E)
+fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[0.2, 1.2], kind='line', color_line='b')
+
+abs_error = zeros([len(V_out)])
+rel_error = zeros([len(V_out)])
+Ip = zeros(len(V_out))
+V_ang = zeros(len(V_out))
+
+m = 0
+for nn in range(len(V_out)):
+    if nn > 2 and E[nn].parameters.azimuth() + m * pi - V_ang[nn - 1] < -pi * 0.5:
+        m = m + 1
+    elif nn > 2 and E[nn].parameters.azimuth() + m * pi - V_ang[nn - 1] > pi * 0.5:
+        m = m - 1
+    V_ang[nn] = E[nn].parameters.azimuth() + m * pi
+    Ip[nn] = -(V_ang[nn] - pi / 2) / (2 * V)
+    abs_error[nn] = abs(Ip[nn] - V_plasmaCurrent[nn])
+    if V_plasmaCurrent[nn] == 0:
+        rel_error[nn] = 100
     else:
-        draw_stokes_points(fig[0], S2, kind='line', color_line='b')
-        draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
+        rel_error[nn] = abs_error[nn] / V_plasmaCurrent[nn]
 
-    # SOP evolution in Sensing fiber (Forward)
-    E2.from_matrix(V_prop2[n_lf:-1])
-    S2.from_Jones(E2)
-    draw_stokes_points(fig[0], S2, kind='line', color_line='r')
-    draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
+# Ploting graph
+fig, ax = plt.subplots(figsize=(6, 3))
 
-    # SOP evolution in Sensing fiber (Backward)
-    E2.from_matrix(V_prop3[0:n-n_lf])
-    S2.from_Jones(E2)
-    draw_stokes_points(fig[0], S2, kind='line', color_line='g')
-    draw_stokes_points(fig[0], S2[0], kind='scatter', color_scatter=cstm_color[mm])
-    draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
+ax.plot(V_plasmaCurrent, rel_error, lw='1')
+ax.plot(V_plasmaCurrent, relErrorlimit, 'r', label='ITER specification', lw='1')
+ax.legend(loc="upper right")
 
-    # SOP evolution in Lead fiber (Backward)
-    E2.from_matrix(V_prop3[n-n_lf:-1])
-    S2.from_Jones(E2)
-    draw_stokes_points(fig[0], S2, kind='line', color_line='k')
-    draw_stokes_points(fig[0], S2[-1], kind='scatter', color_scatter=cstm_color[mm])
-    print(V_prop3[-1])
+plt.rc('text', usetex=True)
+ax.set_xlabel(r'Plasma current $I_{p}(A)$')
+ax.set_ylabel(r'Relative error on $I_{P}$')
+
+# plt.title('Output power vs Plasma current')
+ax.set(xlim=(0, 18e6), ylim=(0, 0.1))
+ax.yaxis.set_major_locator(MaxNLocator(4))
+ax.xaxis.set_major_locator(MaxNLocator(10))
+
+ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
+ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+
+ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
+ax.grid(ls='--', lw=0.5)
+
+#fig.align_ylabels(ax)
+fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom= 0.2)
+#fig.set_size_inches(6,4)
+
 plt.show()
