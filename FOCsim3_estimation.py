@@ -48,8 +48,8 @@ L = 1  # sensing fiber
 # L_lf = L_lf + ones(len(L_lf))*100
 L_lf = [1]
 
-LB = 0.132
-SP = 0.003
+LB = 1.000
+SP = 0.005
 # dz = SP / 1000
 dz = 0.00001
 q = 0
@@ -84,7 +84,9 @@ def eigen_expm(A):
 
 
 n = int(L / dz)
-V_delta = [(2 * pi) / LB*0.95, (2 * pi) / LB, (2 * pi) / LB*1.05]  # Intrinsic linear birefringence
+V_delta = arange(0, 0.03, 0.001)
+V_delta = V_delta + ones(len(V_delta)) * (2 * pi) / LB
+#V_delta = [(2 * pi) / LB*0.95, (2 * pi) / LB, (2 * pi) / LB*1.05]  # Intrinsic linear birefringence
 V_STR = [2*pi/SP*0.95, 2*pi/SP, 2*pi/SP*1.05]
 
 V_plasmaCurrent = arange(1e5, 1e6, 1e5)
@@ -95,9 +97,11 @@ iter_I = 0
 
 V_out = np.einsum('...i,jk->ijk', ones(len(V_delta)) * 1j, np.mat([[0], [0]]))
 mm = 0
-#for delta in V_delta:
-delta = 2*pi/LB
-for STR in V_STR:
+# delta = 2*pi/LB
+# for STR in V_STR:
+STR = 2*pi/SP
+for delta in V_delta:
+
     H = iter_I / L
     # print(H)
     rho = V * H  # Faraday effect induced birefringence
@@ -164,5 +168,20 @@ fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[0.2, 1.2], kind='line', co
 azi = E.parameters.azimuth() *180/pi
 ellip = E.parameters.ellipticity_angle()*180/pi
 print(azi.max() - azi.min(), ellip.max() - ellip.min())
+
+
+fig, ax = plt.subplots()
+
+ax.plot(V_delta, azi, lw='1')
+ax.legend(loc="upper right")
+
+ax.set_xlabel('delta')
+ax.set_ylabel('azimuth angle change')
+#ax[0].set(xlim=(0,18e6), ylim = (0,5e5))
+#ax[0].yaxis.set_major_formatter(OOMFormatter(5, "%1.0f"))
+#ax[0].xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
+#ax[0].ticklabel_format(axis='both', style= 'sci' ,useMathText=True, scilimits=(-3,5))
+#ax[0].grid(ls='--',lw=0.5)
+#ax = plt.axes()
 
 plt.show()
