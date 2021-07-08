@@ -182,12 +182,13 @@ for kk in range(len(V_out)):
 
 fig, ax = plt.subplots()
 
-ax.plot(V_LB, V_ang*180/pi, lw='1', marker='s')
+#ax.plot(1-V_LB, V_ang*180/pi, lw='1', marker='s')
+ax.plot(1-V_LB, V_ang*180/pi, lw='1')
 ax.legend(loc="upper right")
 
 ax.set_xlabel('Vibration induced LB [m]')
-ax.set_ylabel('Azimuth angle change [deg]')
-ax.set(xlim=(0, 0.7), ylim=(176, 181))
+ax.set_ylabel('Azimuth angle [deg]')
+ax.set(xlim=(0, 1), ylim=(-200, 200))
 ax.yaxis.set_major_locator(MaxNLocator(7))
 
 #ax[0].yaxis.set_major_formatter(OOMFormatter(5, "%1.0f"))

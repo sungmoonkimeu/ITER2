@@ -156,7 +156,7 @@ for iter_I in V_plasmaCurrent:
 
 
     # N-matrix of each fibre element considering the local effects acting along the fibre in backward direction
-    print("end of define J-Matrix")
+    print("end of define J-Matrix", )
 
     # V_L = arange(0, L+dz, dz)
     # V_theta = V_L * STR
@@ -165,7 +165,12 @@ for iter_I in V_plasmaCurrent:
     M_lf_b = np.array([[1, 0], [0, 1]])
     M_f = np.array([[1, 0], [0, 1]])
     M_b = np.array([[1, 0], [0, 1]])
-    M_FR = np.array([[0, 1], [-1, 0]])
+    # M_FR = np.array([[0, 1], [-1, 0]])
+
+    ksi = 45*pi/180
+    Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
+    Jm = np.array([[1, 0], [0, 1]])
+    M_FR = Rot @ Jm @ Rot
 
     for nn in range(len(V_theta_lf)-1):
         phi = ((STR * dz) - omega_z_f_lf) / 2 + m * (pi / 2) + V_theta_lf[nn]
@@ -253,12 +258,12 @@ ax.set_xlabel(r'Plasma current $I_{p}(A)$')
 ax.set_ylabel(r'Relative error on $I_{P}$')
 
 # plt.title('Output power vs Plasma current')
-#ax.set(xlim=(0, 18e6), ylim=(0, 0.001))
+ax.set(xlim=(0, 18e6), ylim=(0, 0.1))
 ax.yaxis.set_major_locator(MaxNLocator(4))
 ax.xaxis.set_major_locator(MaxNLocator(10))
 
 ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
-ax.yaxis.set_major_formatter(OOMFormatter(-4, "%4.3f"))
+ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
 
 ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
 ax.grid(ls='--', lw=0.5)
