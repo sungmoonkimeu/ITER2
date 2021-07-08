@@ -47,13 +47,13 @@ L = 0.5  # sensing fiber
 # L_lf = L_lf + ones(len(L_lf))*100
 L_lf = [1]
 
-LB = 0.132
-SP = 0.03
+LB = 0.35
+SP = 0.005
 # dz = SP / 1000
 dz = 0.0001
 q = 0
 I = 10e5
-V = 0.43 * 4 * pi * 1e-7
+V = 0.54 * 4 * pi * 1e-7
 # H = I / (2 * pi * r)
 # H = I/L
 STR = (2 * pi) / SP
@@ -82,8 +82,10 @@ def eigen_expm(A):
                   vects, np.exp(vals), np.linalg.inv(vects))
 
 
+LB_lf = 0.35
 n = int(L / dz)
 delta = (2 * pi) / LB  # Intrinsic linear birefringence
+delta_lf = (2 * pi) / LB_lf  # Intrinsic linear birefringence
 
 V_plasmaCurrent = arange(1e5, 1e6, 1e5)
 V_plasmaCurrent = np.append(V_plasmaCurrent, arange(1e6, 18e6, 5e5))
@@ -127,11 +129,11 @@ for iter_I in V_plasmaCurrent:
     # The following parameters are defined as per Laming (1989) paper
 
     # lead fiber
-    qu_f_lf = 2 * STR / delta
-    qu_b_lf = 2 * -STR / delta
+    qu_f_lf = 2 * STR / delta_lf
+    qu_b_lf = 2 * -STR / delta_lf
 
-    gma_f_lf = 0.5 * (delta ** 2 + 4 * (STR ** 2)) ** 0.5
-    gma_b_lf = 0.5 * (delta ** 2 + 4 * ((-STR) ** 2)) ** 0.5
+    gma_f_lf = 0.5 * (delta_lf ** 2 + 4 * (STR ** 2)) ** 0.5
+    gma_b_lf = 0.5 * (delta_lf ** 2 + 4 * ((-STR) ** 2)) ** 0.5
 
     omega_z_f_lf = STR * dz + arctan((-qu_f_lf / ((1 + qu_f_lf ** 2) ** 0.5)) * tan(gma_f_lf * dz)) + n * pi
     omega_z_b_lf = -STR * dz + arctan((-qu_b_lf / ((1 + qu_b_lf ** 2) ** 0.5)) * tan(gma_b_lf * dz)) + n * pi
@@ -174,7 +176,6 @@ for iter_I in V_plasmaCurrent:
         N = np.array([[N11, N12], [N21, N22]])
         N_integral = eigen_expm(N)
         M_lf_f = N_integral @ M_lf_f
-
 
     for nn in range(len(V_theta) - 1):
         phi = ((STR * dz) - omega_z_f) / 2 + m * (pi / 2) + V_theta[nn]
@@ -252,12 +253,12 @@ ax.set_xlabel(r'Plasma current $I_{p}(A)$')
 ax.set_ylabel(r'Relative error on $I_{P}$')
 
 # plt.title('Output power vs Plasma current')
-ax.set(xlim=(0, 18e6), ylim=(0, 0.1))
+#ax.set(xlim=(0, 18e6), ylim=(0, 0.001))
 ax.yaxis.set_major_locator(MaxNLocator(4))
 ax.xaxis.set_major_locator(MaxNLocator(10))
 
 ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
-ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+ax.yaxis.set_major_formatter(OOMFormatter(-4, "%4.3f"))
 
 ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
 ax.grid(ls='--', lw=0.5)

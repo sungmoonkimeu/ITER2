@@ -84,8 +84,10 @@ def eigen_expm(A):
 
 
 n = int(L / dz)
-V_delta = arange(0, 0.03, 0.001)
-V_delta = V_delta + ones(len(V_delta)) * (2 * pi) / LB
+V_LB = arange(0, 0.8, 0.1)
+V_LB = np.hstack((V_LB, arange(0.8, 0.9, 0.02)))
+V_LB = np.hstack((V_LB, arange(0.9, 1, 0.01)))
+V_delta = 2*pi / (-V_LB + ones(len(V_LB)) * LB)
 #V_delta = [(2 * pi) / LB*0.95, (2 * pi) / LB, (2 * pi) / LB*1.05]  # Intrinsic linear birefringence
 V_STR = [2*pi/SP*0.95, 2*pi/SP, 2*pi/SP*1.05]
 
@@ -165,19 +167,29 @@ S.linear_light(azimuth=0 * abs(V_out))
 E.from_matrix(V_out)
 S.from_Jones(E)
 fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[0.2, 1.2], kind='line', color_line='b')
-azi = E.parameters.azimuth() *180/pi
+azi = E.parameters.azimuth() * 180/pi
 ellip = E.parameters.ellipticity_angle()*180/pi
 print(azi.max() - azi.min(), ellip.max() - ellip.min())
+
+V_ang = zeros(len(V_out))
+m = 0
+for kk in range(len(V_out)):
+    if kk > 2 and (E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1]) * \
+                  (V_ang[kk-1] - V_ang[kk - 2]) < 0:
+        m = m - 1
+    V_ang[kk] = E[kk].parameters.azimuth() + m * pi
 
 
 fig, ax = plt.subplots()
 
-ax.plot(V_delta, azi, lw='1')
+ax.plot(V_LB, V_ang*180/pi, lw='1', marker='s')
 ax.legend(loc="upper right")
 
-ax.set_xlabel('delta')
-ax.set_ylabel('azimuth angle change')
-#ax[0].set(xlim=(0,18e6), ylim = (0,5e5))
+ax.set_xlabel('Vibration induced LB [m]')
+ax.set_ylabel('Azimuth angle change [deg]')
+ax.set(xlim=(0, 0.7), ylim=(176, 181))
+ax.yaxis.set_major_locator(MaxNLocator(7))
+
 #ax[0].yaxis.set_major_formatter(OOMFormatter(5, "%1.0f"))
 #ax[0].xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
 #ax[0].ticklabel_format(axis='both', style= 'sci' ,useMathText=True, scilimits=(-3,5))
