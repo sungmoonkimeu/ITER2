@@ -15,6 +15,7 @@ from numpy import cos, pi, mat, ones, zeros, sin, einsum, append, arange, array,
 from numpy.linalg import norm, eig
 import concurrent.futures as cf
 
+from py_pol.jones_matrix import create_Jones_matrices
 from py_pol.jones_vector import Jones_vector, degrees
 from py_pol.stokes import Stokes, create_Stokes
 from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
@@ -59,10 +60,25 @@ def eigen_expm(A):
                   vects, np.exp(vals), np.linalg.inv(vects))
 
 
-def lamming(LB, SP, DIR, Ip, L, V_theta):
+def lamming(LB, SP, DIR, Ip, L, V_theta, n_div, vib_ell, vib_azi):
+    """
+    :param LB: beatlength
+    :param SP: spin period
+    :param DIR: direction (+1: forward, -1: backward)
+    :param Ip: plasma current
+    :param L: fiber length
+    :param V_theta: vector of theta (angle of optic axes)
+    :param n_div: division number
+    :param vib_azi: [0, pi]: Azimuth. Default: 0.
+    :param vib_ell: [-pi/4, pi/4]: Ellipticity. Default: 0.
+    :return: M matrix calculated from N matrix
+    """
+
     STR = 2 * pi / SP * DIR
     delta = 2 * pi / LB
-    H = Ip / L  # TODO magnetic field in unit length (need to verify)
+    # magnetic field in unit length
+    # H = Ip / (2 * pi * r)
+    H = Ip / L
     V = 0.54 * 4 * pi * 1e-7
     rho = V * H
 
@@ -78,6 +94,10 @@ def lamming(LB, SP, DIR, Ip, L, V_theta):
     R_z = 2 * arcsin(sin(gma * dz) / ((1 + qu ** 2) ** 0.5))
 
     M = np.array([[1, 0], [0, 1]])
+    J_err = create_Jones_matrices('Vibration')  # TODO find eigen state and put the matrix here
+    #J_err.retarder_linear(R=vib_ell, azimuth=vib_azi)
+    J_err.retarder_linear(R=pi/2, azimuth=pi/4)
+    M_err = J_err.parameters.matrix().reshape(2, 2)  # J matrix --> np.array
 
     for nn in range(len(V_theta) - 1):
         if DIR == 1:
@@ -92,6 +112,8 @@ def lamming(LB, SP, DIR, Ip, L, V_theta):
         N = np.array([[n11, n12], [n21, n22]])
         N_integral = eigen_expm(N)
         M = N_integral @ M
+        if (nn - (len(V_theta) % n_div)) % n_div == 0:
+            M = M_err @ M
     return M
 
 
@@ -107,7 +129,6 @@ SP = 0.003
 # dz = SP / 1000
 dz = 0.0001
 q = 0
-I = 10e5
 V = 0.54 * 4 * pi * 1e-7
 # H = I / (2 * pi * r)
 # H = I/L
@@ -128,24 +149,21 @@ mm = 0
 for iter_I in V_plasmaCurrent:
     V_L_lf = arange(0, L_lf[0] + dz, dz)
     V_theta_lf = V_L_lf * STR
-    V_theta_lf2 = V_theta_lf[-1] + V_L_lf * STR
 
     V_L = arange(0, L + dz, dz)
-    V_theta = V_theta_lf2[-1] + V_L * STR
+    V_theta = V_theta_lf[-1] + V_L * STR
 
     ksi = 45 * pi / 180
     Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
     Jm = np.array([[1, 0], [0, 1]])
     M_FR = Rot @ Jm @ Rot
 
-    M_lf_f = lamming(LB, SP, 1, 0, L, V_theta_lf)
-    M_lf_f2 = lamming(LB, SP, 1, 0, L, V_theta_lf2)
-    M_f = lamming(LB, SP, 1, iter_I, L, V_theta)
-    M_b = lamming(LB, SP, -1, iter_I, L, V_theta)
-    M_lf_b2 = lamming(LB, SP, -1, 0, L, V_theta_lf2)
-    M_lf_b = lamming(LB, SP, -1, 0, L, V_theta_lf)
+    M_lf_f = lamming(LB, SP, 1, 0, L, V_theta_lf, len(V_theta)/2, 0*pi/180, 0*pi/180)
+    M_f = lamming(LB, SP, 1, iter_I, L, V_theta, len(V_theta)+1, 0, 0)
+    M_b = lamming(LB, SP, -1, iter_I, L, V_theta, len(V_theta)+1, 0, 0)
+    M_lf_b = lamming(LB, SP, -1, 0, L, V_theta_lf, len(V_theta)/2, 0*pi/180, 0*pi/180)
 
-    V_out[mm] = M_lf_b @ M_lf_b2 @ M_b @ M_FR @ M_f @ M_lf_f2 @ M_lf_f @ V_in
+    V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
     mm = mm + 1
 
 # -------------- Using py_pol module -----------------------------------
