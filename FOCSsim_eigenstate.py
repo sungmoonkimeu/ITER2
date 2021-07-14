@@ -6,22 +6,19 @@ Created on Tue JUL 1 15:00:00 2021
 (Circular vessel shape)
 Spun fibre model with laming matrix
 """
-import cmath, math
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from numpy import cos, pi, mat, ones, zeros, sin, einsum, append, arange, array, cumsum, argmin, sqrt, arcsin, arctan, \
-    tan
-from numpy.linalg import norm, eig
-import concurrent.futures as cf
+import cmath
+import math
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from numpy import cos, pi, zeros, sin, einsum, arange
+from numpy.linalg import norm, eig
+from py_pol.drawings import draw_stokes_points
 from py_pol.jones_matrix import create_Jones_matrices
-from py_pol.jones_vector import Jones_vector, degrees
-from py_pol.stokes import Stokes, create_Stokes
-from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
-import matplotlib.ticker
-from matplotlib.ticker import (MaxNLocator,
-                               FormatStrFormatter, ScalarFormatter)
+from py_pol.jones_vector import Jones_vector
+from py_pol.stokes import create_Stokes
+
 
 def eigen_expm(A):
     """
@@ -78,31 +75,25 @@ for nn in range(len(V_ell)):
         draw_stokes_points(fig[0], S, kind='line', color_line='b')
 
 # Case 3
-J2 = create_Jones_matrices('J2')
+J2 = create_Jones_matrices('Test matrix (Rotation)')
 
-theta = np.arange(0, 90, 15)
-A = np.array([[cos(theta*pi/180), -sin(theta*pi/180)], [sin(theta*pi/180), cos(theta*pi/180)]])
+theta = arange(pi/4, pi/2, pi/8)
+A = np.array([[cos(theta), -sin(theta)],
+              [sin(theta), cos(theta)]])
 J2.from_matrix(A)
 
-a, b = J2.parameters.eigenvalues()
-phase_a = zeros(len(a))
-phase_b = zeros(len(b))
+[lambda1, lambda2, V1, V2] = J2.parameters.eig()
+# the column v[:,i] is the eigenvector corresponding to the eigenvalue w[i].
 
-for nn, vv in enumerate(a):
-    phase_a[nn] = math.degrees(cmath.phase(vv))
-for nn, vv in enumerate(b):
-    phase_b[nn] = math.degrees(cmath.phase(vv))
+# lambda1, lambda2 : eigen value
+# V1, V2 : eigen vector (state)
+MQ = np.dstack((V1.T, V2.T))
+MQ_I = np.linalg.inv(MQ)
+ML = np.dstack((lambda1,lambda2))
 
-print(phase_a)
-print(phase_b)
-
-c, d = J2.parameters.eigenstates()
-e = np.empty((len(c), 2, 2))*1j
-for nn in range(len(c)):
-    e[nn] = np.hstack((c[nn].parameters.matrix(), d[nn].parameters.matrix()))
-
-print(e)
-
+MR = einsum('...ik, ...k, ...kj -> ...ij', MQ, ML, MQ_I)
+print(MR)
+print(A)
 
 for nn in range(len(c)):
     phi_a = phase_a[nn] * pi / 180
