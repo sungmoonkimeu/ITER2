@@ -7,13 +7,13 @@ Created on Tue JUL 1 15:00:00 2021
 Spun fibre model with laming matrix
 """
 
-
+from scipy.linalg import expm, sinm, cosm
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy import cos, pi, mat, ones, zeros, sin, einsum, append, arange, array, cumsum, argmin, sqrt, arcsin, arctan, \
     tan
-from numpy.linalg import norm, eig
+from numpy.linalg import norm
 import concurrent.futures as cf
 
 from py_pol.jones_vector import Jones_vector, degrees
