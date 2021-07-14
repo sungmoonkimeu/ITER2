@@ -12,7 +12,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from numpy import cos, pi, zeros, sin, einsum, arange
+from numpy import cos, pi, zeros, sin, einsum, arange, exp
 from numpy.linalg import norm, eig
 from py_pol.drawings import draw_stokes_points
 from py_pol.jones_matrix import create_Jones_matrices
@@ -48,6 +48,7 @@ S = create_Stokes('Output_S')
 J = create_Jones_matrices('J')
 
 # Case 1
+# Constant retardaion with different azimuth angle
 V_azi = np.hstack((pi/100, arange(0, pi/4, pi/16), pi/4))
 V_mod_ret = arange(0, -pi/2, -pi/100)
 E.linear_light(azimuth=V_azi)
@@ -61,6 +62,7 @@ for nn in range(len(V_azi)):
         draw_stokes_points(fig[0], S, kind='line', color_line='b')
 
 # Case 2
+# Constant rotation with different ellipticity angle
 V_ell = np.hstack((arange(0, -pi/4, -pi/16), -pi/4+pi/100))
 # ellipticity 0 ~ pi/4 --> linear to circular
 V_mod_rot = arange(0, pi/8, pi/100)
@@ -75,44 +77,123 @@ for nn in range(len(V_ell)):
         draw_stokes_points(fig[0], S, kind='line', color_line='b')
 
 # Case 3
+# finding intial basis from eigen value, eigen vector calculation
+# Eigen value, vector --> eig(M) --> [v1, v2] [[λ1, 0], [v1,v2]^-1
+#                                              [0, λ2]]
+# eig(Jones Matrix) --> V M V-1
+# V: eigen vector --> Chainging basis
+# M: eigen value [[λ1, 0],
+#                 [0, λ2]]  --> birefringence or rotation or both
+
 J2 = create_Jones_matrices('Test matrix (Rotation)')
 
-theta = arange(pi/4, pi/2, pi/8)
+# Case 3-1
+# test for Rotation matrix A (no retardation)
+theta = arange(pi/6, pi/2, pi/6)
 A = np.array([[cos(theta), -sin(theta)],
               [sin(theta), cos(theta)]])
-J2.from_matrix(A)
 
+J2.from_matrix(A)
 [lambda1, lambda2, V1, V2] = J2.parameters.eig()
 # the column v[:,i] is the eigenvector corresponding to the eigenvalue w[i].
 
-# lambda1, lambda2 : eigen value
-# V1, V2 : eigen vector (state)
-MQ = np.dstack((V1.T, V2.T))
-MQ_I = np.linalg.inv(MQ)
-ML = np.dstack((lambda1,lambda2))
+MQ = np.dstack((V1.T, V2.T))  # create (len(theta),2,2) array to use np.linalg.inv
+MQ_I = np.linalg.inv(MQ)      # np.linalg.inv works only in (N,M,M) form
+ML = np.dstack((lambda1, lambda2))
 
-MR = einsum('...ik, ...k, ...kj -> ...ij', MQ, ML, MQ_I)
-print(MR)
-print(A)
+MR = einsum('...ik, ...k, ...kj -> ...ij', MQ, ML, MQ_I).reshape(len(theta), 2, 2)
+# (len(theta),2,2) (1, len(theta), 2), len(theta),2,2) --> len(theta),2,2
+print(MR[0])        # (len(theta),2,2)
+print(A[..., 0])    # (2,2,len(theta))
 
-for nn in range(len(c)):
-    phi_a = phase_a[nn] * pi / 180
-    m_a = np.array([[cos(phi_a), -sin(phi_a)], [sin(phi_a), cos(phi_a)]])
-    phi_b = phase_b[nn]*pi/180
-    m_b = np.array([[cos(phi_b), -sin(phi_b)], [sin(phi_b), cos(phi_b)]])
+# Case 3-2
+# test for Retadation matrix A (with rotation)
+theta = arange(pi/6, pi/2, pi/6)
+A = np.array([[cos(theta), -sin(theta)],
+              [sin(theta), cos(theta)]])
+AT = np.array([[cos(theta), sin(theta)],
+              [-sin(theta), cos(theta)]])
+# create (2,2, len(theta)) array
+# create Birefringence matrix
+IB = np.zeros((2, 2, (len(theta))))
+np.einsum('iij->ij', IB)[:] = 1
+Bexp = exp(1j*np.vstack((theta, -theta)))
+B = einsum('ijk, ...ik -> ijk', IB, Bexp)   # Birefringence matrix
+C = einsum('ij..., jk..., kl...-> il...', A, B, AT)    # matrix calculation
 
-    print(m_b@e[nn]@m_a)
+J2.from_matrix(C)
+[lambda1, lambda2, V1, V2] = J2.parameters.eig()
+# the column v[:,i] is the eigenvector corresponding to the eigenvalue w[i].
 
-E.linear_light(azimuth=-45*pi/180)
-J.half_waveplate(azimuth=30*pi/180)
+MQ = np.dstack((V1.T, V2.T))  # create (len(theta),2,2) array to use np.linalg.inv
+MQ_I = np.linalg.inv(MQ)      # np.linalg.inv works only in (N,M,M) form
+ML = np.dstack((lambda1, lambda2))
 
-V_mod_ret = arange(0, -pi/2, -pi/100)
-
-
-J2.retarder_linear(R=V_mod_ret)
-V_out = J2*J*E
-S.from_Jones(V_out)
-fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[33 * pi / 180, 53 * pi / 180], kind='line', color_line='b')
+MR = einsum('...ik, ...k, ...kj -> ...ij', MQ, ML, MQ_I).reshape(len(theta), 2, 2)
+# (len(theta),2,2) (1, len(theta), 2), len(theta),2,2) --> len(theta),2,2
+print(MR[0])        # (len(theta),2,2)
+print(C[..., 0])    # (2,2,len(theta))
 
 plt.show()
 
+
+# lambda1, lambda2 : eigen value
+# V1, V2 : eigen vector (state) [2,len(theta)] --> reshape [2,1,len(theta)] + Hstack
+Vects = np.hstack((V1.reshape(2, 1, len(theta)), V2.reshape(2, 1, len(theta))))
+
+# Case4-1
+# To estimate the equivalent rotation in the presence of retardation
+# Rotation after induction retardation
+# Rotation matrix A (no retardation)
+theta = arange(0, pi/2, pi/50)
+MA = np.array([[cos(theta), -sin(theta)],
+               [sin(theta), cos(theta)]])
+J3 = create_Jones_matrices('Test matrix (Rotation)')
+J3.from_matrix(MA)
+
+phi = arange(0, pi/4, pi/12)
+# create Birefringence matrix
+IB = np.zeros((2, 2, (len(phi))))
+np.einsum('iij->ij', IB)[:] = 1
+Bexp = exp(1j*np.vstack((phi, -phi)))
+MB = einsum('ijk, ...ik -> ijk', IB, Bexp)   # Birefringence matrix
+
+J4 = create_Jones_matrices('Changing basis')
+J4.from_matrix(MB)
+
+[lambda1, lambda2, V1, V2] = J4.parameters.eig()
+# the column v[:,i] is the eigenvector corresponding to the eigenvalue w[i].
+
+MQ = np.dstack((V1.T, V2.T))  # create (len(theta),2,2) array to use np.linalg.inv
+MQ_I = np.linalg.inv(MQ)      # np.linalg.inv works only in (N,M,M) form
+ML = np.dstack((lambda1, lambda2))
+
+MR = einsum('...ik, ...k, ...kj -> ...ij', MQ, ML, MQ_I).reshape(len(phi), 2, 2)
+# (len(theta),2,2) (1, len(theta), 2), len(theta),2,2) --> len(theta),2,2
+print(MR[0])        # (len(theta),2,2)
+print(MB[..., 0])    # (2,2,len(theta))
+
+J5 = create_Jones_matrices('Basis')
+J6 = create_Jones_matrices('Basis')
+E.linear_light(azimuth=0)
+
+J5.from_matrix(MQ[2])
+J6.from_matrix(MQ_I[2])
+
+# Vout = J6 * J3 * J5 * J4[nn] * E[0]
+
+for nn, vv in enumerate(phi):
+
+    J5.from_matrix(MQ[nn])
+    J6.from_matrix(MQ_I[nn])
+    J5.from_matrix(np.array([[cos(pi/4), sin(pi/4)], [-sin(pi/4), cos(pi/4)]]))
+    V_out = J3 * J4[nn] * J5 * E[0]
+    S.from_Jones(V_out)
+
+    if nn == 0:
+        fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[33*pi/180, 53*pi/180], kind='line', color_line='b')
+    else:
+        draw_stokes_points(fig[0], S, kind='line', color_line='b')
+
+# Case4-2
+# inducing retadation in the initial basis
