@@ -60,7 +60,7 @@ def eigen_expm(A):
                   vects, np.exp(vals), np.linalg.inv(vects))
 
 
-def lamming(LB, SP, DIR, Ip, L, V_theta, nVerr, vib_ell, vib_azi):
+def lamming(LB, SP, DIR, Ip, L, V_theta, M_err):
     """
     :param LB: beatlength
     :param SP: spin period
@@ -94,21 +94,8 @@ def lamming(LB, SP, DIR, Ip, L, V_theta, nVerr, vib_ell, vib_azi):
     R_z = 2 * arcsin(sin(gma * dz) / ((1 + qu ** 2) ** 0.5))
 
     M = np.array([[1, 0], [0, 1]])
-    J_err = create_Jones_matrices('Vibration')  # TODO find eigen state and put the matrix here
-    #J_err.retarder_linear(R=vib_ell, azimuth=vib_azi)
-    J_err.retarder_linear(R=pi/2, azimuth=pi/4)
-    if DIR == -1:
-        J_err.transpose()
-    M_err = J_err.parameters.matrix().reshape(2, 2)  # J matrix --> np.array
 
-    theta = pi/4
-    phi = pi/4
-    M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
-    M_phi = np.array([[np.exp(1j*phi), 0], [0, np.exp(1j*phi)]])
-    M_err = M_theta @ M_phi @ M_theta.T
-    if DIR == -1:
-        M_err = M_err.T
-
+    kk = 0  # for counting M_err
     for nn in range(len(V_theta) - 1):
         if DIR == 1:
             phi = ((STR * dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
@@ -123,15 +110,19 @@ def lamming(LB, SP, DIR, Ip, L, V_theta, nVerr, vib_ell, vib_azi):
         N_integral = eigen_expm(N)
         M = N_integral @ M
 
+        nVerr = M_err.shape[2]
         nSet = int(len(V_theta)/(nVerr+1))
         if nVerr > 0:
             if DIR == 1 and (nn + 1) % nSet == 0:
-                M = M_err @ M
+                if kk != nVerr:
+                    M = M_err[...,kk] @ M
+                    kk = kk + 1
             elif DIR == -1 and int((len(V_theta)-nn) % nSet) == 0:
-                M = M_err @ M
-
+                if kk != nVerr:
+                    M = M_err[...,-1-kk] @ M
+                    kk = kk + 1
     return M
-
+'''
 V_theta = arange(10)
 nVerr = 2
 rem = int(len(V_theta) % (nVerr+1))
@@ -148,6 +139,7 @@ for nn in range(len(V_theta)):
         print(int((len(V_theta)-(nn)) % tset))
         V_theta[-1-nn] = V_theta[-1-nn]*100
 print(V_theta)
+'''
 # _______________________________Parameters___________________________________#
 # r = 1
 L = 0.5  # sensing fiber
@@ -155,8 +147,8 @@ L = 0.5  # sensing fiber
 # L_lf = L_lf + ones(len(L_lf))*100
 L_lf = [1]
 
-LB = 0.012
-SP = 0.003
+LB = 1.000
+SP = 0.005
 # dz = SP / 1000
 dz = 0.0001
 q = 0
@@ -170,14 +162,27 @@ M_P = mat([[(cos(A_P)) ** 2, (sin(A_P) * cos(A_P))], [(sin(A_P) * cos(A_P)), (si
 
 cstm_color = ['c', 'm', 'y', 'k', 'r']
 
-V_plasmaCurrent = arange(1e5, 1e6, 1e5)
-V_plasmaCurrent = np.append(V_plasmaCurrent, arange(1e6, 18e6, 5e5))
-
-V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
+V_arr = arange(100)
+V_out = np.einsum('...i,jk->ijk', ones(len(V_arr)) * 1j, np.mat([[0], [0]]))
 
 mm = 0
+for iter_I in V_arr:
+    #  Preparing M_err
+    n_M_err = 1
+    theta = np.random.rand(n_M_err) * pi / 2  # pi/4
+    phi = np.random.rand(n_M_err) * 0.8 * pi / 180  # pi/4
 
-for iter_I in V_plasmaCurrent:
+    M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
+    M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
+
+    IB = np.zeros((2, 2, (n_M_err)))
+    np.einsum('iij->ij', IB)[:] = 1
+    Bexp = np.exp(1j * np.vstack((phi, -phi)))
+    M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)  # Birefringence matrix
+
+    M_err = einsum('ij..., jk..., kl...-> il...', M_theta, M_phi, M_theta_T)  # matrix calculation
+
+
     V_L_lf = arange(0, L_lf[0] + dz, dz)
     V_theta_lf = V_L_lf * STR
 
@@ -189,12 +194,12 @@ for iter_I in V_plasmaCurrent:
     Jm = np.array([[1, 0], [0, 1]])
     M_FR = Rot @ Jm @ Rot
 
-    M_lf_f = lamming(LB, SP, 1, 0, L, V_theta_lf, 1, 0*pi/180, 0*pi/180)
-    M_f = lamming(LB, SP, 1, iter_I, L, V_theta, 0, 0, 0)
-    M_b = lamming(LB, SP, -1, iter_I, L, V_theta, 0, 0, 0)
-    M_lf_b = lamming(LB, SP, -1, 0, L, V_theta_lf, 1, 0*pi/180, 0*pi/180)
+    M_lf_f = lamming(LB, SP, 1, 0, L, V_theta_lf, M_err)
+    #M_lf_b = lamming(LB, SP, -1, 0, L, V_theta_lf, M_err)
+
 
     #V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
+    #V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
     V_out[mm] = M_lf_f @ V_in
     mm = mm + 1
 
@@ -208,8 +213,11 @@ S.linear_light(azimuth=0 * abs(V_out))
 # SOP evolution in Lead fiber (Forward)
 E.from_matrix(V_out)
 S.from_Jones(E)
-fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[0.2, 1.2], kind='line', color_line='b')
+fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24*pi/180, 31*pi/180], kind='scatter', color_line='b')
 
+ell_V_out = E.parameters.ellipticity_angle()
+print(ell_V_out.max()-ell_V_out.min())
+'''
 abs_error = zeros([len(V_out)])
 rel_error = zeros([len(V_out)])
 Ip = zeros(len(V_out))
@@ -270,5 +278,5 @@ ax.grid(ls='--', lw=0.5)
 # fig.align_ylabels(ax)
 fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
 # fig.set_size_inches(6,4)
-
+'''
 plt.show()
