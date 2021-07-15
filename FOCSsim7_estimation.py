@@ -119,7 +119,7 @@ def lamming(LB, SP, DIR, Ip, L, V_theta, M_err):
                     kk = kk + 1
             elif DIR == -1 and int((len(V_theta)-nn) % nSet) == 0:
                 if kk != nVerr:
-                    M = M_err[...,-1-kk] @ M
+                    M = M_err[...,-1-kk].T @ M
                     kk = kk + 1
     return M
 '''
@@ -169,8 +169,11 @@ mm = 0
 for iter_I in V_arr:
     #  Preparing M_err
     n_M_err = 1
-    theta = np.random.rand(n_M_err) * pi / 2  # pi/4
-    phi = np.random.rand(n_M_err) * 0.8 * pi / 180  # pi/4
+    theta = (np.random.rand(n_M_err)-0.5)*2 * pi / 2            # random axis of LB
+    phi = (np.random.rand(n_M_err)-0.5)*2 * 0.8 * pi / 180      # ellipticity angle change from experiment
+    theta_e = (np.random.rand(n_M_err)-0.5)*2 * 0.8 * pi / 180  # azimuth angle change from experiment
+
+    M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,n_M_err)
 
     M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
     M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
@@ -180,9 +183,9 @@ for iter_I in V_arr:
     Bexp = np.exp(1j * np.vstack((phi, -phi)))
     M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)  # Birefringence matrix
 
-    M_err = einsum('ij..., jk..., kl...-> il...', M_theta, M_phi, M_theta_T)  # matrix calculation
+    M_err = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)  # matrix calculation
 
-
+    M_empty = np.array([]).reshape(2, 2, 0)
     V_L_lf = arange(0, L_lf[0] + dz, dz)
     V_theta_lf = V_L_lf * STR
 
@@ -195,12 +198,13 @@ for iter_I in V_arr:
     M_FR = Rot @ Jm @ Rot
 
     M_lf_f = lamming(LB, SP, 1, 0, L, V_theta_lf, M_err)
-    #M_lf_b = lamming(LB, SP, -1, 0, L, V_theta_lf, M_err)
+    M_f = lamming(LB, SP, 1, 0, L, V_theta,  M_empty)
+    M_b = lamming(LB, SP, -1, 0, L, V_theta,  M_empty)
+    M_lf_b = lamming(LB, SP, -1, 0, L, V_theta_lf, M_err)
 
-
-    #V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
+    V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
     #V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
-    V_out[mm] = M_lf_f @ V_in
+    #V_out[mm] = M_lf_f @ V_in
     mm = mm + 1
 
 # -------------- Using py_pol module -----------------------------------
@@ -215,8 +219,15 @@ E.from_matrix(V_out)
 S.from_Jones(E)
 fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24*pi/180, 31*pi/180], kind='scatter', color_line='b')
 
-ell_V_out = E.parameters.ellipticity_angle()
-print(ell_V_out.max()-ell_V_out.min())
+ell_V_out = E.parameters.ellipticity_angle()*180/pi
+print("ell=", ell_V_out.max()-ell_V_out.min())
+azi_V_out = E.parameters.azimuth()*180/pi
+
+for nn, v in enumerate(azi_V_out):
+    if v > 90:
+        azi_V_out[nn] = azi_V_out[nn] - 180
+
+print("azi=", azi_V_out.max()-azi_V_out.min())
 '''
 abs_error = zeros([len(V_out)])
 rel_error = zeros([len(V_out)])
