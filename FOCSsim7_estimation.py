@@ -50,6 +50,9 @@ def eigen_expm(A):
     A : 2 x 2 diagonalizable matrix
         DESCRIPTION.
 
+    scify.linalg.expm() is available but only works for a (2,2) matrix.
+    This function is for (2,2,n) matrix
+
     Returns
     -------
     expm(A): exponential of the matrix A.
