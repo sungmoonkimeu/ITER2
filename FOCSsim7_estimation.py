@@ -165,11 +165,15 @@ M_P = mat([[(cos(A_P)) ** 2, (sin(A_P) * cos(A_P))], [(sin(A_P) * cos(A_P)), (si
 
 cstm_color = ['c', 'm', 'y', 'k', 'r']
 
-V_arr = arange(100)
-V_out = np.einsum('...i,jk->ijk', ones(len(V_arr)) * 1j, np.mat([[0], [0]]))
+#V_arr = arange(100)*1000
+#V_out = np.einsum('...i,jk->ijk', ones(len(V_arr)) * 1j, np.mat([[0], [0]]))
+
+V_plasmaCurrent = arange(1e5, 1e6, 1e5)
+# V_plasmaCurrent = np.append(V_plasmaCurrent, arange(1e6, 18e6, 5e5))
+V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
 
 mm = 0
-for iter_I in V_arr:
+for iter_I in V_plasmaCurrent:
     #  Preparing M_err
     n_M_err = 1
     theta = (np.random.rand(n_M_err)-0.5)*2 * pi / 2            # random axis of LB
@@ -181,30 +185,39 @@ for iter_I in V_arr:
     M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
     M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
 
-    IB = np.zeros((2, 2, (n_M_err)))
+    # Create (2,2,n_M_err) Birefringence matrix
+    IB = np.zeros((2, 2, n_M_err))
     np.einsum('iij->ij', IB)[:] = 1
     Bexp = np.exp(1j * np.vstack((phi, -phi)))
-    M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)  # Birefringence matrix
+    M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)
 
-    M_err = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)  # matrix calculation
+    # Random birefringence(circular + linear), random optic axis matrix calculation
+    M_err = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
 
+    # Empty matrix => there is no error matrix(Merr)
     M_empty = np.array([]).reshape(2, 2, 0)
+
     V_L_lf = arange(0, L_lf[0] + dz, dz)
     V_theta_lf = V_L_lf * STR
 
     V_L = arange(0, L + dz, dz)
     V_theta = V_theta_lf[-1] + V_L * STR
 
-    ksi = 45 * pi / 180
+    ksi = 44 * pi / 180
     Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
     Jm = np.array([[1, 0], [0, 1]])
     M_FR = Rot @ Jm @ Rot
 
     M_lf_f = lamming(LB, SP, 1, 0, L, V_theta_lf, M_err)
-    M_f = lamming(LB, SP, 1, 0, L, V_theta,  M_empty)
-    M_b = lamming(LB, SP, -1, 0, L, V_theta,  M_empty)
+    M_f = lamming(LB, SP, 1, iter_I, L, V_theta,  M_empty)
+    M_b = lamming(LB, SP, -1, iter_I, L, V_theta,  M_empty)
     M_lf_b = lamming(LB, SP, -1, 0, L, V_theta_lf, M_err)
-
+    '''
+    M_lf_f = lamming(LB, SP, 1, 0, L, V_theta_lf, M_empty)
+    M_f = lamming(LB, SP, 1, iter_I, L, V_theta, M_empty)
+    M_b = lamming(LB, SP, -1, iter_I, L, V_theta, M_empty)
+    M_lf_b = lamming(LB, SP, -1, 0, L, V_theta_lf, M_empty)
+    '''
     V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
     #V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
     #V_out[mm] = M_lf_f @ V_in
@@ -231,7 +244,7 @@ for nn, v in enumerate(azi_V_out):
         azi_V_out[nn] = azi_V_out[nn] - 180
 
 print("azi=", azi_V_out.max()-azi_V_out.min())
-'''
+
 abs_error = zeros([len(V_out)])
 rel_error = zeros([len(V_out)])
 Ip = zeros(len(V_out))
@@ -244,7 +257,8 @@ for nn in range(len(V_out)):
     elif nn > 2 and E[nn].parameters.azimuth() + m * pi - V_ang[nn - 1] > pi * 0.5:
         m = m - 1
     V_ang[nn] = E[nn].parameters.azimuth() + m * pi
-    Ip[nn] = -(V_ang[nn] - pi / 2) / (2 * V)
+    #Ip[nn] = -(V_ang[nn] - pi / 2) / (2 * V)
+    Ip[nn] = -(V_ang[nn] - 2*ksi) / (2 * V)  # Calibration the FM angle error
     abs_error[nn] = abs(Ip[nn] - V_plasmaCurrent[nn])
     if V_plasmaCurrent[nn] == 0:
         rel_error[nn] = 100
@@ -292,5 +306,5 @@ ax.grid(ls='--', lw=0.5)
 # fig.align_ylabels(ax)
 fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
 # fig.set_size_inches(6,4)
-'''
+
 plt.show()
