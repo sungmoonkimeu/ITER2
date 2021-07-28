@@ -1,14 +1,13 @@
 import numpy as np
-from numpy import pi, cos, sin, ones, zeros, einsum, arange, arcsin, arctan, tan, eig
+from numpy import pi, cos, sin, ones, zeros, einsum, arange, arcsin, arctan, tan
+from numpy.linalg import norm, eig
 
 
 class SPUNFIBER:
-    def __init__(self, beat_length, spin_pitch, length, delta_l):
+    def __init__(self, beat_length, spin_pitch, delta_l):
         self.LB = beat_length
         self.SP = spin_pitch
-        self.LF = length
         self.dz = delta_l
-        self.build_spunfiber()
 
     @staticmethod
     def _eigen_expm(A):
@@ -31,7 +30,7 @@ class SPUNFIBER:
         return einsum('...ik, ...k, ...kj -> ...ij',
                       vects, np.exp(vals), np.linalg.inv(vects))
 
-    def build_spunfiber(self, Ip, DIR):
+    def lamming1(self, Ip, DIR):
         """
         :param LB: beatlength
         :param SP: spin period
@@ -87,7 +86,7 @@ class SPUNFIBER:
 
         return M
 
-    def build_spunfiber_vib(self, Ip, DIR, M_err):
+    def lamming_vib(self, Ip, DIR, L, V_theta, M_err):
         """
         :param LB: beatlength
         :param SP: spin period
@@ -106,7 +105,7 @@ class SPUNFIBER:
 
         # magnetic field in unit length
         # H = Ip / (2 * pi * r)
-        H = Ip / self.LF
+        H = Ip / L
         V = 0.54 * 4 * pi * 1e-7
         rho = V * H
 
@@ -121,16 +120,13 @@ class SPUNFIBER:
 
         R_z = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
 
-        V_L = arange(0, self.LF + self.dz, self.dz)
-        V_theta = V_L * s_t_r
-
         M = np.array([[1, 0], [0, 1]])
 
         kk = 0  # for counting M_err
         for nn in range(len(V_theta) - 1):
-            if self.DIR == 1:
+            if DIR == 1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
-            elif self.DIR == -1:
+            elif DIR == -1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[-1 - nn]
 
             n11 = R_z / 2 * 1j * cos(2 * phi)
@@ -159,6 +155,12 @@ class SPUNFIBER:
         # V_plasmaCurrent = np.append(V_plasmaCurrent, arange(1e6, 18e6, 5e5))
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
 
+        s_t_r = 2 * pi / self.SP
+        LF = 1
+        L = 1
+
+        V_in = np.array([[1], [0]])
+        mm = 0
         for iter_I in V_plasmaCurrent:
             #  Preparing M_err
             n_M_err = 1
@@ -167,7 +169,6 @@ class SPUNFIBER:
             theta_e = (np.random.rand(n_M_err) - 0.5) * 2 * 0.8 * pi / 180  # azimuth angle change from experiment
 
             M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,n_M_err)
-
             M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
             M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
 
@@ -183,23 +184,21 @@ class SPUNFIBER:
             # Empty matrix => there is no error matrix(Merr)
             M_empty = np.array([]).reshape(2, 2, 0)
 
-            V_L_lf = arange(0, L_lf[0] + dz, dz)
-            V_theta_lf = V_L_lf * STR
+            V_L_lf = arange(0, LF + self.dz, self.dz)
+            V_theta_lf = V_L_lf * s_t_r
 
-            V_L = arange(0, L + dz, dz)
-            V_theta = V_theta_lf[-1] + V_L * STR
+            V_L = arange(0, L + self.dz, self.dz)
+            V_theta = V_theta_lf[-1] + V_L * s_t_r
 
             ksi = 44 * pi / 180
             Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
 
-            (self, Ip, DIR, M_err)
-
-            M_lf_f = self.build_spunfiber_vib(0, 1, M_err)
-            M_f = self.build_spunfiber_vib(iter_I, 1, M_empty)
-            M_b = self.build_spunfiber_vib(iter_I, -1, M_empty)
-            M_lf_b = self.build_spunfiber_vib(iter_I, -1, M_err)
+            M_lf_f = self.lamming_vib(0, 1, LF, V_theta_lf, M_err)
+            M_f = self.lamming_vib(iter_I, 1, L, V_theta, M_empty)
+            M_b = self.lamming_vib(iter_I, -1, L, V_theta, M_empty)
+            M_lf_b = self.lamming_vib(iter_I, -1, L, V_theta_lf, M_err)
             '''
             M_lf_f = lamming(LB, SP, 1, 0, L, V_theta_lf, M_empty)
             M_f = lamming(LB, SP, 1, iter_I, L, V_theta, M_empty)
@@ -210,3 +209,14 @@ class SPUNFIBER:
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             # V_out[mm] = M_lf_f @ V_in
             mm = mm + 1
+        print("done")
+
+
+if __name__ == '__main__':
+    LB = 1.000
+    SP = 0.005
+    # dz = SP / 1000
+    dz = 0.0001
+    spunfiber = SPUNFIBER(LB, SP, dz)
+    spunfiber.first_calc()
+
