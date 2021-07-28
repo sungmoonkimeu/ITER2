@@ -86,7 +86,7 @@ def eigen_expm(A):
 n = int(L / dz)
 delta = (2 * pi) / LB  # Intrinsic linear birefringence
 
-V_plasmaCurrent = arange(1e5, 2e6, 1e5)
+V_plasmaCurrent = arange(1e5, 10e6, 2e5)
 #V_plasmaCurrent = np.append(V_plasmaCurrent, arange(1e6, 18e6, 5e5))
 
 V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
@@ -113,63 +113,15 @@ for iter_I in V_plasmaCurrent:
     # print(H)
     rho = V * H  # Faraday effect induced birefringence
 
-    ###----------------------Laming parameters---------------------------------###
-    n = 0
-    m = 0
-    # --------Laming: orientation of the local slow axis ------------
-
-
     V_L = arange(0, L + dz, dz)
     V_theta = V_L * STR
-
-    # -----------------------------------------------------------------------------
-    # The following parameters are defined as per Laming (1989) paper
-    qu_f = 2 * (STR + rho) / delta
-    qu_b = 2 * (-STR + rho) / delta
-
-    gma_f = 0.5 * (delta ** 2 + 4 * ((STR + rho) ** 2)) ** 0.5
-    gma_b = 0.5 * (delta ** 2 + 4 * ((-STR + rho) ** 2)) ** 0.5
-
-    omega_z_f = STR * dz + arctan((-qu_f / ((1 + qu_f ** 2) ** 0.5)) * tan(gma_f * dz)) + n * pi
-    omega_z_b = -STR * dz + arctan((-qu_b / ((1 + qu_b ** 2) ** 0.5)) * tan(gma_b * dz)) + n * pi
-
-    R_z_f = 2 * arcsin(sin(gma_f * dz) / ((1 + qu_f ** 2) ** 0.5))
-    R_z_b = 2 * arcsin(sin(gma_b * dz) / ((1 + qu_b ** 2) ** 0.5))
-
-    # phi_z_f = ((STR * dz) - omega_z_f) / 2 + m * (pi / 2) + t_s_f
-    # phi_z_b = ((-STR * dz) - omega_z_b) / 2 + m * (pi / 2) + t_s_b
-
-    # N-matrix of each fibre element considering the local effects acting along the fibre in backward direction
-    print("end of define J-Matrix")
-
-    # V_L = arange(0, L+dz, dz)
-    # V_theta = V_L * STR
-
-    M_f = np.array([[1, 0], [0, 1]])
-    M_b = np.array([[1, 0], [0, 1]])
-    M_FR = np.array([[0, 1], [-1, 0]])
-
-    for nn in range(len(V_theta) - 1):
-        phi = ((STR * dz) - omega_z_f) / 2 + m * (pi / 2) + V_theta[nn]
-        N11 = R_z_f / 2 * 1j * cos(2 * phi)
-        N12 = R_z_f / 2 * 1j * sin(2 * phi) - omega_z_f
-        N21 = R_z_f / 2 * 1j * sin(2 * phi) + omega_z_f
-        N22 = R_z_f / 2 * -1j * cos(2 * phi)
-        N = np.array([[N11, N12], [N21, N22]])
-        N_integral = eigen_expm(N)
-        M_f = N_integral @ M_f
-
-    for nn in range(len(V_theta) - 1):
-        phi = ((STR * dz) - omega_z_b) / 2 + m * (pi / 2) + V_theta[-1 - nn]
-        N11 = R_z_b / 2 * 1j * cos(2 * phi)
-        N12 = R_z_b / 2 * 1j * sin(2 * phi) - omega_z_b
-        N21 = R_z_b / 2 * 1j * sin(2 * phi) + omega_z_b
-        N22 = R_z_b / 2 * -1j * cos(2 * phi)
-        N = np.array([[N11, N12], [N21, N22]])
-        N_integral = eigen_expm(N)
-        M_b = N_integral @ M_b
-
-    V_out[mm] = M_b @ M_FR @ M_f @ V_in
+    ang = 0
+    MF = np.array([[cos(rho*L), sin(rho*L)], [sin(rho*L), cos(rho*L)]])
+    MPDL = np.array([[1, 0], [0, sqrt(10**(-0.2/10))]])
+    M45 = np.array([[cos(ang), sin(ang)], [-sin(ang), cos(ang)]])
+    M45P = np.array([[cos(ang), -sin(ang)], [sin(ang), cos(ang)]])
+    V_out[mm] = M45 @ MPDL @ M45P @ MF @ V_in
+    #V_out[mm] = MPDL @ MF @ V_in
     mm = mm + 1
 
 # -------------- Using py_pol module -----------------------------------
@@ -196,7 +148,7 @@ for nn in range(len(V_out)):
     elif nn > 2 and E[nn].parameters.azimuth() + m * pi - V_ang[nn - 1] > pi * 0.5:
         m = m - 1
     V_ang[nn] = E[nn].parameters.azimuth() + m * pi
-    Ip[nn] = -(V_ang[nn] - pi / 2) / (2 * V)
+    Ip[nn] = (V_ang[nn]) / V
     abs_error[nn] = abs(Ip[nn] - V_plasmaCurrent[nn])
     if V_plasmaCurrent[nn] == 0:
         rel_error[nn] = 100
@@ -228,5 +180,6 @@ ax.grid(ls='--', lw=0.5)
 #fig.align_ylabels(ax)
 fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom= 0.2)
 #fig.set_size_inches(6,4)
+plt.rc('text', usetex=False)
 
 plt.show()
