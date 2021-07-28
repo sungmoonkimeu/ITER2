@@ -321,7 +321,27 @@ class SPUNFIBER:
 
         plt.show()
 
-    def cal_rotation(self, V_Ip, num, Vout_dic):
+    def create_Merr(self, num_Merr, max_phi, max_theta_e):
+        theta = (np.random.rand(num_Merr) - 0.5) * 2 * pi / 2  # random axis of LB
+        phi = (np.random.rand(num_Merr) - 0.5) * 2 * max_phi * pi / 180  # ellipticity angle change from experiment
+        theta_e = (np.random.rand(num_Merr) - 0.5) * 2 * max_theta_e * pi / 180  # azimuth angle change from experiment
+
+        M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,n_M_err)
+        M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
+        M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
+        # print(theta)
+        # Create (2,2,n_M_err) Birefringence matrix
+        IB = np.zeros((2, 2, num_Merr))
+        np.einsum('iij->ij', IB)[:] = 1
+        Bexp = np.exp(1j * np.vstack((phi, -phi)))
+        M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)
+
+        # Random birefringence(circular + linear), random optic axis matrix calculation
+        M_err = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
+
+        return M_err
+
+    def cal_rotation(self, V_Ip, num, Vout_dic, M_err):
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
 
@@ -333,25 +353,6 @@ class SPUNFIBER:
 
         mm = 0
         for iter_I in V_plasmaCurrent:
-            #  Preparing M_err
-            n_M_err = 1
-            theta = (np.random.rand(n_M_err) - 0.5) * 2 * pi / 2  # random axis of LB
-            phi = (np.random.rand(n_M_err) - 0.5) * 2 * 0.8 * pi / 180  # ellipticity angle change from experiment
-            theta_e = (np.random.rand(n_M_err) - 0.5) * 2 * 0.8 * pi / 180  # azimuth angle change from experiment
-
-            M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,n_M_err)
-            M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
-            M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,n_M_err)
-
-            # Create (2,2,n_M_err) Birefringence matrix
-            IB = np.zeros((2, 2, n_M_err))
-            np.einsum('iij->ij', IB)[:] = 1
-            Bexp = np.exp(1j * np.vstack((phi, -phi)))
-            M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)
-
-            # Random birefringence(circular + linear), random optic axis matrix calculation
-            M_err = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
-
             # Empty matrix => Error matrix (Merr) with no effect
             M_empty = np.array([]).reshape(2, 2, 0)
 
@@ -381,9 +382,8 @@ class SPUNFIBER:
         #print("done")
         Vout_dic[num] = V_out
 
-    def calc_mp1(self, num_processor):
+    def calc_mp1(self, num_processor, V_I, M_err):
         V = 0.54
-        V_I = arange(0.2e6, 2e6 + 0.2e6, 0.2e6)
         spl_I = np.array_split(V_I, num_processor)
         '''
         f = open('mp1.txt', 'w')
@@ -397,46 +397,35 @@ class SPUNFIBER:
 
         # f = open('mp1.txt', 'a')
 
-        Ip = zeros([2, len(V_I)])
+        Ip = zeros(len(V_I))
 
-        for mm in range(2):
-            for num in range(num_processor):
-                proc = Process(target=self.cal_rotation,
-                               args=(spl_I[num], num, Vout_dic))
-                procs.append(proc)
-                proc.start()
+        for num in range(num_processor):
+            proc = Process(target=self.cal_rotation,
+                           args=(spl_I[num], num, Vout_dic, M_err))
+            procs.append(proc)
+            proc.start()
 
-            for proc in procs:
-                proc.join()
+        for proc in procs:
+            proc.join()
 
-            Vout = Vout_dic[0]
-            for kk in range(num_processor - 1):
-                Vout = np.vstack((Vout, Vout_dic[kk + 1]))
+        Vout = Vout_dic[0]
+        for kk in range(num_processor - 1):
+            Vout = np.vstack((Vout, Vout_dic[kk + 1]))
 
-            E = Jones_vector('Output')
-            E.from_matrix(M=Vout)
-            V_ang = zeros(len(V_I))
+        E = Jones_vector('Output')
+        E.from_matrix(M=Vout)
+        V_ang = zeros(len(V_I))
 
-            m = 0
-            for kk in range(len(V_I)):
-                if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
-                    m = m + 1
-                elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
-                    m = m - 1
-                V_ang[kk] = E[kk].parameters.azimuth() + m * pi
-                Ip[mm, kk] = -(V_ang[kk] - 2*44*pi/180) / (2 * V * 4 * pi * 1e-7)
+        m = 0
+        for kk in range(len(V_I)):
+            if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+                m = m + 1
+            elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+                m = m - 1
+            V_ang[kk] = E[kk].parameters.azimuth() + m * pi
+            Ip[kk] = -(V_ang[kk] - 2*44*pi/180) / (2 * V * 4 * pi * 1e-7)
 
-
-            # print(" %s mm was calcualated, (%s / %s)" % (Len_LF[mm], mm + 1, len(Len_LF)))
-            # savetxt(f, Ip[mm], newline="\t")
-            # f.write("\n")
-
-        #f.close()
-        #Todo change this.!!
-        outdict = {'Ip': V_I, '1': Ip[0], '2': Ip[1]}
-        df = pd.DataFrame(outdict)
-        df.to_csv('mp1.csv', index=False)
-
+        return Ip
 
     def plotingerror(self, filename):
 
@@ -493,5 +482,15 @@ if __name__ == '__main__':
     dz = 0.0001
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
-    spunfiber.calc_mp1(4)
+    num_processor = 16
+    V_I = arange(0.2e6, 18e6 + 0.2e6, 0.2e6)
+    outdict = {'Ip': V_I}
+    num_Merr = 4
+    for nn in range(100):
+        M_err = spunfiber.create_Merr(num_Merr, 0.2, 0.2)
+        Ip = spunfiber.calc_mp1(num_processor, V_I, M_err)
+        outdict[str(nn)] = Ip
+    df = pd.DataFrame(outdict)
+    df.to_csv('mp1.csv', index=False)
+
     spunfiber.plotingerror('mp1.csv')
