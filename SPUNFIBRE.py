@@ -432,7 +432,7 @@ class SPUNFIBER:
             # f.write("\n")
 
         #f.close()
-
+        #Todo change this.!!
         outdict = {'Ip': V_I, '1': Ip[0], '2': Ip[1]}
         df = pd.DataFrame(outdict)
         df.to_csv('mp1.csv', index=False)
