@@ -47,13 +47,14 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 LB = [0.132]
 SR = [0.03]
 
-V_I = arange(0.2e6, 5e6, 0.2e6)
+V_I = arange(0.2e6, 5e6, 0.4e6)
 
 JF = mat([[0, 1], [-1, 0]])
 # JF = mat([[1, 0], [0, -1]])
 
 #Len_LF = [0.153, 0.156, 0.159, 0.162, 0.165]
-Len_LF = [0.159]
+#Len_LF = [0.159]
+Len_LF = [0.006]
 E3 = Jones_vector('Output_SAVEDATA')
 
 E3.linear_light(azimuth=zeros(len(Len_LF)))
@@ -81,8 +82,8 @@ for mm in range(len(Len_LF)):
     V_in1 = mat([[0.707], [0.707]])
     V_in2 = mat([[0], [1]])
     V_in3 = mat([[1], [0]])
-    V_in = mat([[1], [0]])
-
+    V_in = mat([[1, 0],[0, np.exp(1j*0*pi/180)]]) * V_in1
+    #V_in = V_in2
     # [+0.924+0.000j][+0.383+0.000j]
     V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
 
@@ -199,7 +200,8 @@ for mm in range(len(Len_LF)):
                 J0T = np.vstack((J11, J21, J12, J22)).T.reshape(2, 2) @ J0T
                 V_prop4[kk] =  J0T @ JT @ JF @J @ J0 @ V_in
 
-        V_out[nn] = J0T @ JT @ JF @ J @ J0 @ V_in
+        #V_out[nn] = J0T @ JT @ JF @ J @ J0 @ V_in
+        V_out[nn] = J0T @ JT @ JF @ J @ J0 @V_in
 
     # print(S2)
     # fig, ax = S2[arange(0,len(V_LF),10)].draw_poincare(figsize=(10,10),angle_view=[0,0],kind='line',color_line='b')

@@ -20,10 +20,11 @@ from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
 LB = [0.132]    # Linear beatlength [m] 0.132
 SR = [0.03]     # Spin ratio
 
-V_I = 10e5       # Aplied current 500kA
+V_I = 100e4# Aplied current 500kA
 
 JF = mat([[0, 1], [-1, 0]]) # Faraday mirror
-Len_LF = [0.153, 0.156, 0.159, 0.162, 0.165]    #Length of Lead fiber [m]
+#Len_LF = [0.153, 0.156, 0.159, 0.162, 0.165]    #Length of Lead fiber [m]
+Len_LF = [0.153]    #Length of Lead fiber [m]
 
 J0_V = np.einsum('...i,jk->ijk', ones(len(Len_LF)) * 1j, np.mat([[0,0], [0,0]]))
 JT0_V = np.einsum('...i,jk->ijk', ones(len(Len_LF)) * 1j, np.mat([[0,0], [0,0]]))
@@ -35,7 +36,7 @@ for mm in range(len(Len_LF)):
     delta = 2*pi/LB[0]                     # Linear birefringence [rad/m]
     LC = 1*2*pi*10000000000000             # Reciprocal circular beatlength [m]
     rho_C = 2*pi/LC                     # Reciprocal circular birefringence [rad/m]
-    Len_SF = 0.5                        # length of sensing fiber 28 m
+    Len_SF = 0.2                        # length of sensing fiber 28 m
     I = 1                               # Applied plasma current 1A for normalization
     V = 0.43                         # Verdat constant 0.54 but in here 0.43
     rho_F = V*4*pi*1e-7/(Len_SF*I)   # Non reciprocal circular birefringence for unit ampare and unit length[rad/m·A]
