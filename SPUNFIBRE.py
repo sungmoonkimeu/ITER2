@@ -10,6 +10,8 @@ from matplotlib.ticker import (MaxNLocator,
 from multiprocessing import Process, Queue, Manager,Lock
 import pandas as pd
 import matplotlib.pyplot as plt
+# import tdqm
+
 
 
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
@@ -361,15 +363,15 @@ class SPUNFIBER:
             Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
-            '''
+
             M_lf_f = self.lamming1(0, 1, LF, V_theta_lf)
             M_f = self.lamming1(iter_I, 1, L, V_theta)
             M_b = self.lamming1(iter_I, -1, L, V_theta)
             M_lf_b = self.lamming1(0, -1, LF, V_theta_lf)
-            
-            V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
-            '''
 
+            V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
+
+            '''
             # QWP
             M_qwp = Rot @ np.array([[1, 0], [0, 1j]]) @ Rot.T
             M_qwp_b = M_qwp.T
@@ -378,7 +380,7 @@ class SPUNFIBER:
             M_b = self.lamming1(iter_I, -1, LF, V_theta_lf)
 
             V_out[mm] = M_qwp_b @ M_b @ M_FR @ M_f @ M_qwp @ V_in
-
+            '''
             mm = mm + 1
         #print("done")
         Vout_dic[num] = V_out
@@ -528,12 +530,12 @@ class SPUNFIBER:
                 absErrorlimit[nn] = V_I[nn] * 0.01
             relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
 
-        fig, ax = plt.subplots(figsize=(6,3))
+        fig, ax = plt.subplots(figsize=(6, 3))
         for col_name in data:
             if col_name != 'Ip':
                 ax.plot(V_I, abs((data[col_name]-V_I)/V_I), label=col_name)
 
-        ax.plot(V_I,relErrorlimit,'r',label='ITER specification')
+        ax.plot(V_I, relErrorlimit, 'r', label='ITER specification')
         ax.legend(loc="upper right")
         plt.rc('text', usetex=True)
         ax.set_xlabel(r'Plasma current $I_{p}(A)$')
@@ -564,26 +566,31 @@ if __name__ == '__main__':
     dz = 0.0001
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
-    '''
-    num_processor = 16
+
+    num_processor = 8
     V_I = arange(0.2e6, 18e6 + 0.2e6, 0.2e6)
     outdict = {'Ip': V_I}
-    num_Merr = 4
+    num_Merr = 1
+    start = pd.Timestamp.now()
     for nn in range(100):
         M_err = spunfiber.create_Merr(num_Merr, 0.2, 0.2)
         Ip = spunfiber.calc_mp_Merr(num_processor, V_I, M_err)
         outdict[str(nn)] = Ip
+        checktime = pd.Timestamp.now() - start
+        print(nn, "/100, ", checktime)
+        start = pd.Timestamp.now()
+
     df = pd.DataFrame(outdict)
     df.to_csv('mp1.csv', index=False)
-    '''
 
-    num_processor = 4
+    '''
+    
+    num_processor = 8
     V_I = arange(0.2e6, 18e6 + 0.2e6, 0.2e6)
     outdict = {'Ip': V_I}
     Ip = spunfiber.calc_mp1(num_processor, V_I)
     outdict['1'] = Ip
     df = pd.DataFrame(outdict)
     df.to_csv('mp3.csv', index=False)
-
-
-    spunfiber.plot_error('mp3.csv')
+    '''
+    spunfiber.plot_error('mp1.csv')
