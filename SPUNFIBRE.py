@@ -561,7 +561,7 @@ class SPUNFIBER:
 
 if __name__ == '__main__':
     LB = 1.000
-    SP = 0.080
+    SP = 0.200
     # dz = SP / 1000
     dz = 0.0001
     spunfiber = SPUNFIBER(LB, SP, dz)
@@ -581,7 +581,7 @@ if __name__ == '__main__':
         start = pd.Timestamp.now()
 
     df = pd.DataFrame(outdict)
-    df.to_csv('mp1.csv', index=False)
+    df.to_csv('mp2.csv', index=False)
 
     '''
     
@@ -593,4 +593,4 @@ if __name__ == '__main__':
     df = pd.DataFrame(outdict)
     df.to_csv('mp3.csv', index=False)
     '''
-    spunfiber.plot_error('mp1.csv')
+    spunfiber.plot_error('mp2.csv')
