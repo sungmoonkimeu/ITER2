@@ -586,14 +586,14 @@ if __name__ == '__main__':
     mode = 0
 
     if mode == 0:
-        num_processor = 8
+        num_processor = 12
         V_I = arange(0.2e6, 18e6 + 0.2e6, 0.2e6)
         outdict = {'Ip': V_I}
         num_Merr = 1
         start = pd.Timestamp.now()
-        ang_FM = 44
-        for nn in range(4):
-            M_err = spunfiber.create_Merr(num_Merr, nn*5, nn*5)
+        ang_FM = 45
+        for nn in range(100):
+            M_err = spunfiber.create_Merr(num_Merr, 1, 1)
             Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
             outdict[str(nn)] = Ip
             checktime = pd.Timestamp.now() - start
@@ -601,10 +601,10 @@ if __name__ == '__main__':
             start = pd.Timestamp.now()
 
         df = pd.DataFrame(outdict)
-        df.to_csv('IdealFM2.csv', index=False)
-        fig, ax, lines = spunfiber.plot_error('IdealFM2.csv')
+        df.to_csv('IdealFM_Err1deg.csv', index=False)
+        fig, ax, lines = spunfiber.plot_error('IdealFM_Err1deg.csv')
     else:
-        fig, ax, lines = spunfiber.plot_error('mp2.csv')
+        fig, ax, lines = spunfiber.plot_error('IdealFM_Err1deg.csv')
         #ax.legend(lines[:], ['line A', 'line B'], loc='upper right')
 
         #spunfiber.add_plot('mp3.csv', ax, '45')
