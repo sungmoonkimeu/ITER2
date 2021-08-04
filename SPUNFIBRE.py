@@ -425,7 +425,7 @@ class SPUNFIBER:
 
         return Ip
 
-    def cal_rotation_Merr(self, V_Ip, num, Vout_dic, M_err):
+    def cal_rotation_Merr(self, V_Ip, ang_FM, num, Vout_dic, M_err):
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
 
@@ -449,7 +449,7 @@ class SPUNFIBER:
             V_theta = V_theta_lf[-1] + V_L * s_t_r
 
             # Faraday mirror
-            ksi = 44 * pi / 180
+            ksi = ang_FM * pi / 180
             Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
@@ -466,7 +466,7 @@ class SPUNFIBER:
         #print("done")
         Vout_dic[num] = V_out
 
-    def calc_mp_Merr(self, num_processor, V_I, M_err):
+    def calc_mp_Merr(self, num_processor, V_I, ang_FM, M_err):
         V = 0.54
         spl_I = np.array_split(V_I, num_processor)
         '''
@@ -485,7 +485,7 @@ class SPUNFIBER:
 
         for num in range(num_processor):
             proc = Process(target=self.cal_rotation_Merr,
-                           args=(spl_I[num], num, Vout_dic, M_err))
+                           args=(spl_I[num], ang_FM, num, Vout_dic, M_err))
             procs.append(proc)
             proc.start()
 
@@ -507,7 +507,7 @@ class SPUNFIBER:
             elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
                 m = m - 1
             V_ang[kk] = E[kk].parameters.azimuth() + m * pi
-            Ip[kk] = -(V_ang[kk] - 2*44*pi/180) / (2 * V * 4 * pi * 1e-7)
+            Ip[kk] = -(V_ang[kk] - 2*ang_FM*pi/180) / (2 * V * 4 * pi * 1e-7)
 
         return Ip
 
@@ -516,7 +516,6 @@ class SPUNFIBER:
         data = pd.read_csv(filename)
 
         V_I = data['Ip']
-        DataIN = data['1']
 
         ## Requirement specificaion for ITER
         absErrorlimit = zeros(len(V_I))
@@ -531,11 +530,12 @@ class SPUNFIBER:
             relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
 
         fig, ax = plt.subplots(figsize=(6, 3))
+        lines = []
         for col_name in data:
             if col_name != 'Ip':
-                ax.plot(V_I, abs((data[col_name]-V_I)/V_I), label=col_name)
+                lines += ax.plot(V_I, abs((data[col_name]-V_I)/V_I), label=col_name)
 
-        ax.plot(V_I, relErrorlimit, 'r', label='ITER specification')
+        lines += ax.plot(V_I, relErrorlimit, 'r', label='ITER specification')
         ax.legend(loc="upper right")
         plt.rc('text', usetex=True)
         ax.set_xlabel(r'Plasma current $I_{p}(A)$')
@@ -556,7 +556,24 @@ class SPUNFIBER:
         fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
         # fig.set_size_inches(6,4)
         plt.rc('text', usetex=False)
-        plt.show()
+
+        return fig, ax, lines
+        #plt.show()
+
+    def add_plot(self, filename, ax, str_label):
+
+        data = pd.read_csv(filename)
+
+        V_I = data['Ip']
+
+        ## Requirement specificaion for ITER
+        absErrorlimit = zeros(len(V_I))
+        relErrorlimit = zeros(len(V_I))
+
+        for col_name in data:
+            if col_name != 'Ip':
+                ax.plot(V_I, abs((data[col_name] - V_I) / V_I), label=str_label)
+        ax.legend(loc="upper right")
 
 
 if __name__ == '__main__':
@@ -566,25 +583,32 @@ if __name__ == '__main__':
     dz = 0.0001
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
+    mode = 0
 
-    num_processor = 8
-    V_I = arange(0.2e6, 18e6 + 0.2e6, 0.2e6)
-    outdict = {'Ip': V_I}
-    num_Merr = 1
-    start = pd.Timestamp.now()
-    for nn in range(100):
-        M_err = spunfiber.create_Merr(num_Merr, 0.2, 0.2)
-        Ip = spunfiber.calc_mp_Merr(num_processor, V_I, M_err)
-        outdict[str(nn)] = Ip
-        checktime = pd.Timestamp.now() - start
-        print(nn, "/100, ", checktime)
+    if mode == 0:
+        num_processor = 8
+        V_I = arange(0.2e6, 18e6 + 0.2e6, 0.2e6)
+        outdict = {'Ip': V_I}
+        num_Merr = 1
         start = pd.Timestamp.now()
+        ang_FM = 44
+        for nn in range(4):
+            M_err = spunfiber.create_Merr(num_Merr, nn*5, nn*5)
+            Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
+            outdict[str(nn)] = Ip
+            checktime = pd.Timestamp.now() - start
+            print(nn, "/100, ", checktime)
+            start = pd.Timestamp.now()
 
-    df = pd.DataFrame(outdict)
-    df.to_csv('mp2.csv', index=False)
+        df = pd.DataFrame(outdict)
+        df.to_csv('IdealFM2.csv', index=False)
+        fig, ax, lines = spunfiber.plot_error('IdealFM2.csv')
+    else:
+        fig, ax, lines = spunfiber.plot_error('mp2.csv')
+        #ax.legend(lines[:], ['line A', 'line B'], loc='upper right')
 
+        #spunfiber.add_plot('mp3.csv', ax, '45')
     '''
-    
     num_processor = 8
     V_I = arange(0.2e6, 18e6 + 0.2e6, 0.2e6)
     outdict = {'Ip': V_I}
@@ -593,4 +617,4 @@ if __name__ == '__main__':
     df = pd.DataFrame(outdict)
     df.to_csv('mp3.csv', index=False)
     '''
-    spunfiber.plot_error('mp2.csv')
+plt.show()
