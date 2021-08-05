@@ -137,10 +137,13 @@ class SPUNFIBER:
 
         kk = 0  # for counting M_err
         for nn in range(len(V_theta) - 1):
+
             if DIR == 1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
             elif DIR == -1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[-1 - nn]
+
+            # phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
 
             n11 = R_z / 2 * 1j * cos(2 * phi)
             n12 = R_z / 2 * 1j * sin(2 * phi) - omega
@@ -148,8 +151,14 @@ class SPUNFIBER:
             n22 = R_z / 2 * -1j * cos(2 * phi)
             N = np.array([[n11, n12], [n21, n22]])
             N_integral = self._eigen_expm(N)
-            M = N_integral @ M
 
+            M = N_integral @ M
+            '''
+            if DIR == 1:
+                M = N_integral @ M
+            else:
+                M = M @ N_integral
+            '''
             # If vibration matrix (Merr) is presence, it will be inserted automatically.
             # For example, if Merr.shape[2] == 2, two Merr will be inserted
             # in the 1/3, 2/3 position of L
@@ -442,10 +451,12 @@ class SPUNFIBER:
 
             # Lead fiber vector with V_theta_lf
             V_L_lf = arange(0, LF + self.dz, self.dz)
+            #V_L_lf = arange(0, LF, self.dz)
             V_theta_lf = V_L_lf * s_t_r
 
             # Sensing fiber vector with V_theta
             V_L = arange(0, L + self.dz, self.dz)
+            #V_L = arange(0, L, self.dz)
             V_theta = V_theta_lf[-1] + V_L * s_t_r
 
             # Faraday mirror
@@ -458,8 +469,55 @@ class SPUNFIBER:
             M_f = self.lamming_vib(iter_I, 1, L, V_theta, M_empty)
             M_b = self.lamming_vib(iter_I, -1, L, V_theta, M_empty)
             M_lf_b = self.lamming_vib(0, -1, LF, V_theta_lf, M_err)
-
+            if iter_I == V_plasmaCurrent[-1]:
+                print("M_lf_f = ", M_lf_f[0, 1], M_lf_f[1, 0])
+                print("M_lf_b = ", M_lf_b[0, 1], M_lf_b[1, 0])
+                print("abs() = ", abs(M_lf_f[0, 1])-abs(M_lf_b[1, 0]))
             V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
+            # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
+            # V_out[mm] = M_lf_f @ V_in
+            mm = mm + 1
+        #print("done")
+        Vout_dic[num] = V_out
+
+    def cal_rotation_Merr_trans(self, V_Ip, ang_FM, num, Vout_dic, M_err):
+        V_plasmaCurrent = V_Ip
+        V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
+
+        V = 0.54 * 4 * pi * 1e-7
+        s_t_r = 2 * pi / self.SP
+        LF = 1
+        L = 1
+        V_in = np.array([[1], [0]])
+
+        mm = 0
+        for iter_I in V_plasmaCurrent:
+            # Empty matrix => Error matrix (Merr) with no effect
+            M_empty = np.array([]).reshape(2, 2, 0)
+
+            # Lead fiber vector with V_theta_lf
+            V_L_lf = arange(0, LF + self.dz, self.dz)
+            V_theta_lf = V_L_lf * s_t_r
+
+            # Sensing fiber vector with V_theta
+            V_L = arange(0, L + self.dz, self.dz)
+            V_theta = V_theta_lf[-1] + V_L * s_t_r
+
+            # lead fiber vector with V_theta_lf2
+            V_L_lf2 = arange(0, LF + self.dz, self.dz)
+            V_theta_lf2 = V_theta[-1] + V_L_lf2 * s_t_r
+
+            # Faraday mirror
+            ksi = ang_FM * pi / 180
+            Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
+            Jm = np.array([[1, 0], [0, 1]])
+            M_FR = Rot @ Jm @ Rot
+
+            M_lf_f = self.lamming_vib(0, 1, LF, V_theta_lf, M_err)
+            M_f = self.lamming_vib(iter_I, 1, L, V_theta, M_empty)
+            M_lf_b = self.lamming_vib(0, 1, LF, V_theta_lf2, M_err)
+
+            V_out[mm] = M_lf_b @ M_f @ M_lf_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             # V_out[mm] = M_lf_f @ V_in
             mm = mm + 1
@@ -511,6 +569,93 @@ class SPUNFIBER:
 
         return Ip
 
+    def calc_mp_Merr_trans(self, num_processor, V_I, ang_FM, M_err):
+        V = 0.54
+        spl_I = np.array_split(V_I, num_processor)
+        '''
+        f = open('mp1.txt', 'w')
+        savetxt(f, V_I, newline="\t")
+        f.write("\n")
+        f.close()
+        '''
+        procs = []
+        manager = Manager()
+        Vout_dic = manager.dict()
+
+        # f = open('mp1.txt', 'a')
+
+        Ip = zeros(len(V_I))
+
+        for num in range(num_processor):
+            proc = Process(target=self.cal_rotation_Merr_trans,
+                           args=(spl_I[num], ang_FM, num, Vout_dic, M_err))
+            procs.append(proc)
+            proc.start()
+
+        for proc in procs:
+            proc.join()
+
+        Vout = Vout_dic[0]
+        for kk in range(num_processor - 1):
+            Vout = np.vstack((Vout, Vout_dic[kk + 1]))
+
+        E = Jones_vector('Output')
+        E.from_matrix(M=Vout)
+        V_ang = zeros(len(V_I))
+
+        m = 0
+        for kk in range(len(V_I)):
+            if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+                m = m + 1
+            elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+                m = m - 1
+            V_ang[kk] = E[kk].parameters.azimuth() + m * pi
+            Ip[kk] = -(V_ang[kk]-V_ang[0]) / (V * 4 * pi * 1e-7)
+
+        return Ip
+
+    def calc_mp_Merr_SOP(self, num_processor, V_I, ang_FM, M_err):
+        V = 0.54
+        spl_I = np.array_split(V_I, num_processor)
+        '''
+        f = open('mp1.txt', 'w')
+        savetxt(f, V_I, newline="\t")
+        f.write("\n")
+        f.close()
+        '''
+        procs = []
+        manager = Manager()
+        Vout_dic = manager.dict()
+
+        # f = open('mp1.txt', 'a')
+
+        Ip = zeros(len(V_I))
+
+        for num in range(num_processor):
+            proc = Process(target=self.cal_rotation_Merr,
+                           args=(spl_I[num], ang_FM, num, Vout_dic, M_err))
+            procs.append(proc)
+            proc.start()
+
+        for proc in procs:
+            proc.join()
+
+        Vout = Vout_dic[0]
+        for kk in range(num_processor - 1):
+            Vout = np.vstack((Vout, Vout_dic[kk + 1]))
+
+        E = Jones_vector('Output')
+        E.from_matrix(M=Vout)
+        S = create_Stokes('Output_S')
+
+        # SOP evolution in Lead fiber (Forward)
+        E.from_matrix(Vout)
+        S.from_Jones(E)
+        fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='scatter',
+                                  color_line='b')
+
+
+
     def plot_error(self, filename):
 
         data = pd.read_csv(filename)
@@ -527,15 +672,25 @@ class SPUNFIBER:
                 absErrorlimit[nn] = 10e3
             else:
                 absErrorlimit[nn] = V_I[nn] * 0.01
-            relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
+            if V_I[nn] == 0:
+                pass
+            else:
+                relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
 
         fig, ax = plt.subplots(figsize=(6, 3))
         lines = []
         for col_name in data:
             if col_name != 'Ip':
-                lines += ax.plot(V_I, abs((data[col_name]-V_I)/V_I), label=col_name)
+                if V_I[0] == 0:
+                    lines += ax.plot(V_I[1:], abs((data[col_name][1:] - V_I[1:]) / V_I[1:]))
+                #lines += ax.plot(V_I, abs((data[col_name]-V_I)/V_I), label=col_name)
+                else:
+                    lines += ax.plot(V_I, abs((data[col_name] - V_I) / V_I))
 
-        lines += ax.plot(V_I, relErrorlimit, 'r', label='ITER specification')
+        if V_I[0] == 0:
+            lines += ax.plot(V_I[1:], relErrorlimit[1:], 'r', label='ITER specification')
+        else:
+            lines += ax.plot(V_I, relErrorlimit, 'r', label='ITER specification')
         ax.legend(loc="upper right")
         plt.rc('text', usetex=True)
         ax.set_xlabel(r'Plasma current $I_{p}(A)$')
@@ -580,31 +735,48 @@ if __name__ == '__main__':
     LB = 1.000
     SP = 0.200
     # dz = SP / 1000
-    dz = 0.0001
+    dz = 0.00005
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
-    mode = 0
+    mode = 1
 
     if mode == 0:
-        num_processor = 12
-        V_I = arange(0.2e6, 18e6 + 0.2e6, 0.2e6)
+        num_processor = 8
+        V_I = arange(0e6, 18e6 + 0.2e6, 0.2e6)
         outdict = {'Ip': V_I}
         num_Merr = 1
         start = pd.Timestamp.now()
         ang_FM = 45
-        for nn in range(100):
-            M_err = spunfiber.create_Merr(num_Merr, 1, 1)
-            Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
+        for nn in range(5):
+            M_err = spunfiber.create_Merr(num_Merr, 2, 2)
+            #Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
+            Ip = spunfiber.calc_mp_Merr_trans(num_processor, V_I, ang_FM, M_err)
             outdict[str(nn)] = Ip
             checktime = pd.Timestamp.now() - start
             print(nn, "/100, ", checktime)
             start = pd.Timestamp.now()
 
         df = pd.DataFrame(outdict)
-        df.to_csv('IdealFM_Err1deg.csv', index=False)
-        fig, ax, lines = spunfiber.plot_error('IdealFM_Err1deg.csv')
+        df.to_csv('IdealFM_Err1deg_trans.csv', index=False)
+        fig, ax, lines = spunfiber.plot_error('IdealFM_Err1deg_trans.csv')
+
+    elif mode == 1:
+        num_processor = 8
+        V_I = zeros(1)
+        outdict = {'Ip': V_I}
+        num_Merr = 1
+        start = pd.Timestamp.now()
+        ang_FM = 45
+
+        for nn in range(1):
+            M_err = spunfiber.create_Merr(num_Merr, 2, 2)
+            # Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
+            spunfiber.calc_mp_Merr_SOP(num_processor, V_I, ang_FM, M_err)
+            checktime = pd.Timestamp.now() - start
+            print(nn, "/100, ", checktime)
+            start = pd.Timestamp.now()
     else:
-        fig, ax, lines = spunfiber.plot_error('IdealFM_Err1deg.csv')
+        fig, ax, lines = spunfiber.plot_error('IdealFM_Err5deg.csv')
         #ax.legend(lines[:], ['line A', 'line B'], loc='upper right')
 
         #spunfiber.add_plot('mp3.csv', ax, '45')
@@ -618,3 +790,5 @@ if __name__ == '__main__':
     df.to_csv('mp3.csv', index=False)
     '''
 plt.show()
+
+#Todo: SOP check that FM operates well.
