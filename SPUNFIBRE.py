@@ -146,18 +146,15 @@ class SPUNFIBER:
 
             if DIR == 1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
-
                 strM = "M" + str(nn)
                 tmp = np.append(tmp, strM)  # for test
 
             elif DIR == -1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[-1 - nn]
-
                 strM = "M" + str(len(V_theta) - 1 - nn)
                 tmp = np.append(tmp, strM)  # for test
 
             # phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
-
             n11 = R_z / 2 * 1j * cos(2 * phi)
             n12 = R_z / 2 * 1j * sin(2 * phi) - omega
             n21 = R_z / 2 * 1j * sin(2 * phi) + omega
@@ -170,10 +167,13 @@ class SPUNFIBER:
             # If vibration matrix (Merr) is presence, it will be inserted automatically.
             # For example, if Merr.shape[2] == 2, two Merr will be inserted
             # in the 1/3, 2/3 position of L
+            # nVerr = M_err.shape[2]
+            # nSet = int((len(V_theta) - 1) / (nVerr + 1))
+            # rem = (len(V_theta) - 1) % nSet
 
             if nVerr > 0:
                 if DIR == 1 and (nn + 1) % nSet == 0:
-                    if kk != nVerr:
+                    if kk != nVerr and (nn + 1 - rem) != 0:
                         M = M_err[..., kk] @ M
 
                         print(nn+1, "번째에 에러 매트릭스 추가")
@@ -183,7 +183,7 @@ class SPUNFIBER:
                         kk = kk + 1
 
                 elif DIR == -1 and (nn + 1 - rem) % nSet == 0:
-                    if kk != nVerr and nn != 0:
+                    if kk != nVerr and (nn + 1 - rem) != 0:
                         M = M_err[..., -1 - kk].T @ M
 
                         print(len(V_theta) - 1 - nn, "번째에 에러 매트릭스 추가 (-backward)")
@@ -192,7 +192,7 @@ class SPUNFIBER:
 
                         kk = kk + 1
 
-        print("rem", rem)
+        print("rem=", rem, "nVerr=", nVerr, "nSet = ", nSet)
         print(tmp)
         return M
 
@@ -682,8 +682,6 @@ class SPUNFIBER:
         fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='scatter',
                                   color_line='b')
 
-
-
     def plot_error(self, filename):
 
         data = pd.read_csv(filename)
@@ -763,7 +761,7 @@ if __name__ == '__main__':
     LB = 1.000
     SP = 0.300
     # dz = SP / 1000
-    dz = 0.2
+    dz = 0.00001
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
     mode = 1
@@ -789,10 +787,10 @@ if __name__ == '__main__':
         fig, ax, lines = spunfiber.plot_error('IdealFM_Err1deg_trans.csv')
 
     elif mode == 1:
-        num_processor = 8
+        num_processor = 16
         V_I = zeros(1)
         outdict = {'Ip': V_I}
-        num_Merr = 2
+        num_Merr = 3
         start = pd.Timestamp.now()
         ang_FM = 45
 
@@ -818,5 +816,3 @@ if __name__ == '__main__':
     df.to_csv('mp3.csv', index=False)
     '''
 plt.show()
-
-#Todo: SOP check that FM operates well.
