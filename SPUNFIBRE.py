@@ -136,12 +136,25 @@ class SPUNFIBER:
         M = np.array([[1, 0], [0, 1]])
 
         kk = 0  # for counting M_err
-        for nn in range(len(V_theta) - 1):
+        tmp = np.array([])  # for test
+
+        nVerr = M_err.shape[2]
+        nSet = int((len(V_theta)-1) / (nVerr + 1))
+        rem = (len(V_theta)-1) % nSet
+
+        for nn in range(len(V_theta)-1):
 
             if DIR == 1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
+
+                strM = "M" + str(nn)
+                tmp = np.append(tmp, strM)  # for test
+
             elif DIR == -1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[-1 - nn]
+
+                strM = "M" + str(len(V_theta) - 1 - nn)
+                tmp = np.append(tmp, strM)  # for test
 
             # phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
 
@@ -153,27 +166,34 @@ class SPUNFIBER:
             N_integral = self._eigen_expm(N)
 
             M = N_integral @ M
-            '''
-            if DIR == 1:
-                M = N_integral @ M
-            else:
-                M = M @ N_integral
-            '''
+
             # If vibration matrix (Merr) is presence, it will be inserted automatically.
             # For example, if Merr.shape[2] == 2, two Merr will be inserted
             # in the 1/3, 2/3 position of L
 
-            nVerr = M_err.shape[2]
-            nSet = int(len(V_theta) / (nVerr + 1))
             if nVerr > 0:
                 if DIR == 1 and (nn + 1) % nSet == 0:
                     if kk != nVerr:
                         M = M_err[..., kk] @ M
+
+                        print(nn+1, "번째에 에러 매트릭스 추가")
+                        strM = "Merr" + str(kk)
+                        tmp = np.append(tmp, strM)  # for test
+
                         kk = kk + 1
-                elif DIR == -1 and int((len(V_theta) - nn) % nSet) == 0:
-                    if kk != nVerr:
+
+                elif DIR == -1 and (nn + 1 - rem) % nSet == 0:
+                    if kk != nVerr and nn != 0:
                         M = M_err[..., -1 - kk].T @ M
+
+                        print(len(V_theta) - 1 - nn, "번째에 에러 매트릭스 추가 (-backward)")
+                        strM = "Merr" + str(nVerr - kk - 1)
+                        tmp = np.append(tmp, strM)  # for test
+
                         kk = kk + 1
+
+        print("rem", rem)
+        print(tmp)
         return M
 
     def first_calc(self):
@@ -450,12 +470,12 @@ class SPUNFIBER:
             M_empty = np.array([]).reshape(2, 2, 0)
 
             # Lead fiber vector with V_theta_lf
-            V_L_lf = arange(0, LF + self.dz, self.dz)
+            V_L_lf = arange(0, LF+self.dz , self.dz)
             #V_L_lf = arange(0, LF, self.dz)
             V_theta_lf = V_L_lf * s_t_r
 
             # Sensing fiber vector with V_theta
-            V_L = arange(0, L + self.dz, self.dz)
+            V_L = arange(0, L+self.dz, self.dz)
             #V_L = arange(0, L, self.dz)
             V_theta = V_theta_lf[-1] + V_L * s_t_r
 
@@ -473,11 +493,19 @@ class SPUNFIBER:
                 print("M_lf_f = ", M_lf_f[0, 1], M_lf_f[1, 0])
                 print("M_lf_b = ", M_lf_b[0, 1], M_lf_b[1, 0])
                 print("abs() = ", abs(M_lf_f[0, 1])-abs(M_lf_b[1, 0]))
+
+                print("M_f = ", M_f[0, 1], M_f[1, 0])
+                print("M_b = ", M_b[0, 1], M_b[1, 0])
+                print("abs() = ", abs(M_f[0, 1]) - abs(M_b[1, 0]))
+                print(M_err[..., -1].T @ M_FR @ M_err[..., 0])
+
             V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             # V_out[mm] = M_lf_f @ V_in
             mm = mm + 1
         #print("done")
+
+
         Vout_dic[num] = V_out
 
     def cal_rotation_Merr_trans(self, V_Ip, ang_FM, num, Vout_dic, M_err):
@@ -733,9 +761,9 @@ class SPUNFIBER:
 
 if __name__ == '__main__':
     LB = 1.000
-    SP = 0.200
+    SP = 0.300
     # dz = SP / 1000
-    dz = 0.00005
+    dz = 0.2
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
     mode = 1
@@ -764,12 +792,12 @@ if __name__ == '__main__':
         num_processor = 8
         V_I = zeros(1)
         outdict = {'Ip': V_I}
-        num_Merr = 1
+        num_Merr = 2
         start = pd.Timestamp.now()
         ang_FM = 45
 
         for nn in range(1):
-            M_err = spunfiber.create_Merr(num_Merr, 2, 2)
+            M_err = spunfiber.create_Merr(num_Merr, 50, 50)
             # Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
             spunfiber.calc_mp_Merr_SOP(num_processor, V_I, ang_FM, M_err)
             checktime = pd.Timestamp.now() - start
