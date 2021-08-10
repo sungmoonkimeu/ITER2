@@ -490,14 +490,15 @@ class SPUNFIBER:
             M_b = self.lamming_vib(iter_I, -1, L, V_theta, M_empty)
             M_lf_b = self.lamming_vib(0, -1, LF, V_theta_lf, M_err)
             if iter_I == V_plasmaCurrent[-1]:
-                print("M_lf_f = ", M_lf_f[0, 1], M_lf_f[1, 0])
-                print("M_lf_b = ", M_lf_b[0, 1], M_lf_b[1, 0])
-                print("abs() = ", abs(M_lf_f[0, 1])-abs(M_lf_b[1, 0]))
+                #print("M_lf_f = ", M_lf_f[0, 1], M_lf_f[1, 0])
+                #print("M_lf_b = ", M_lf_b[0, 1], M_lf_b[1, 0])
+                #print("abs() = ", abs(M_lf_f[0, 1])-abs(M_lf_b[1, 0]))
+                print("Norm (MLead_f - MLead_b.T) = ", norm(M_lf_f - M_lf_b.T))
 
-                print("M_f = ", M_f[0, 1], M_f[1, 0])
-                print("M_b = ", M_b[0, 1], M_b[1, 0])
-                print("abs() = ", abs(M_f[0, 1]) - abs(M_b[1, 0]))
-                print(M_err[..., -1].T @ M_FR @ M_err[..., 0])
+                #print("M_f = ", M_f[0, 1], M_f[1, 0])
+                #print("M_b = ", M_b[0, 1], M_b[1, 0])
+                print("Norm (Msens_f - Msens_b.T) = ", norm(M_f - M_b.T))
+
 
             V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
@@ -759,9 +760,9 @@ class SPUNFIBER:
 
 if __name__ == '__main__':
     LB = 1.000
-    SP = 0.300
+    SP = 0.2
     # dz = SP / 1000
-    dz = 0.00001
+    dz = 0.002
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
     mode = 1
@@ -787,14 +788,14 @@ if __name__ == '__main__':
         fig, ax, lines = spunfiber.plot_error('IdealFM_Err1deg_trans.csv')
 
     elif mode == 1:
-        num_processor = 16
+        num_processor = 8
         V_I = zeros(1)
         outdict = {'Ip': V_I}
-        num_Merr = 3
+        num_Merr = 1
         start = pd.Timestamp.now()
         ang_FM = 45
 
-        for nn in range(1):
+        for nn in range(3):
             M_err = spunfiber.create_Merr(num_Merr, 50, 50)
             # Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
             spunfiber.calc_mp_Merr_SOP(num_processor, V_I, ang_FM, M_err)
