@@ -471,12 +471,10 @@ class SPUNFIBER:
 
             # Lead fiber vector with V_theta_lf
             V_L_lf = arange(0, LF+self.dz , self.dz)
-            #V_L_lf = arange(0, LF, self.dz)
             V_theta_lf = V_L_lf * s_t_r
 
             # Sensing fiber vector with V_theta
             V_L = arange(0, L+self.dz, self.dz)
-            #V_L = arange(0, L, self.dz)
             V_theta = V_theta_lf[-1] + V_L * s_t_r
 
             # Faraday mirror
@@ -757,25 +755,28 @@ class SPUNFIBER:
                 ax.plot(V_I, abs((data[col_name] - V_I) / V_I), label=str_label)
         ax.legend(loc="upper right")
 
+# Todo Progress bar
+# Todo comparison between transmission and reflection
+# Todo FM effect
 
 if __name__ == '__main__':
     LB = 1.000
     SP = 0.2
     # dz = SP / 1000
-    dz = 0.002
+    dz = 0.001
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
-    mode = 1
+    mode = 0
 
     if mode == 0:
-        num_processor = 8
+        num_processor = 16
         V_I = arange(0e6, 18e6 + 0.2e6, 0.2e6)
         outdict = {'Ip': V_I}
         num_Merr = 1
         start = pd.Timestamp.now()
         ang_FM = 45
-        for nn in range(5):
-            M_err = spunfiber.create_Merr(num_Merr, 2, 2)
+        for nn in range(20):
+            M_err = spunfiber.create_Merr(num_Merr, 5, 5)
             #Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
             Ip = spunfiber.calc_mp_Merr_trans(num_processor, V_I, ang_FM, M_err)
             outdict[str(nn)] = Ip
@@ -784,8 +785,8 @@ if __name__ == '__main__':
             start = pd.Timestamp.now()
 
         df = pd.DataFrame(outdict)
-        df.to_csv('IdealFM_Err1deg_trans.csv', index=False)
-        fig, ax, lines = spunfiber.plot_error('IdealFM_Err1deg_trans.csv')
+        df.to_csv('IdealFM_Err5deg2.csv', index=False)
+        fig, ax, lines = spunfiber.plot_error('IdealFM_Err5deg2.csv')
 
     elif mode == 1:
         num_processor = 8
@@ -803,7 +804,7 @@ if __name__ == '__main__':
             print(nn, "/100, ", checktime)
             start = pd.Timestamp.now()
     else:
-        fig, ax, lines = spunfiber.plot_error('IdealFM_Err5deg.csv')
+        fig, ax, lines = spunfiber.plot_error('mp1.csv')
         #ax.legend(lines[:], ['line A', 'line B'], loc='upper right')
 
         #spunfiber.add_plot('mp3.csv', ax, '45')
