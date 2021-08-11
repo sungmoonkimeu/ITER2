@@ -10,7 +10,8 @@ from matplotlib.ticker import (MaxNLocator,
 from multiprocessing import Process, Queue, Manager,Lock
 import pandas as pd
 import matplotlib.pyplot as plt
-# import tdqm
+# import parmap
+import tqdm
 
 
 
@@ -146,14 +147,16 @@ class SPUNFIBER:
 
             if DIR == 1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
-                strM = "M" + str(nn)
-                tmp = np.append(tmp, strM)  # for test
-
+                '''
+                strM = "M" + str(nn)        # For indexing matrix to indicate the position of Merr  
+                tmp = np.append(tmp, strM)  
+                '''
             elif DIR == -1:
                 phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[-1 - nn]
+                '''
                 strM = "M" + str(len(V_theta) - 1 - nn)
                 tmp = np.append(tmp, strM)  # for test
-
+                '''
             # phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
             n11 = R_z / 2 * 1j * cos(2 * phi)
             n12 = R_z / 2 * 1j * sin(2 * phi) - omega
@@ -175,25 +178,25 @@ class SPUNFIBER:
                 if DIR == 1 and (nn + 1) % nSet == 0:
                     if kk != nVerr and (nn + 1 - rem) != 0:
                         M = M_err[..., kk] @ M
-
+                        '''
                         print(nn+1, "번째에 에러 매트릭스 추가")
                         strM = "Merr" + str(kk)
                         tmp = np.append(tmp, strM)  # for test
-
+                        '''
                         kk = kk + 1
 
                 elif DIR == -1 and (nn + 1 - rem) % nSet == 0:
                     if kk != nVerr and (nn + 1 - rem) != 0:
                         M = M_err[..., -1 - kk].T @ M
-
+                        '''
                         print(len(V_theta) - 1 - nn, "번째에 에러 매트릭스 추가 (-backward)")
                         strM = "Merr" + str(nVerr - kk - 1)
                         tmp = np.append(tmp, strM)  # for test
-
+                        '''
                         kk = kk + 1
 
-        print("rem=", rem, "nVerr=", nVerr, "nSet = ", nSet)
-        print(tmp)
+        # print("rem=", rem, "nVerr=", nVerr, "nSet = ", nSet) # To show current spun fiber's info.
+        # print(tmp) # To show where is the position of Merr
         return M
 
     def first_calc(self):
@@ -755,7 +758,7 @@ class SPUNFIBER:
                 ax.plot(V_I, abs((data[col_name] - V_I) / V_I), label=str_label)
         ax.legend(loc="upper right")
 
-# Todo Progress bar
+# Progress bar is not easy/
 # Todo comparison between transmission and reflection
 # Todo FM effect
 
@@ -763,30 +766,45 @@ if __name__ == '__main__':
     LB = 1.000
     SP = 0.2
     # dz = SP / 1000
-    dz = 0.001
+    dz = 0.002
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
     mode = 0
+    num_iter = 20
 
     if mode == 0:
-        num_processor = 16
+        num_processor = 8
         V_I = arange(0e6, 18e6 + 0.2e6, 0.2e6)
         outdict = {'Ip': V_I}
-        num_Merr = 1
+        num_Merr = 5
         start = pd.Timestamp.now()
         ang_FM = 45
-        for nn in range(20):
-            M_err = spunfiber.create_Merr(num_Merr, 5, 5)
-            #Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
+        for nn in range(num_iter):
+            M_err = spunfiber.create_Merr(num_Merr, 1, 1)
+            Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
             Ip = spunfiber.calc_mp_Merr_trans(num_processor, V_I, ang_FM, M_err)
+
             outdict[str(nn)] = Ip
             checktime = pd.Timestamp.now() - start
-            print(nn, "/100, ", checktime)
+            print(nn, "/", num_iter, checktime)
             start = pd.Timestamp.now()
 
         df = pd.DataFrame(outdict)
-        df.to_csv('IdealFM_Err5deg2.csv', index=False)
-        fig, ax, lines = spunfiber.plot_error('IdealFM_Err5deg2.csv')
+        df.to_csv('IdealFM_Err5ref2.csv', index=False)
+        fig, ax, lines = spunfiber.plot_error('IdealFM_Err5ref2.csv')
+        for nn in range(num_iter):
+            M_err = spunfiber.create_Merr(num_Merr, 1, 1)
+            Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
+            Ip = spunfiber.calc_mp_Merr_trans(num_processor, V_I, ang_FM, M_err)
+
+            outdict[str(nn)] = Ip
+            checktime = pd.Timestamp.now() - start
+            print(nn, "/", num_iter, checktime)
+            start = pd.Timestamp.now()
+
+        df = pd.DataFrame(outdict)
+        df.to_csv('IdealFM_Err5trans2.csv', index=False)
+        fig, ax, lines = spunfiber.plot_error('IdealFM_Err5trans2.csv')
 
     elif mode == 1:
         num_processor = 8
@@ -799,12 +817,14 @@ if __name__ == '__main__':
         for nn in range(3):
             M_err = spunfiber.create_Merr(num_Merr, 50, 50)
             # Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
-            spunfiber.calc_mp_Merr_SOP(num_processor, V_I, ang_FM, M_err)
+            # spunfiber.calc_mp_Merr_SOP(num_processor, V_I, ang_FM, M_err)
             checktime = pd.Timestamp.now() - start
-            print(nn, "/100, ", checktime)
+            print(nn+1, "/", num_iter, checktime)
             start = pd.Timestamp.now()
+
     else:
-        fig, ax, lines = spunfiber.plot_error('mp1.csv')
+        fig, ax, lines = spunfiber.plot_error('IdealFM_Err5trans.csv')
+        fig, ax, lines = spunfiber.plot_error('IdealFM_Err5ref.csv')
         #ax.legend(lines[:], ['line A', 'line B'], loc='upper right')
 
         #spunfiber.add_plot('mp3.csv', ax, '45')

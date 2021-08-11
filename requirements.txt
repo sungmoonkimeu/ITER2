@@ -76,3 +76,5 @@ urllib3==1.26.2
 ushlex==0.99.1
 webencodings==0.5.1
 websocket-client==0.57.0
+
+parmap~=1.5.2
