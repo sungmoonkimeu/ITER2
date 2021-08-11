@@ -490,7 +490,7 @@ class SPUNFIBER:
             M_f = self.lamming_vib(iter_I, 1, L, V_theta, M_empty)
             M_b = self.lamming_vib(iter_I, -1, L, V_theta, M_empty)
             M_lf_b = self.lamming_vib(0, -1, LF, V_theta_lf, M_err)
-            if iter_I == V_plasmaCurrent[-1]:
+            if num == 0 and iter_I == V_plasmaCurrent[-1]:
                 #print("M_lf_f = ", M_lf_f[0, 1], M_lf_f[1, 0])
                 #print("M_lf_b = ", M_lf_b[0, 1], M_lf_b[1, 0])
                 #print("abs() = ", abs(M_lf_f[0, 1])-abs(M_lf_b[1, 0]))
@@ -538,16 +538,14 @@ class SPUNFIBER:
             V_theta_lf2 = V_theta[-1] + V_L_lf2 * s_t_r
 
             # Faraday mirror
-            ksi = ang_FM * pi / 180
-            Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
-            Jm = np.array([[1, 0], [0, 1]])
-            M_FR = Rot @ Jm @ Rot
 
             M_lf_f = self.lamming_vib(0, 1, LF, V_theta_lf, M_err)
             M_f = self.lamming_vib(iter_I, 1, L, V_theta, M_empty)
+            #M_f = self.lamming1(iter_I, 1, L, V_theta)
             M_lf_b = self.lamming_vib(0, 1, LF, V_theta_lf2, M_err)
 
             V_out[mm] = M_lf_b @ M_f @ M_lf_f @ V_in
+            #V_out[mm] = M_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             # V_out[mm] = M_lf_f @ V_in
             mm = mm + 1
@@ -587,6 +585,12 @@ class SPUNFIBER:
         E = Jones_vector('Output')
         E.from_matrix(M=Vout)
         V_ang = zeros(len(V_I))
+
+        # SOP evolution in Lead fiber (Forward)
+        S = create_Stokes('Output_S')
+        S.from_Jones(E)
+        fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
+                                  color_line='b')
 
         m = 0
         for kk in range(len(V_I)):
@@ -633,6 +637,12 @@ class SPUNFIBER:
         E.from_matrix(M=Vout)
         V_ang = zeros(len(V_I))
 
+        # SOP evolution in Lead fiber (Forward)
+        S = create_Stokes('Output_S')
+        S.from_Jones(E)
+        fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
+                                  color_line='b')
+
         m = 0
         for kk in range(len(V_I)):
             if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
@@ -647,12 +657,7 @@ class SPUNFIBER:
     def calc_mp_Merr_SOP(self, num_processor, V_I, ang_FM, M_err):
         V = 0.54
         spl_I = np.array_split(V_I, num_processor)
-        '''
-        f = open('mp1.txt', 'w')
-        savetxt(f, V_I, newline="\t")
-        f.write("\n")
-        f.close()
-        '''
+
         procs = []
         manager = Manager()
         Vout_dic = manager.dict()
@@ -680,6 +685,45 @@ class SPUNFIBER:
 
         # SOP evolution in Lead fiber (Forward)
         E.from_matrix(Vout)
+        S.from_Jones(E)
+        fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='scatter',
+                                  color_line='b')
+
+    def calc_mp_Merr_trans_SOP(self, num_processor, V_I, ang_FM, M_err):
+        V = 0.54
+        spl_I = np.array_split(V_I, num_processor)
+        '''
+        f = open('mp1.txt', 'w')
+        savetxt(f, V_I, newline="\t")
+        f.write("\n")
+        f.close()
+        '''
+        procs = []
+        manager = Manager()
+        Vout_dic = manager.dict()
+
+        # f = open('mp1.txt', 'a')
+
+        Ip = zeros(len(V_I))
+
+        for num in range(num_processor):
+            proc = Process(target=self.cal_rotation_Merr_trans,
+                           args=(spl_I[num], ang_FM, num, Vout_dic, M_err))
+            procs.append(proc)
+            proc.start()
+
+        for proc in procs:
+            proc.join()
+
+        Vout = Vout_dic[0]
+        for kk in range(num_processor - 1):
+            Vout = np.vstack((Vout, Vout_dic[kk + 1]))
+
+        E = Jones_vector('Output')
+        E.from_matrix(M=Vout)
+        S = create_Stokes('Output_S')
+
+        # SOP evolution in Lead fiber (Forward)
         S.from_Jones(E)
         fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='scatter',
                                   color_line='b')
@@ -761,29 +805,29 @@ class SPUNFIBER:
 # Progress bar is not easy/
 # Todo comparison between transmission and reflection
 # Todo FM effect
-
+# Todo measurement method azimuth angle vs trace length
+# Todo Ip calculation method change --> azimuth angle --> arc length
 if __name__ == '__main__':
     LB = 1.000
     SP = 0.2
     # dz = SP / 1000
-    dz = 0.002
+    dz = 0.004
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
     mode = 0
-    num_iter = 20
+    num_iter = 5
 
     if mode == 0:
-        num_processor = 8
-        V_I = arange(0e6, 18e6 + 0.2e6, 0.2e6)
+        num_processor = 1
+        V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         outdict = {'Ip': V_I}
-        num_Merr = 5
+        num_Merr = 1
         start = pd.Timestamp.now()
         ang_FM = 45
-        for nn in range(num_iter):
-            M_err = spunfiber.create_Merr(num_Merr, 1, 1)
-            Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
-            Ip = spunfiber.calc_mp_Merr_trans(num_processor, V_I, ang_FM, M_err)
 
+        for nn in range(num_iter):
+            M_err = spunfiber.create_Merr(num_Merr, 5, 5)
+            Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
             outdict[str(nn)] = Ip
             checktime = pd.Timestamp.now() - start
             print(nn, "/", num_iter, checktime)
@@ -792,9 +836,9 @@ if __name__ == '__main__':
         df = pd.DataFrame(outdict)
         df.to_csv('IdealFM_Err5ref2.csv', index=False)
         fig, ax, lines = spunfiber.plot_error('IdealFM_Err5ref2.csv')
+        '''
         for nn in range(num_iter):
-            M_err = spunfiber.create_Merr(num_Merr, 1, 1)
-            Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
+            M_err = spunfiber.create_Merr(num_Merr, 5, 5)
             Ip = spunfiber.calc_mp_Merr_trans(num_processor, V_I, ang_FM, M_err)
 
             outdict[str(nn)] = Ip
@@ -805,7 +849,7 @@ if __name__ == '__main__':
         df = pd.DataFrame(outdict)
         df.to_csv('IdealFM_Err5trans2.csv', index=False)
         fig, ax, lines = spunfiber.plot_error('IdealFM_Err5trans2.csv')
-
+        '''
     elif mode == 1:
         num_processor = 8
         V_I = zeros(1)
@@ -815,12 +859,21 @@ if __name__ == '__main__':
         ang_FM = 45
 
         for nn in range(3):
-            M_err = spunfiber.create_Merr(num_Merr, 50, 50)
+            M_err = spunfiber.create_Merr(num_Merr, 5, 5)
             # Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
-            # spunfiber.calc_mp_Merr_SOP(num_processor, V_I, ang_FM, M_err)
+            spunfiber.calc_mp_Merr_SOP(num_processor, V_I, ang_FM, M_err)
             checktime = pd.Timestamp.now() - start
             print(nn+1, "/", num_iter, checktime)
             start = pd.Timestamp.now()
+
+        for nn in range(3):
+            M_err = spunfiber.create_Merr(num_Merr, 5, 5)
+            # Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
+            spunfiber.calc_mp_Merr_trans_SOP(num_processor, V_I, ang_FM, M_err)
+            checktime = pd.Timestamp.now() - start
+            print(nn + 1, "/", num_iter, checktime)
+            start = pd.Timestamp.now()
+
 
     else:
         fig, ax, lines = spunfiber.plot_error('IdealFM_Err5trans.csv')
