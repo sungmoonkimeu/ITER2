@@ -254,7 +254,7 @@ class SPUNFIBER:
             M_b = self.lamming_vib(iter_I, -1, L, V_theta, M_empty)
             M_lf_b = self.lamming_vib(0, -1, LF, V_theta_lf, M_err)
 
-            V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
+            # V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             # V_out[mm] = M_lf_f @ V_in
             mm = mm + 1
@@ -504,7 +504,7 @@ class SPUNFIBER:
 
 
             V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
-            #V_out[mm] = M_lf_f.T @ M_b @ M_FR @ M_f @ M_lf_f @ V_in
+            # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             #V_out[mm] =  M_lf_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             # V_out[mm] = M_lf_f @ V_in
@@ -521,7 +521,7 @@ class SPUNFIBER:
         V = 0.54 * 4 * pi * 1e-7
         s_t_r = 2 * pi / self.SP
         LF = 1
-        L = 2
+        L = 1
         V_in = np.array([[1], [0]])
 
         mm = 0
@@ -544,7 +544,7 @@ class SPUNFIBER:
             # Faraday mirror
 
             M_lf_f = self.lamming_vib(0, 1, LF, V_theta_lf, M_err)
-            M_f = self.lamming_vib(iter_I * 2, 1, L, V_theta, M_empty)
+            M_f = self.lamming_vib(iter_I, 1, L, V_theta, M_empty)
             M_lf_b = self.lamming_vib(0, 1, LF, V_theta_lf2, M_err)
 
 
@@ -657,7 +657,7 @@ class SPUNFIBER:
             elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
                 m = m - 1
             V_ang[kk] = E[kk].parameters.azimuth() + m * pi
-            Ip[kk] = -(V_ang[kk]-V_ang[0]) / (2* V * 4 * pi * 1e-7)
+            Ip[kk] = -(V_ang[kk]-V_ang[0]) / (V * 4 * pi * 1e-7)
 
         return Ip
 
@@ -812,28 +812,27 @@ class SPUNFIBER:
 # Progress bar is not easy/
 # Todo comparison between transmission and reflection
 # Todo FM effect
-# Todo measurement method azimuth angle vs trace length
 # Todo Ip calculation method change --> azimuth angle --> arc length
 if __name__ == '__main__':
-    LB = 1.000
-    SP = 0.200
+    LB = 0.01
+    SP = 0.002
     # dz = SP / 1000
-    dz = 0.00001
+    dz = 0.0001
     spunfiber = SPUNFIBER(LB, SP, dz)
     #spunfiber.first_calc()
     mode = 0
     num_iter = 5
 
     if mode == 0:
-        num_processor = 16
-        V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
+        num_processor = 8
+        V_I = arange(0e6, 36e6 + 0.1e6, 0.1e6)
         outdict = {'Ip': V_I}
-        num_Merr = 5
+        num_Merr = 1
         start = pd.Timestamp.now()
         ang_FM = 45
-
+        '''
         for nn in range(num_iter):
-            M_err = spunfiber.create_Merr(num_Merr, 1, 1)
+            M_err = spunfiber.create_Merr(num_Merr, 5, 5)
             Ip = spunfiber.calc_mp_Merr(num_processor, V_I, ang_FM, M_err)
             outdict[str(nn)] = Ip
             checktime = pd.Timestamp.now() - start
@@ -856,7 +855,7 @@ if __name__ == '__main__':
         df = pd.DataFrame(outdict)
         df.to_csv('IdealFM_Err5trans2.csv', index=False)
         fig, ax, lines = spunfiber.plot_error('IdealFM_Err5trans2.csv')
-        '''
+
     elif mode == 1:
         num_processor = 8
         V_I = zeros(1)

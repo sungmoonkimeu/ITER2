@@ -44,17 +44,17 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 
 # _______________________________Parameters#1___________________________________#
 # LB = 160 + mm*20                    # Linear beatlength [m]
-LB = [0.132]
-SR = [0.03]
+LB = [10]
+SR = [2]
 
-V_I = arange(0.2e6, 5e6, 0.4e6)
+V_I = arange(0.2e6, 5e6, 0.1e6)
 
 JF = mat([[0, 1], [-1, 0]])
 # JF = mat([[1, 0], [0, -1]])
 
 #Len_LF = [0.153, 0.156, 0.159, 0.162, 0.165]
 #Len_LF = [0.159]
-Len_LF = [0.006]
+Len_LF = [1, 1.06]
 E3 = Jones_vector('Output_SAVEDATA')
 
 E3.linear_light(azimuth=zeros(len(Len_LF)))
@@ -67,13 +67,13 @@ for mm in range(len(Len_LF)):
     delta = 2 * pi / LB[0]  # Linear birefringence [rad/m]
     LC = 1 * 2 * pi * 10000000000000  # Reciprocal circular beatlength [m]
     rho_C = 2 * pi / LC  # Reciprocal circular birefringence [rad/m]
-    Len_SF = 0.5  # length of sensing fiber 28 m
+    Len_SF = 1  # length of sensing fiber 28 m
     # Len_LF = 0.165
     I = 1  # Applied plasma current 1A for normalization
     V = 0.43  # Verdat constant 0.54 but in here 0.43
     rho_F = V * 4 * pi * 1e-7 / (
                 Len_SF * I)  # Non reciprocal circular birefringence for unit ampare and unit length[rad/m·A]
-    delta_L = 0.00001  # delta L [m]
+    delta_L = 0.001  # delta L [m]
     dq = 2 * pi / SR[0]
     q = 0
     # _______________________________Parameters#2____________________________________
