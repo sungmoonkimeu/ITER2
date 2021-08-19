@@ -525,21 +525,23 @@ if __name__ == '__main__':
         fig2, ax2, lines = spunfiber.plot_error(strfile2)
 
     elif mode == 1:
-        strfile1 = 'AO2015f0'
-        num_processor = 16
-        V_I = arange(0e6, 0.08e6 + 0.02e6, 0.02e6)
+        strfile1 = 'Inputpoldiff.csv'
+        num_processor = 8
+        V_I = arange(0e6, 18e6 + 0.2e6, 0.2e6)
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
         start = pd.Timestamp.now()
         ang_FM = 45
-        num_iter = 3
+        num_iter = 7
 
         fig1, ax1 = spunfiber.init_plot_SOP()
         #Vin = np.array([[[1], [0]], [[0.981], [0.195*1j]], [[0.924], [0.383*1j]]])
-        Vin = np.array([[[0.707], [0.707]], [[0.694-0.138*1j], [0.694+0.138*1j]],
-                        [[0.653-0.271*1j], [0.653+0.271*1j]]])
+        #Vin = np.array([[[0.707], [0.707]], [[0.694-0.138*1j], [0.694+0.138*1j]],
+        #                [[0.653-0.271*1j], [0.653+0.271*1j]]])
+        th = arange(0, 90+15, 15)
         for nn in range(num_iter):
-            Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, fig=fig1, Vin=Vin[nn])
+            Vin = np.array([[cos(th[nn]*pi/180)], [sin(th[nn]*pi/180)]])
+            Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, fig=fig1, Vin=Vin)
             outdict[str(nn)] = Ip
 
             outdict2[str(nn) + ' Ex'] = Vout[:, 0, 0]
@@ -548,7 +550,7 @@ if __name__ == '__main__':
             checktime = pd.Timestamp.now() - start
             print(nn, "/", num_iter, checktime)
             start = pd.Timestamp.now()
-            print(Vin[nn])
+            print(Vin)
 
         df = pd.DataFrame(outdict)
         df.to_csv(strfile1, index=False)
