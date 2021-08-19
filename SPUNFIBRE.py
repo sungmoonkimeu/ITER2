@@ -37,6 +37,7 @@ class SPUNFIBER:
         self.LB = beat_length
         self.SP = spin_pitch
         self.dz = delta_l
+        self.V = 0.54 * 4* pi * 1e-7
 
     @staticmethod
     def _eigen_expm(A):
@@ -74,8 +75,7 @@ class SPUNFIBER:
         # magnetic field in unit length
         # H = Ip / (2 * pi * r)
         H = Ip / L
-        V = 0.43 * 4 * pi * 1e-7
-        rho = V * H
+        rho = self.V * H
 
         # ----------------------Laming parameters--------------------------------- #
         n = 0
@@ -277,7 +277,6 @@ class SPUNFIBER:
         Vout_dic[num] = V_out
 
     def calc_mp(self, num_processor, V_I, ang_FM, M_vib=None, fig=None, Vin=None):
-        V = 0.43
         spl_I = np.array_split(V_I, num_processor)
 
         procs = []
@@ -320,12 +319,11 @@ class SPUNFIBER:
             elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
                 m = m - 1
             V_ang[kk] = E[kk].parameters.azimuth() + m * pi
-            Ip[kk] = -(V_ang[kk] - V_ang[0]) / (2 * V * 4 * pi * 1e-7)
+            Ip[kk] = -(V_ang[kk] - V_ang[0]) / (2 * self.V)
 
         return Ip, Vout
 
     def calc_mp_trans(self, num_processor, V_I, M_vib=None, fig=None, Vin=None):
-        V = 0.43
         spl_I = np.array_split(V_I, num_processor)
         '''
         f = open('mp1.txt', 'w')
@@ -375,7 +373,7 @@ class SPUNFIBER:
             elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
                 m = m - 1
             V_ang[kk] = E[kk].parameters.azimuth() + m * pi
-            Ip[kk] = -(V_ang[kk]-V_ang[0]) / (V * 4 * pi * 1e-7)
+            Ip[kk] = -(V_ang[kk]-V_ang[0]) / self.V
 
         return Ip, Vout
 
@@ -465,10 +463,10 @@ class SPUNFIBER:
 
 
 if __name__ == '__main__':
-    LB = 0.132
-    SP = 0.03
+    LB = 1.000
+    SP = 0.005
     # dz = SP / 1000
-    dz = 0.001
+    dz = 0.0001
     spunfiber = SPUNFIBER(LB, SP, dz)
     mode = 1
 
