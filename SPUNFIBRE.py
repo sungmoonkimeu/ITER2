@@ -470,7 +470,7 @@ if __name__ == '__main__':
     # dz = SP / 1000
     dz = 0.001
     spunfiber = SPUNFIBER(LB, SP, dz)
-    mode = 3
+    mode = 1
 
     if mode == 0:
         num_iter = 3
@@ -525,19 +525,19 @@ if __name__ == '__main__':
         fig2, ax2, lines = spunfiber.plot_error(strfile2)
 
     elif mode == 1:
-        strfile1 = 'AO2015fig130'
-        num_processor = 8
-        V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
+        strfile1 = 'AO2015f0'
+        num_processor = 16
+        V_I = arange(0e6, 0.08e6 + 0.02e6, 0.02e6)
         outdict = {'Ip': V_I}
-        outdict2 = {}
+        outdict2 = {'Ip': V_I}
         start = pd.Timestamp.now()
         ang_FM = 45
         num_iter = 3
 
         fig1, ax1 = spunfiber.init_plot_SOP()
-        Vin = np.array([[[1], [0]], [[0.981], [0.195*1j]], [[0.924], [0.383*1j]]])
-        #Vin = np.array([[[0.707], [0.707]], [[0.694-0.138*1j], [0.694+0.138*1j]],
-        #                [[0.653-0.271*1j], [0.653+0.271*1j]]])
+        #Vin = np.array([[[1], [0]], [[0.981], [0.195*1j]], [[0.924], [0.383*1j]]])
+        Vin = np.array([[[0.707], [0.707]], [[0.694-0.138*1j], [0.694+0.138*1j]],
+                        [[0.653-0.271*1j], [0.653+0.271*1j]]])
         for nn in range(num_iter):
             Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, fig=fig1, Vin=Vin[nn])
             outdict[str(nn)] = Ip
@@ -556,7 +556,7 @@ if __name__ == '__main__':
         df2.to_csv(strfile1+"_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
     elif mode == 2:
-        strfile1 = 'AO2015fig130'
+        strfile1 = 'AO2015fig131'
         #strfile2 = 'IdealFM_Vib5trans2.csv'
         fig, ax, lines = spunfiber.plot_error(strfile1)
         ax.legend(lines, ['azimuth=0, ellipticity=0',
@@ -572,7 +572,7 @@ if __name__ == '__main__':
         #spunfiber.add_plot('mp3.csv', ax, '45')
     else:
         V = 0.43
-        strfile1 = 'Ar_S'
+        strfile1 = 'AO2015f0_S'
         data = pd.read_csv(strfile1)
         V_I = data['Ip']
         E = Jones_vector('Output')
@@ -606,7 +606,7 @@ if __name__ == '__main__':
                 elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang1[kk - 1] > pi * 0.8:
                     m = m - 1
                 V_ang1[kk] = E[kk].parameters.azimuth() + m * pi
-                Ip0[nn][kk] = -(V_ang1[kk] - V_ang1[0]) / (2* V * 4 * pi * 1e-7)
+                Ip0[nn][kk] = -(V_ang1[kk] - V_ang1[0]) / (2 * V * 4 * pi * 1e-7)
 
             # calculate trace length
             # https://en.wikipedia.org/wiki/Spherical_trigonometry
@@ -614,7 +614,7 @@ if __name__ == '__main__':
             # intersect the surface of the sphere or, equivalently, the angles between the tangent vectors of
             # the great circle arcs where they meet at the vertices. Angles are in radians.
             V_ang2 = zeros(len(V_I))
-
+            flag = 0
             for kk in range(len(V_I)-1):
                 c = pi / 2 - S[kk].parameters.ellipticity_angle()  # Ellipticity angle of Starting point (Ip = 0)
                 b = pi / 2 - S[kk+1].parameters.ellipticity_angle()  # Ellipticity angle of End point (Ip != 0)
@@ -630,9 +630,14 @@ if __name__ == '__main__':
                     ang_Poincare = ang_Poincare - pi/2
                 '''
                 V_ang2[kk+1] = V_ang2[kk] + ang_Poincare
-
-                Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) / (2*V*0.95 * 4 * pi * 1e-7)
-            Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) / ( 2*V*0.95 * 4 * pi * 1e-7)
+                if flag == 0:
+                    sf = (V_I[kk+1]-V_I[kk])/(V_ang2[kk+1]-V_ang2[kk])
+                    flag = 1
+                #Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) / (2*V * 4 * pi * 1e-7)
+                Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) * sf
+                print(V_ang2[kk+1]-V_ang2[kk])
+            #Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) / ( 2*V * 4 * pi * 1e-7)
+            Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) * sf
                 #if kk < 0.2 * len(V_I):
                 #    print(c, b, A, ang_Poincare, V_ang2[kk])
             '''
