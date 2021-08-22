@@ -12,10 +12,9 @@ from matplotlib.ticker import (MaxNLocator,
 from multiprocessing import Process, Queue, Manager,Lock
 import pandas as pd
 import matplotlib.pyplot as plt
+
 # import parmap
 import tqdm
-
-
 
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
@@ -97,29 +96,27 @@ class SPUNFIBER:
             nSet = int((len(V_theta)-1) / (nM_vib + 1))
             rem = (len(V_theta)-1) % nSet
 
+        if DIR == 1:
+            V_phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta
+            '''
+            strM = "M" + str(nn)        # For indexing matrix to indicate the position of Merr  
+            tmp = np.append(tmp, strM)  
+            '''
+        elif DIR == -1:
+            V_phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + np.flip(V_theta)
+            '''
+            strM = "M" + str(len(V_theta) - 1 - nn)
+            tmp = np.append(tmp, strM)  # for test
+            '''
+        n11 = R_z / 2 * 1j * cos(2 * V_phi)
+        n12 = R_z / 2 * 1j * sin(2 * V_phi) - omega
+        n21 = R_z / 2 * 1j * sin(2 * V_phi) + omega
+        n22 = R_z / 2 * -1j * cos(2 * V_phi)
+        N = np.array([[n11, n12], [n21, n22]])
+        N_integral = self._eigen_expm(N.T)
+
         for nn in range(len(V_theta)-1):
-
-            if DIR == 1:
-                phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
-                '''
-                strM = "M" + str(nn)        # For indexing matrix to indicate the position of Merr  
-                tmp = np.append(tmp, strM)  
-                '''
-            elif DIR == -1:
-                phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[-1 - nn]
-                '''
-                strM = "M" + str(len(V_theta) - 1 - nn)
-                tmp = np.append(tmp, strM)  # for test
-                '''
-            # phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta[nn]
-            n11 = R_z / 2 * 1j * cos(2 * phi)
-            n12 = R_z / 2 * 1j * sin(2 * phi) - omega
-            n21 = R_z / 2 * 1j * sin(2 * phi) + omega
-            n22 = R_z / 2 * -1j * cos(2 * phi)
-            N = np.array([[n11, n12], [n21, n22]])
-            N_integral = self._eigen_expm(N)
-
-            M = N_integral @ M
+            M = N_integral[nn] @ M
 
             # If vibration matrix (Merr) is presence, it will be inserted automatically.
             # For example, if Merr.shape[2] == 2, two Merr will be inserted
@@ -466,27 +463,26 @@ if __name__ == '__main__':
     LB = 1.000
     SP = 0.005
     # dz = SP / 1000
-    dz = 0.0001
+    dz = 0.00005
     spunfiber = SPUNFIBER(LB, SP, dz)
-    mode = 1
+    mode =3
 
     if mode == 0:
-        num_iter = 3
-        strfile1 = 'Ar'
-        strfile2 = 'At.csv'
-        num_processor = 8
-        V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
+        num_iter = 100
+        strfile1 = 'IdealFM_Errdeg1x5_3.csv'
+        strfile2 = 'IdealFM_Errdeg1x5_3_trans.csv'
+        num_processor = 16
+        V_I = arange(0e6, 18e6 + 0.2e6, 0.2e6)
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
-        nM_vib = 1
+        nM_vib = 5
         start = pd.Timestamp.now()
         ang_FM = 45
-
-        fig1, ax1 = spunfiber.init_plot_SOP()
         Vin = np.array([[1], [0]])
 
+        fig1, ax1 = spunfiber.init_plot_SOP()
         for nn in range(num_iter):
-            M_vib = spunfiber.create_Mvib(nM_vib, 5, 5)
+            M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
             Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
             outdict[str(nn)] = Ip
             outdict2[str(nn) + ' Ex'] = Vout[:, 0, 0]
@@ -501,11 +497,9 @@ if __name__ == '__main__':
         df2.to_csv(strfile1 + "_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
 
-
         fig3, ax3 = spunfiber.init_plot_SOP()
-
         for nn in range(num_iter):
-            M_vib = spunfiber.create_Mvib(nM_vib, 5, 5)
+            M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
             Ip, Vout = spunfiber.calc_mp_trans(num_processor, V_I, M_vib, fig3, Vin)
 
             outdict[str(nn)] = Ip
@@ -556,7 +550,7 @@ if __name__ == '__main__':
         df2.to_csv(strfile1+"_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
     elif mode == 2:
-        strfile1 = 'AO2015fig131'
+        strfile1 = 'IdealFM_Errdeg5.csv'
         #strfile2 = 'IdealFM_Vib5trans2.csv'
         fig, ax, lines = spunfiber.plot_error(strfile1)
         ax.legend(lines, ['azimuth=0, ellipticity=0',
@@ -570,9 +564,8 @@ if __name__ == '__main__':
         #ax.legend(lines[:], ['line A', 'line B'], loc='upper right')
 
         #spunfiber.add_plot('mp3.csv', ax, '45')
-    else:
-        V = 0.43
-        strfile1 = 'AO2015f0_S'
+    elif mode == 3:
+        strfile1 = 'IdealFM_Errdeg1x5_3.csv_S'
         data = pd.read_csv(strfile1)
         V_I = data['Ip']
         E = Jones_vector('Output')
@@ -606,7 +599,7 @@ if __name__ == '__main__':
                 elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang1[kk - 1] > pi * 0.8:
                     m = m - 1
                 V_ang1[kk] = E[kk].parameters.azimuth() + m * pi
-                Ip0[nn][kk] = -(V_ang1[kk] - V_ang1[0]) / (2 * V * 4 * pi * 1e-7)
+                Ip0[nn][kk] = -(V_ang1[kk] - V_ang1[0]) / (2*spunfiber.V)
 
             # calculate trace length
             # https://en.wikipedia.org/wiki/Spherical_trigonometry
@@ -633,11 +626,11 @@ if __name__ == '__main__':
                 if flag == 0:
                     sf = (V_I[kk+1]-V_I[kk])/(V_ang2[kk+1]-V_ang2[kk])
                     flag = 1
-                #Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) / (2*V * 4 * pi * 1e-7)
-                Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) * sf
+                Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) / spunfiber.V
+                #Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) * sf
                 print(V_ang2[kk+1]-V_ang2[kk])
-            #Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) / ( 2*V * 4 * pi * 1e-7)
-            Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) * sf
+            Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) / spunfiber.V
+            #Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) * sf
                 #if kk < 0.2 * len(V_I):
                 #    print(c, b, A, ang_Poincare, V_ang2[kk])
             '''
@@ -686,5 +679,24 @@ if __name__ == '__main__':
             fig2.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
             # fig.set_size_inches(6,4)
             plt.rc('text', usetex=False)
+    else:
+        V_I = 0
+        ang_FM = 45
+        DIR = 1
+        L = 10
+        V_L = arange(0, L + dz, dz)
+        s_t_r = 2 * pi / SP
+        V_theta = V_L * s_t_r
+        start = pd.Timestamp.now()
+        nM_vib = 5
+        M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
+        M_l = spunfiber.lamming(0, 1, L, V_theta, M_vib)
+        print(pd.Timestamp.now()-start)
+
+        start = pd.Timestamp.now()
+        spunfiber.lamming2(0, DIR, L, V_theta)
+        print(pd.Timestamp.now() - start)
+
+
 
 plt.show()
