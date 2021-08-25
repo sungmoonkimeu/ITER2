@@ -453,23 +453,24 @@ if __name__ == '__main__':
     SP = 0.005
     # dz = SP / 1000
     dz = 0.00005
-    len_lf = 10  # lead fiber
+    len_lf = 20  # lead fiber
     len_ls = 10   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 2
+    mode = 0
 
-
+    # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
+    # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
     if mode == 0:
         num_iter = 100
-        strfile1 = 'IdealFM_Errdeg1x5_4.csv'
-        strfile2 = 'IdealFM_Errdeg1x5_4_trans.csv'
+        strfile1 = '44FM_Errdeg1x5_1.csv'
+        strfile2 = '44FM_Errdeg1x5_1_trans.csv'
         num_processor = 16
         V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 45
+        ang_FM = 44
         Vin = np.array([[1], [0]])
 
         fig1, ax1 = spunfiber.init_plot_SOP()
@@ -541,7 +542,7 @@ if __name__ == '__main__':
         df2.to_csv(strfile1+"_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
     elif mode == 2:
-        strfile1 = 'IdealFM_Errdeg1x5_3.csv'
+        strfile1 = '43FM_Errdeg1x5_0.csv'
         #strfile2 = 'IdealFM_Vib5trans2.csv'
         fig, ax, lines = spunfiber.plot_error(strfile1)
         '''
@@ -554,7 +555,7 @@ if __name__ == '__main__':
 
         #spunfiber.add_plot('mp3.csv', ax, '45')
     elif mode == 3:
-        strfile1 = 'IdealFM_Errdeg1x5_3.csv_S'
+        strfile1 = '44FM_Errdeg1x5_0.csv_S'
         data = pd.read_csv(strfile1)
         V_I = data['Ip']
         E = Jones_vector('Output')
@@ -566,6 +567,8 @@ if __name__ == '__main__':
         fig2, ax2 = plt.subplots(figsize=(6, 3))  # error calculation with new method
 
         for nn in range(int((data.shape[1] - 1) / 2)):
+            if nn == 2:
+                break
             str_Ex = str(nn) + ' Ex'
             str_Ey = str(nn) + ' Ey'
             Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
@@ -587,7 +590,10 @@ if __name__ == '__main__':
                 elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang1[kk - 1] > pi * 0.8:
                     m = m - 1
                 V_ang1[kk] = E[kk].parameters.azimuth() + m * pi
-                Ip0[nn][kk] = -(V_ang1[kk] - V_ang1[0]) / (2*spunfiber.V)
+                #Ip0[nn][kk] = (V_ang1[kk] - V_ang1[0]) / (2*spunfiber.V)
+
+                Ip0[nn][kk] = (V_ang1[kk] - pi/2) / (2 * spunfiber.V)
+            print(Ip0[nn])
 
             # calculate trace length
             # https://en.wikipedia.org/wiki/Spherical_trigonometry
