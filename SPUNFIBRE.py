@@ -422,6 +422,74 @@ class SPUNFIBER:
         return fig, ax, lines
         #plt.show()
 
+    def plot_errorbar(self, filename):
+
+        data = pd.read_csv(filename)
+
+        V_I = data['Ip']
+
+        ## Requirement specificaion for ITER
+        absErrorlimit = zeros(len(V_I))
+        relErrorlimit = zeros(len(V_I))
+
+        # Calcuation ITER specification
+        for nn in range(len(V_I)):
+            if V_I[nn] < 1e6:
+                absErrorlimit[nn] = 10e3
+            else:
+                absErrorlimit[nn] = V_I[nn] * 0.01
+            if V_I[nn] == 0:
+                pass
+            else:
+                relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
+        if V_I[0] == 0:
+            df_mean = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).mean(axis=1).drop(0, axis=0)
+            df_std = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).std(axis=1).drop(0, axis=0)
+            fig, ax = plt.subplots(figsize=(6, 3))
+            ax.plot(V_I[1:], df_mean[:], label="mean value")
+            ax.errorbar(V_I[1::3], df_mean[::3], yerr=df_std[::3], label="std", ls='None', c='black', ecolor='g', capsize=4)
+        else:
+            df_mean = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).mean(axis=1)
+            df_std = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).std(axis=1)
+            fig, ax = plt.subplots(figsize=(6, 3))
+            ax.plot(V_I, df_mean, label="mean value")
+            ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], label="std", ls='None', c='black', ecolor='g', capsize=4)
+
+
+        lines = []
+
+        if V_I[0] == 0:
+            ax.plot(V_I[1:], relErrorlimit[1:], 'r', label='ITER specification')
+            ax.plot(V_I[1:], -relErrorlimit[1:], 'r')
+        else:
+            ax.plot(V_I, relErrorlimit, 'r', label='ITER specification')
+            ax.plot(V_I, -relErrorlimit, 'r')
+
+        ax.legend(loc="upper right")
+
+        plt.rc('text', usetex=True)
+        ax.set_xlabel(r'Plasma current $I_{p}(A)$')
+        ax.set_ylabel(r'Relative error on $I_{P}$')
+
+        # plt.title('Output power vs Plasma current')
+        ax.set(xlim=(0, 18e6), ylim=(-0.012, 0.012))
+        ax.yaxis.set_major_locator(MaxNLocator(4))
+        ax.xaxis.set_major_locator(MaxNLocator(10))
+
+        ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
+        ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+
+        ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
+        ax.grid(ls='--', lw=0.5)
+
+        # fig.align_ylabels(ax)
+        fig.subplots_adjust(left = 0.17, hspace=0.4, right=0.95, top=0.93, bottom=0.2)
+        # fig.set_size_inches(6,4)
+        plt.rc('text', usetex=False)
+
+        return fig, ax, lines
+        #plt.show()
+
     def add_plot(self, filename, ax, str_label):
 
         data = pd.read_csv(filename)
@@ -456,7 +524,7 @@ if __name__ == '__main__':
     len_lf = 20  # lead fiber
     len_ls = 10   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 0
+    mode = 2
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
@@ -542,9 +610,11 @@ if __name__ == '__main__':
         df2.to_csv(strfile1+"_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
     elif mode == 2:
-        strfile1 = '43FM_Errdeg1x5_0.csv'
+        strfile1 = 'IdealFM_Errdeg1x5_4.csv'
         #strfile2 = 'IdealFM_Vib5trans2.csv'
-        fig, ax, lines = spunfiber.plot_error(strfile1)
+        #fig, ax, lines = spunfiber.plot_error(strfile1)
+        fig, ax, lines = spunfiber.plot_errorbar(strfile1)
+
         '''
         ax.set(xlim=(-0.5e5, 18e6), ylim=(-0.019, 0.125))
         ax.yaxis.set_major_locator(MaxNLocator(8))
