@@ -521,24 +521,24 @@ if __name__ == '__main__':
     SP = 0.005
     # dz = SP / 1000
     dz = 0.00005
-    len_lf = 20  # lead fiber
+    len_lf = 10  # lead fiber
     len_ls = 10   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 2
+    mode = 0
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
     if mode == 0:
-        num_iter = 100
-        strfile1 = '44FM_Errdeg1x5_1.csv'
-        strfile2 = '44FM_Errdeg1x5_1_trans.csv'
+        num_iter = 25
+        strfile1 = '22.5FM_Errdeg1x5_0.csv'
+        strfile2 = '22.5FM_Errdeg1x5_0_trans.csv'
         num_processor = 16
         V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
-        nM_vib = 5
+        nM_vib = 1
         start = pd.Timestamp.now()
-        ang_FM = 44
+        ang_FM = 22.5
         Vin = np.array([[1], [0]])
 
         fig1, ax1 = spunfiber.init_plot_SOP()
@@ -610,7 +610,7 @@ if __name__ == '__main__':
         df2.to_csv(strfile1+"_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
     elif mode == 2:
-        strfile1 = 'IdealFM_Errdeg1x5_4.csv'
+        strfile1 = 'IdealFM_Errdeg1_0.csv'
         #strfile2 = 'IdealFM_Vib5trans2.csv'
         #fig, ax, lines = spunfiber.plot_error(strfile1)
         fig, ax, lines = spunfiber.plot_errorbar(strfile1)
