@@ -517,28 +517,28 @@ class SPUNFIBER:
 
 
 if __name__ == '__main__':
-    LB = 1.000
-    SP = 0.005
+    LB = 0.009
+    SP = 0.0045
     # dz = SP / 1000
-    dz = 0.00005
+    dz = 0.00001
     len_lf = 10  # lead fiber
     len_ls = 10   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 2
+    mode = 3
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
     if mode == 0:
-        num_iter = 25
-        strfile1 = '22.5FM_Errdeg1x5_0.csv'
+        num_iter = 20
+        strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
         strfile2 = '22.5FM_Errdeg1x5_0_trans.csv'
         num_processor = 16
         V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
-        nM_vib = 1
+        nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 22.5
+        ang_FM = 45
         Vin = np.array([[1], [0]])
 
         fig1, ax1 = spunfiber.init_plot_SOP()
@@ -625,7 +625,7 @@ if __name__ == '__main__':
 
         #spunfiber.add_plot('mp3.csv', ax, '45')
     elif mode == 3:
-        strfile1 = '44FM_Errdeg1x5_0.csv_S'
+        strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv_S'
         data = pd.read_csv(strfile1)
         V_I = data['Ip']
         E = Jones_vector('Output')
@@ -663,7 +663,7 @@ if __name__ == '__main__':
                 #Ip0[nn][kk] = (V_ang1[kk] - V_ang1[0]) / (2*spunfiber.V)
 
                 Ip0[nn][kk] = (V_ang1[kk] - pi/2) / (2 * spunfiber.V)
-            print(Ip0[nn])
+            # print(Ip0[nn])
 
             # calculate trace length
             # https://en.wikipedia.org/wiki/Spherical_trigonometry
@@ -679,6 +679,8 @@ if __name__ == '__main__':
 
                 if A > pi/2:
                     A = A-pi
+                elif A < -pi/2:
+                    A = A+pi
                 ang_Poincare = arccos(cos(b) * cos(c) + sin(b) * sin(c) * cos(A))
                 '''
                 if kk > 2 and ang_Poincare < -pi / 2 * 0.5:
@@ -687,12 +689,24 @@ if __name__ == '__main__':
                     ang_Poincare = ang_Poincare - pi/2
                 '''
                 V_ang2[kk+1] = V_ang2[kk] + ang_Poincare
+                print("V_ang", (V_ang2[kk]*180/pi) % (360), "ang_poincare = ", ang_Poincare)
+                '''
+                if ang_Poincare > 1:
+                    print("c= ", c)
+                    print("b= ", b)
+                    print("A= ", A)
+                if kk == 0:
+                    print("kk == 0")
+                    print("c= ", c)
+                    print("b= ", b)1
+                    print("A= ", A)
+                '''
                 if flag == 0:
                     sf = (V_I[kk+1]-V_I[kk])/(V_ang2[kk+1]-V_ang2[kk])
+                    #sf = (V_I[-2] - V_I[-1]) / (V_ang2[-2] - V_ang2[-1])
                     flag = 1
-                Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) / spunfiber.V
-                #Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) * sf
-                print(V_ang2[kk+1]-V_ang2[kk])
+                #Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) / spunfiber.V
+                Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) * sf*0.95
             Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) / spunfiber.V
             #Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) * sf
                 #if kk < 0.2 * len(V_I):
