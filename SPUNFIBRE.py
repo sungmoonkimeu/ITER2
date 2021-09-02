@@ -524,7 +524,7 @@ if __name__ == '__main__':
     len_lf = 10  # lead fiber
     len_ls = 10   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 4
+    mode = 2
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
@@ -610,7 +610,7 @@ if __name__ == '__main__':
         df2.to_csv(strfile1+"_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
     elif mode == 2:
-        strfile1 = 'IdealFM_Errdeg1_0.csv'
+        strfile1 = '43FM_Errdeg1x5_0.csv'
         #strfile2 = 'IdealFM_Vib5trans2.csv'
         #fig, ax, lines = spunfiber.plot_error(strfile1)
         fig, ax, lines = spunfiber.plot_errorbar(strfile1)
