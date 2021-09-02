@@ -524,7 +524,7 @@ if __name__ == '__main__':
     len_lf = 10  # lead fiber
     len_ls = 10   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 3
+    mode = 4
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
@@ -625,7 +625,7 @@ if __name__ == '__main__':
 
         #spunfiber.add_plot('mp3.csv', ax, '45')
     elif mode == 3:
-        strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv_S'
+        strfile1 = '44FM_Errdeg1x5_1.csv_S'
         data = pd.read_csv(strfile1)
         V_I = data['Ip']
         E = Jones_vector('Output')
@@ -758,14 +758,37 @@ if __name__ == '__main__':
             # fig.set_size_inches(6,4)
             plt.rc('text', usetex=False)
     else:
-        strfile1 = 'IdealFM_Errdeg1x5_3.csv_S'
+        strfile1 = '22.5FM_Errdeg1x5_0.csv_S'
         data = pd.read_csv(strfile1)
         V_I = data['Ip']
         E = Jones_vector('Output')
         V_ang = zeros(len(V_I))
         Ip0 = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
+        Ip1 = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
 
         fig1, ax1 = plt.subplots(figsize=(6, 3))  # error calculation with previous method
+
+        ## Requirement specificaion for ITER
+        absErrorlimit = zeros(len(V_I))
+        relErrorlimit = zeros(len(V_I))
+
+        # Calcuation ITER specification
+        for nn in range(len(V_I)):
+            if V_I[nn] < 1e6:
+                absErrorlimit[nn] = 10e3
+            else:
+                absErrorlimit[nn] = V_I[nn] * 0.01
+            if V_I[nn] == 0:
+                pass
+            else:
+                relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
+
+        if V_I[0] == 0:
+            ax1.plot(V_I[1:], relErrorlimit[1:], 'r', label='ITER specification')
+            ax1.plot(V_I[1:], -relErrorlimit[1:], 'r')
+        else:
+            ax1.plot(V_I, relErrorlimit, 'r', label='ITER specification')
+            ax1.plot(V_I, -relErrorlimit, 'r')
 
         for nn in range(int((data.shape[1] - 1) / 2)):
             str_Ex = str(nn) + ' Ex'
@@ -788,22 +811,42 @@ if __name__ == '__main__':
                 elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang1[kk - 1] > pi * 0.8:
                     m = m - 1
                 V_ang1[kk] = E[kk].parameters.azimuth() + m * pi
-                Ip0[nn][kk] = -(V_ang1[kk] - V_ang1[0]) / (2 * spunfiber.V)
+                Ip0[nn][kk] = (V_ang1[kk] - V_ang1[0]) / (2 * spunfiber.V)
+                Ip1[nn][kk] = (V_ang1[kk] - pi / 2) / (2 * spunfiber.V)
 
             if nn != 0:
-                draw_stokes_points(fig[0], S, kind='line', color_line='b')
+                draw_stokes_points(fig[0], S[0], kind='scatter', color_line='b')
             else:
-                fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-                                          color_line='b')
+                fig, ax = S[0].draw_poincare(figsize=(7, 7), angle_view=[31 * pi / 180, 164 * pi / 180], kind='scatter',
+                                             color_line='b')
+            if nn != 0:
+                draw_stokes_points(fig[0], S[3], kind='scatter', color_line='r')
+                draw_stokes_points(fig[0], S[7], kind='scatter', color_line='r')
+                draw_stokes_points(fig[0], S[11], kind='scatter', color_line='r')
+                draw_stokes_points(fig[0], S[15], kind='scatter', color_line='r')
+                draw_stokes_points(fig[0], S[19], kind='scatter', color_line='r')
+
+
+            else:
+                #fig, ax = S[30].draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
+                #                             color_line='b')
+                draw_stokes_points(fig[0], S[3], kind='scatter', color_line='r')
+                draw_stokes_points(fig[0], S[7], kind='scatter', color_line='r')
+                draw_stokes_points(fig[0], S[11], kind='scatter', color_line='r')
+                draw_stokes_points(fig[0], S[15], kind='scatter', color_line='r')
+                draw_stokes_points(fig[0], S[19], kind='scatter', color_line='r')
 
             # fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
             #                          color_line='b')
             if V_I[0] == 0:
                 ax1.plot(V_I[1:], abs((Ip0[nn][1:] - V_I[1:]) / V_I[1:]))
+                ax1.plot(V_I[1:], abs((Ip1[nn][1:] - V_I[1:]) / V_I[1:]))
+
             else:
                 ax1.plot(V_I, abs((Ip0[nn] - V_I) / V_I))
+                ax1.plot(V_I, abs((Ip1[nn] - V_I) / V_I))
 
-            ax.legend(loc="upper right")
+            ax1.legend(loc="upper right")
             plt.rc('text', usetex=True)
             ax1.set_xlabel(r'Plasma current $I_{p}(A)$')
             ax1.set_ylabel(r'Relative error on $I_{P}$')
