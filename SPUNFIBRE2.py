@@ -517,23 +517,23 @@ class SPUNFIBER:
 
 
 if __name__ == '__main__':
-    LB = 0.009
-    SP = 0.0045
+    LB = 1.000
+    SP = 0.050
     # dz = SP / 1000
-    dz = 0.00001
-    len_lf = 10  # lead fiber
-    len_ls = 10   # sensing fiber
+    dz = 0.0001
+    len_lf = 1  # lead fiber
+    len_ls = 1   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
     mode = 2
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
     if mode == 0:
-        num_iter = 20
-        strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
-        strfile2 = '22.5FM_Errdeg1x5_0_trans.csv'
+        num_iter = 3
+        strfile1 = 'TSET.csv'
+        strfile2 = 'TEST_SOP.csv'
         num_processor = 16
-        V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
+        V_I = arange(0e6, 160e3 + 0.1e6, 0.1e6)
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
         nM_vib = 5
