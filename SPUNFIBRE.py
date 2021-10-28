@@ -220,7 +220,6 @@ class SPUNFIBER:
             mm = mm + 1
         #print("done")
 
-
         Vout_dic[num] = V_out
 
     def cal_rotation_trans(self, V_Ip, num, Vout_dic, M_vib=None, Vin=None):
@@ -715,8 +714,7 @@ if __name__ == '__main__':
             if nn != 0:
                 draw_stokes_points(fig[0], S, kind='line', color_line='b')
             else:
-                fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-                                          color_line='b')
+
 
             #fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
             #                          color_line='b')
