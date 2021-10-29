@@ -16,6 +16,7 @@ from py_pol.jones_vector import Jones_vector, degrees
 from py_pol.stokes import Stokes, create_Stokes
 from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
 
+import matplotlib as mpl
 import matplotlib.ticker
 from matplotlib.ticker import (MaxNLocator,
                                FormatStrFormatter, ScalarFormatter)
@@ -39,9 +40,9 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 
 # Circulator input matrix
 
-theta = 30 * pi / 180   # random axis of LB
-phi = 30* pi / 180  # ellipticity angle change from experiment
-theta_e = 0 * pi / 180  # azimuth angle change from experiment
+theta = -45 * pi / 180   # random axis of LB
+phi = 15 * pi / 180  # ellipticity angle change from experiment
+theta_e = 5 * pi / 180  # azimuth angle change from experiment
 
 M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
 M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
@@ -52,8 +53,8 @@ M_ci = M_rot @ M_theta @ M_phi @ M_theta_T
 
 # Circulator output matrix
 
-theta = 0 * pi / 2  # random axis of LB
-phi = 0 * pi / 180  # ellipticity angle change from experiment
+theta = 0 * pi / 180  # random axis of LB
+phi = 0* pi / 180  # ellipticity angle change from experiment
 theta_e = 0 * pi / 180  # azimuth angle change from experiment
 
 # Mci
@@ -65,13 +66,14 @@ M_phi = np.array([[exp(1j*phi), 0],[0, exp(-1j*phi)]])
 M_co = M_rot @ M_theta @ M_phi @ M_theta_T
 
 # input matrix
-V_I = arange(0e6, 300e3 + 1e3, 1e3)
+V_I = arange(0e6, 200e3 + 1e3, 1e3)
 
 V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
 V = 0.54 * 4 * pi * 1e-7
 
 E = Jones_vector('Output')
 V_in = np.array([[[1], [0]], [[np.sqrt(0.5)], [np.sqrt(0.5)]], [[np.sqrt(0.5)], [np.sqrt(0.5)*1j]]])
+color_code = ['b', 'k', 'r']
 for nn in range(len(V_in)):
     for mm, iter_I in enumerate(V_I):
         # Faraday rotation matirx
@@ -84,10 +86,19 @@ for nn in range(len(V_in)):
     S = create_Stokes('Output_S')
     S.from_Jones(E)
     if nn != 0:
-        draw_stokes_points(fig[0], S, kind='line', color_line='b')
+        draw_stokes_points(fig[0], S, kind='line', color_line=color_code[nn])
+        draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=color_code[nn])
     else:
-        fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[31 * pi / 180, 164 * pi / 180], kind='line',
-                                     color_line='b')
-print(V_out)
+        fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[23 * pi / 180, 32 * pi / 180], kind='line',
+                                     color_line=color_code[nn])
+        draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=color_code[nn])
+
+labelTups = [('LP0', 0), ('LP45', 1), ('RCP', 2)]
+colors = color_code
+custom_lines = [plt.Line2D([0], [0], ls="", marker='.',
+                           mec='k', mfc=c, mew=.1, ms=20) for c in colors]
+ax.legend(custom_lines, [lt[0] for lt in labelTups],loc='center left', bbox_to_anchor=(0.7, .8))
+
+#print(V_out)
 
 plt.show()
