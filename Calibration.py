@@ -42,7 +42,7 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 
 theta = -45 * pi / 180   # random axis of LB
 phi = 15 * pi / 180  # ellipticity angle change from experiment
-theta_e = 5 * pi / 180  # azimuth angle change from experiment
+theta_e = 0 * pi / 180  # azimuth angle change from experiment
 
 M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
 M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
@@ -66,7 +66,7 @@ M_phi = np.array([[exp(1j*phi), 0],[0, exp(-1j*phi)]])
 M_co = M_rot @ M_theta @ M_phi @ M_theta_T
 
 # input matrix
-V_I = arange(0e6, 100e3 + 1e3, 1e3)
+V_I = arange(0e6, 10e3 + 1e3, 1e3)
 
 V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
 V = 0.54 * 4 * pi * 1e-7
