@@ -40,8 +40,8 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 
 # Circulator input matrix
 
-theta = -45 * pi / 180   # random axis of LB
-phi = 15 * pi / 180  # ellipticity angle change from experiment
+theta = 0 * pi / 180   # birefringence axis of LB
+phi = 0 * pi / 180  # ellipticity angle change from experiment
 theta_e = 0 * pi / 180  # azimuth angle change from experiment
 
 M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
@@ -66,21 +66,29 @@ M_phi = np.array([[exp(1j*phi), 0],[0, exp(-1j*phi)]])
 M_co = M_rot @ M_theta @ M_phi @ M_theta_T
 
 # input matrix
-V_I = arange(0e6, 10e3 + 1e3, 1e3)
+V_I = arange(0e6, 200e3 + 1e3, 1e3)
 
 V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
-V = 0.54 * 4 * pi * 1e-7
+V = 0.7 * 4 * pi * 1e-7
 
+E0 = Jones_vector('input')
 E = Jones_vector('Output')
+E0.general_azimuth_ellipticity(azimuth=[0,pi/4, pi/4], ellipticity=[0,0, pi/4])
 V_in = np.array([[[1], [0]], [[np.sqrt(0.5)], [np.sqrt(0.5)]], [[np.sqrt(0.5)], [np.sqrt(0.5)*1j]]])
+#V_in = np.array([[[1], [0]], [[-cos(pi/7)*1j], [sin(pi/7)]], [[0.707], [0.707*1j]]])
+#V_in = np.array([[[1], [0]], [[-cos(pi/7)*1j], [sin(pi/7)]]])
+
 color_code = ['b', 'k', 'r']
+#color_code = ['r', 'r', 'r']
 for nn in range(len(V_in)):
     for mm, iter_I in enumerate(V_I):
         # Faraday rotation matirx
         th_FR = iter_I * V*2
         M_FR = np.array([[cos(th_FR), sin(th_FR)], [-sin(th_FR), cos(th_FR)]])
 
-        V_out[mm] = M_co @ M_FR @ M_ci @ V_in[nn]
+        #V_out[mm] = M_co @ M_FR @ M_ci @ V_in[nn]
+        V_out[mm] = M_co @ M_FR @ M_ci @ E0[nn].parameters.matrix()
+
 
     E.from_matrix(M=V_out)
     S = create_Stokes('Output_S')
@@ -92,12 +100,13 @@ for nn in range(len(V_in)):
         fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[23 * pi / 180, 32 * pi / 180], kind='line',
                                      color_line=color_code[nn])
         draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=color_code[nn])
-
+    print(S[-1])
 labelTups = [('LP0', 0), ('LP45', 1), ('RCP', 2)]
 colors = color_code
 custom_lines = [plt.Line2D([0], [0], ls="", marker='.',
                            mec='k', mfc=c, mew=.1, ms=20) for c in colors]
 ax.legend(custom_lines, [lt[0] for lt in labelTups],loc='center left', bbox_to_anchor=(0.7, .8))
+
 
 #print(V_out)
 
