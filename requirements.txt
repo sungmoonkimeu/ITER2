@@ -78,3 +78,4 @@ webencodings==0.5.1
 websocket-client==0.57.0
 
 parmap~=1.5.2
+oct2py~=5.3.0

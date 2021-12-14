@@ -79,6 +79,7 @@ V_in = np.array([[[1], [0]], [[np.sqrt(0.5)], [np.sqrt(0.5)]], [[np.sqrt(0.5)], 
 #V_in = np.array([[[1], [0]], [[-cos(pi/7)*1j], [sin(pi/7)]]])
 
 color_code = ['b', 'k', 'r']
+OV = np.array([])
 #color_code = ['r', 'r', 'r']
 for nn in range(len(V_in)):
     for mm, iter_I in enumerate(V_I):
