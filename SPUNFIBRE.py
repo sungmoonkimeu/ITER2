@@ -714,10 +714,8 @@ if __name__ == '__main__':
             if nn != 0:
                 draw_stokes_points(fig[0], S, kind='line', color_line='b')
             else:
-
-
-            #fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-            #                          color_line='b')
+                fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
+                                      color_line='b')
             if V_I[0] == 0:
                 ax1.plot(V_I[1:], abs((Ip0[nn][1:] - V_I[1:]) / V_I[1:]))
                 ax2.plot(V_I[1:], abs((Ip1[nn][1:] - V_I[1:]) / V_I[1:]))
