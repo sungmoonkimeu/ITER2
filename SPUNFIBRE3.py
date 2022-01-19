@@ -61,6 +61,83 @@ class SPUNFIBER:
         return einsum('...ik, ...k, ...kj -> ...ij',
                       vects, np.exp(vals), np.linalg.inv(vects))
 
+    def stacking_matrix_rotation(self, V_Ip, Vin=None):
+        V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+        Ip = zeros(len(V_Ip))
+        dq = 2 * pi / self.SP  # spin twist ratio
+        delta = 2 * pi / self.LB
+        LC = 1*2*pi*100000000000000
+        I = 1
+        Len_SF = 1
+        V = 0.54
+        rho_C = 2*pi/LC
+        rho_F = V * 4 * pi * 1e-7 / (Len_SF * I)  # Non reciprocal circular birefringence for unit ampare and unit length[rad/m·A]
+
+        delta_L = 0.0001
+        V_L = arange(delta_L, Len_SF + delta_L, delta_L)
+        n_V_L = len(V_L)
+
+        # ------------------------------ Variable forward--------------
+        rho_1 = rho_C + rho_F * V_Ip
+        delta_Beta_1 = 2 * (rho_1 ** 2 + (delta ** 2) / 4) ** 0.5
+
+        alpha_1 = cos(delta_Beta_1 / 2 * delta_L)
+        beta_1 = delta / delta_Beta_1 * sin(delta_Beta_1 / 2 * delta_L)
+        gamma_1 = 2 * rho_1 / delta_Beta_1 * sin(delta_Beta_1 / 2 * delta_L)
+
+        # ------------------------------ Variable backward--------------
+        rho_2 = rho_C - rho_F * V_Ip
+        delta_Beta_2 = 2 * (rho_2 ** 2 + (delta ** 2) / 4) ** 0.5
+
+        alpha_2 = cos(delta_Beta_2 / 2 * delta_L)
+        beta_2 = delta / delta_Beta_2 * sin(delta_Beta_2 / 2 * delta_L)
+        gamma_2 = 2 * rho_2 / delta_Beta_2 * sin(delta_Beta_2 / 2 * delta_L)
+
+        # ------------------------------ Variable FRM--------------
+
+        # print(J)
+
+        E = Jones_vector('Output')
+
+        Ip = zeros(len(V_Ip))
+        V_ang = zeros(len(V_Ip))
+        JF = np.mat([[0, 1], [-1, 0]])
+
+        m = 0
+        for nn in range(len(V_Ip)):
+            #print("mm = ", mm, " nn = ", nn)
+            q = 0
+            J = np.mat([[1, 0], [0, 1]])
+            JT = np.mat([[1, 0], [0, 1]])
+            for kk in range(len(V_L)):
+                q = q + dq * delta_L
+
+                J11 = alpha_1[nn] + 1j * beta_1[nn] * cos(2 * q)
+                J12 = -gamma_1[nn] + 1j * beta_1[nn] * sin(2 * q)
+                J21 = gamma_1[nn] + 1j * beta_1[nn] * sin(2 * q)
+                J22 = alpha_1[nn] - 1j * beta_1[nn] * cos(2 * q)
+
+                J = np.vstack((J11, J12, J21, J22)).T.reshape(2, 2) @ J
+
+                J11 = alpha_2[nn] + 1j * beta_2[nn] * cos(2 * q)
+                J12 = -gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
+                J21 = gamma_2[nn] + 1j * beta_2[nn] * sin(2 * q)
+                J22 = alpha_2[nn] - 1j * beta_2[nn] * cos(2 * q)
+
+                JT = JT @ np.vstack((J11, J21, J12, J22)).T.reshape(2, 2)
+
+            # print(q)
+            V_out[nn] = JT @ JF @ J @ Vin
+            E.from_matrix(M=V_out[nn])
+
+            if nn > 2 and E.parameters.azimuth() + m * pi - V_ang[nn - 1] < -pi * 0.9:
+                m = m + 1
+            V_ang[nn] = E.parameters.azimuth() + m * pi
+            Ip[nn] = (V_ang[nn] - pi / 2) / (2 * V * 4 * pi * 1e-7)
+
+        return Ip, V_out
+
+
     def total_rotation(self, V_Ip, fig=None, Vin=None):
 
         V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
@@ -100,12 +177,18 @@ class SPUNFIBER:
             if tmp_f_Phi_z == 0:
                 tmp_f_Phi_z = Phi_z
 
-            if abs(Omega_z - tmp_f_Omega_z) > pi/2:
-                n = n+1
+            if Omega_z - tmp_f_Omega_z > pi/2:
+                n = n-1
                 Omega_z = Omega_z - pi
-            if abs(Phi_z - tmp_f_Phi_z) > pi/4:
+            elif Omega_z - tmp_f_Omega_z < -pi/2:
+                n = n + 1
+                Omega_z = Omega_z + pi
+            if Phi_z - tmp_f_Phi_z > pi/4:
+                m = m-1
+                Phi_z = Phi_z -pi/2
+            elif Phi_z - tmp_f_Phi_z < -pi/4:
                 m = m+1
-                Phi_z = Phi_z + pi/2
+                Phi_z = Phi_z +pi/2
 
             #print(I, "Forward: = ", Omega_z-tmp_f_Omega_z, Phi_z-tmp_f_Phi_z)
 
@@ -556,8 +639,8 @@ if __name__ == '__main__':
     LB = 0.1
     SP = 0.02
     # dz = SP / 1000
-    dz = 0.0001
-    len_lf = 1 # lead fiber
+    dz = 0.0002
+    len_lf = 1   # lead fiber
     len_ls = 1   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
     mode = 0
@@ -565,7 +648,7 @@ if __name__ == '__main__':
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
     if mode == 0:
-        num_iter = 2
+        num_iter = 3
         strfile1 = 'AAAA1.csv'
         strfile2 = 'AAAA2.csv'
         num_processor = 16
@@ -582,11 +665,15 @@ if __name__ == '__main__':
             M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
             #Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
             if nn == 1:
-                Ip, Vout = spunfiber.total_rotation(V_I, fig1, Vin)
-                outdict[str(nn)] = -Ip
-            else:
+                Ip, Vout = spunfiber.stacking_matrix_rotation(V_I, Vin)
+                outdict[str(nn)] = Ip
+            elif nn ==2:
                 Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
                 outdict[str(nn)] = Ip
+            else:
+                Ip, Vout = spunfiber.total_rotation(V_I, fig1, Vin)
+                outdict[str(nn)] = -Ip
+
             outdict2[str(nn) + ' Ex'] = Vout[:, 0, 0]
             outdict2[str(nn) + ' Ey'] = Vout[:, 1, 0]
             checktime = pd.Timestamp.now() - start
@@ -599,6 +686,13 @@ if __name__ == '__main__':
         df2.to_csv(strfile1 + "_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
 
+        labelTups = [('Stacking matrix (dz = 0.0001)', 0), ('Lamming method with small step (dz = 0.0001)', 1),
+                     ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
+
+        #ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+        ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right')
+        ax2.set(xlim=(0, 4e6), ylim=(0, 0.05))
+        ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
 
 plt.show()
 
