@@ -169,7 +169,7 @@ class SPUNFIBER:
 
         return M_vib
 
-    def cal_rotation(self, V_Ip, ang_FM, num, Vout_dic, M_vib=None, Vin=None):
+    def cal_rotation(self, V_Ip, ang_FM, num, Vout_dic, M_vib=None, M_vib2=None, Vin=None):
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
 
@@ -186,6 +186,10 @@ class SPUNFIBER:
             V_L = arange(0, self.L+self.dz, self.dz)
             V_theta = V_theta_lf[-1] + V_L * s_t_r
 
+            # Lead fiber2 vector with V_theta_lf2
+            V_L_lf = arange(0, self.LF + self.dz, self.dz)
+            V_theta_lf2 = V_theta[-1] + V_L_lf * s_t_r
+
             # Faraday mirror
             ksi = ang_FM * pi / 180
             Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
@@ -194,6 +198,8 @@ class SPUNFIBER:
 
             M_lf_f = self.lamming(0, 1, V_theta_lf, M_vib)
             M_f = self.lamming(iter_I, 1, V_theta)
+            M_lf2_f = self.lamming(0, 1, V_theta_lf2, M_vib2)
+            M_lf2_b = self.lamming(0, -1, V_theta_lf2, M_vib2)
             M_b = self.lamming(iter_I, -1, V_theta)
             M_lf_b = self.lamming(0, -1, V_theta_lf, M_vib)
 
@@ -212,14 +218,13 @@ class SPUNFIBER:
                 # print("M_b = ", M_b[0, 1], M_b[1, 0])
                 #print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
 
-            V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
+            V_out[mm] = M_lf_b @ M_b @ M_lf2_b @ M_FR @ M_lf2_f @ M_f @ M_lf_f @ Vin
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
             # V_out[mm] =  M_lf_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             # V_out[mm] = M_lf_f @ V_in
             mm = mm + 1
         #print("done")
-
 
         Vout_dic[num] = V_out
 
@@ -262,7 +267,7 @@ class SPUNFIBER:
         #print("done")
         Vout_dic[num] = V_out
 
-    def calc_mp(self, num_processor, V_I, ang_FM, M_vib=None, fig=None, Vin=None):
+    def calc_mp(self, num_processor, V_I, ang_FM, M_vib=None, M_vib2=None, fig=None, Vin=None):
         spl_I = np.array_split(V_I, num_processor)
 
         procs = []
@@ -273,7 +278,7 @@ class SPUNFIBER:
         #print("Vin_calc_mp", Vin)
         for num in range(num_processor):
             proc = Process(target=self.cal_rotation,
-                           args=(spl_I[num], ang_FM, num, Vout_dic, M_vib, Vin))
+                           args=(spl_I[num], ang_FM, num, Vout_dic, M_vib, M_vib2, Vin))
             procs.append(proc)
             proc.start()
 
@@ -517,34 +522,35 @@ class SPUNFIBER:
 
 
 if __name__ == '__main__':
-    LB = 1.000
-    SP = 0.050
+    LB = 1
+    SP = 0.005
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 1  # lead fiber
     len_ls = 1   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 2
+    mode = 0
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
     if mode == 0:
-        num_iter = 3
-        strfile1 = 'TSET.csv'
-        strfile2 = 'TEST_SOP.csv'
-        num_processor = 16
-        V_I = arange(0e6, 160e3 + 0.1e6, 0.1e6)
+        num_iter = 5
+        strfile1 = 'A.csv'
+        strfile2 = 'A.csv'
+        num_processor = 8
+        V_I = arange(0e6, 18e6 + 0.2e6, 0.2e6)
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 45
+        ang_FM = 44
         Vin = np.array([[1], [0]])
 
         fig1, ax1 = spunfiber.init_plot_SOP()
         for nn in range(num_iter):
             M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
-            Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
+            M_vib2 = spunfiber.create_Mvib(nM_vib, 1, 1)
+            Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, M_vib2, fig1, Vin)
             outdict[str(nn)] = Ip
             outdict2[str(nn) + ' Ex'] = Vout[:, 0, 0]
             outdict2[str(nn) + ' Ey'] = Vout[:, 1, 0]
@@ -557,6 +563,8 @@ if __name__ == '__main__':
         df2 = pd.DataFrame(outdict2)
         df2.to_csv(strfile1 + "_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
+        fig, ax, lines = spunfiber.plot_errorbar(strfile1)
+
         '''
         fig3, ax3 = spunfiber.init_plot_SOP()
         for nn in range(num_iter):
@@ -576,6 +584,7 @@ if __name__ == '__main__':
         df2 = pd.DataFrame(outdict2)
         df2.to_csv(strfile2 + "_S", index=False)
         '''
+
     elif mode == 1:
         strfile1 = 'Inputpoldiff.csv'
         num_processor = 8
@@ -609,7 +618,6 @@ if __name__ == '__main__':
         df2 = pd.DataFrame(outdict2)
         df2.to_csv(strfile1+"_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
-
     elif mode == 2:
         strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
         #strfile2 = 'IdealFM_Vib5trans2.csv'
@@ -717,10 +725,7 @@ if __name__ == '__main__':
                 draw_stokes_points(fig[0], S, kind='line', color_line='b')
             else:
                 fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-                                          color_line='b')
-
-            #fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-            #                          color_line='b')
+                                      color_line='b')
             if V_I[0] == 0:
                 ax1.plot(V_I[1:], abs((Ip0[nn][1:] - V_I[1:]) / V_I[1:]))
                 ax2.plot(V_I[1:], abs((Ip1[nn][1:] - V_I[1:]) / V_I[1:]))
