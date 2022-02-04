@@ -427,7 +427,7 @@ class SPUNFIBER:
         return fig, ax, lines
         #plt.show()
 
-    def plot_errorbar(self, filename):
+    def plot_errorbar(self, filename, fig=None, ax=None):
 
         data = pd.read_csv(filename)
 
@@ -447,19 +447,20 @@ class SPUNFIBER:
                 pass
             else:
                 relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
+
+        if fig is None:
+            fig, ax = plt.subplots(figsize=(6,3))
+
         if V_I[0] == 0:
             df_mean = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).mean(axis=1).drop(0, axis=0)
             df_std = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).std(axis=1).drop(0, axis=0)
-            fig, ax = plt.subplots(figsize=(6, 3))
             ax.plot(V_I[1:], df_mean[:], label="mean value")
             ax.errorbar(V_I[1::3], df_mean[::3], yerr=df_std[::3], label="std", ls='None', c='black', ecolor='g', capsize=4)
         else:
             df_mean = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).mean(axis=1)
             df_std = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).std(axis=1)
-            fig, ax = plt.subplots(figsize=(6, 3))
             ax.plot(V_I, df_mean, label="mean value")
             ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], label="std", ls='None', c='black', ecolor='g', capsize=4)
-
 
         lines = []
 
@@ -522,28 +523,28 @@ class SPUNFIBER:
 
 
 if __name__ == '__main__':
-    LB = 1
-    SP = 0.005
+    LB = 0.09
+    SP = 0.048
     # dz = SP / 1000
-    dz = 0.0001
+    dz = 0.00005
     len_lf = 1  # lead fiber
     len_ls = 1   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 0
+    mode = 1
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
     if mode == 0:
-        num_iter = 5
-        strfile1 = 'A.csv'
+        num_iter = 50
+        strfile1 = 'Hibi_42FM_errdeg1x5.csv'
         strfile2 = 'A.csv'
-        num_processor = 8
-        V_I = arange(0e6, 18e6 + 0.2e6, 0.2e6)
+        num_processor = 16
+        V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 44
+        ang_FM = 42
         Vin = np.array([[1], [0]])
 
         fig1, ax1 = spunfiber.init_plot_SOP()
@@ -586,38 +587,27 @@ if __name__ == '__main__':
         '''
 
     elif mode == 1:
-        strfile1 = 'Inputpoldiff.csv'
-        num_processor = 8
-        V_I = arange(0e6, 18e6 + 0.2e6, 0.2e6)
-        outdict = {'Ip': V_I}
-        outdict2 = {'Ip': V_I}
-        start = pd.Timestamp.now()
-        ang_FM = 45
-        num_iter = 7
 
-        fig1, ax1 = spunfiber.init_plot_SOP()
-        #Vin = np.array([[[1], [0]], [[0.981], [0.195*1j]], [[0.924], [0.383*1j]]])
-        #Vin = np.array([[[0.707], [0.707]], [[0.694-0.138*1j], [0.694+0.138*1j]],
-        #                [[0.653-0.271*1j], [0.653+0.271*1j]]])
-        th = arange(0, 90+15, 15)
-        for nn in range(num_iter):
-            Vin = np.array([[cos(th[nn]*pi/180)], [sin(th[nn]*pi/180)]])
-            Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, fig=fig1, Vin=Vin)
-            outdict[str(nn)] = Ip
+        strfile1 = '44FM_errdeg1x5_0_2.csv'
+        fig, ax, lines = spunfiber.plot_error(strfile1)
+        fig2, ax2, lines = spunfiber.plot_errorbar(strfile1)
 
-            outdict2[str(nn) + ' Ex'] = Vout[:, 0, 0]
-            outdict2[str(nn) + ' Ey'] = Vout[:, 1, 0]
-            print(outdict2)
-            checktime = pd.Timestamp.now() - start
-            print(nn, "/", num_iter, checktime)
-            start = pd.Timestamp.now()
-            print(Vin)
+        strfile2 = '42FM_errdeg1x5_0_2.csv'
+        fig, ax, lines = spunfiber.plot_error(strfile2)
+        fig2, ax2, lines = spunfiber.plot_errorbar(strfile2, fig2, ax2)
 
-        df = pd.DataFrame(outdict)
-        df.to_csv(strfile1, index=False)
-        df2 = pd.DataFrame(outdict2)
-        df2.to_csv(strfile1+"_S", index=False)
-        fig2, ax2, lines = spunfiber.plot_error(strfile1)
+        strfile3 = '40FM_errdeg1x5_0_2.csv'
+        fig, ax, lines = spunfiber.plot_error(strfile3)
+        fig2, ax2, lines2 = spunfiber.plot_errorbar(strfile3, fig2, ax2)
+
+
+        strfile10 = 'Hibi_44FM_errdeg1x5.csv'
+        fig, ax, lines = spunfiber.plot_error(strfile10)
+        fig2, ax2, lines = spunfiber.plot_errorbar(strfile10)
+
+        strfile11 = 'Hibi_42FM_errdeg1x5.csv'
+        fig, ax, lines = spunfiber.plot_error(strfile11)
+        fig2, ax2, lines = spunfiber.plot_errorbar(strfile11, fig2, ax2)
     elif mode == 2:
         strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
         #strfile2 = 'IdealFM_Vib5trans2.csv'

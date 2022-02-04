@@ -60,6 +60,53 @@ class SPUNFIBER:
         vals, vects = eig(A)
         return einsum('...ik, ...k, ...kj -> ...ij',
                       vects, np.exp(vals), np.linalg.inv(vects))
+    def real_laming(self, V_Ip, DIR, V_theta, M_vib=None):
+        s_t_r = 2 * pi / self.SP  # spin twist ratio
+        delta = 2 * pi / self.LB
+        n = 0
+        m = 0
+        tmp_Omega_z = 0
+        tmp_Phi_z = 0
+
+        for I in V_Ip:
+            # magnetic field in unit length
+            # H = Ip / (2 * pi * r)
+            H = I / self.L
+            rho = self.V * H
+
+            # --------Laming: orientation of the local slow axis ------------
+            # --------Laming matrix on lead fiber --------------------------
+            qu = 2 * (s_t_r + rho) / delta
+            gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
+
+            R_z = 2 * arcsin(sin(gma * self.L) / ((1 + qu ** 2) ** 0.5))
+            Omega_z = s_t_r * self.L + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.L)) - n2 * pi
+            Phi_z = ((s_t_r * self.L) - Omega_z) / 2 + m2 * (pi / 2)
+
+            if tmp_f_Omega_z == 0:
+                tmp_f_Omega_z = Omega_z
+            if tmp_f_Phi_z == 0:
+                tmp_f_Phi_z = Phi_z
+
+            if abs(Omega_z - tmp_f_Omega_z) > pi/2:
+                n = n+1
+                Omega_z = Omega_z - pi
+            if abs(Phi_z - tmp_f_Phi_z) > pi/4:
+                m = m+1
+                Phi_z = Phi_z + pi/2
+
+            #print(I, "Forward: = ", Omega_z-tmp_f_Omega_z, Phi_z-tmp_f_Phi_z)
+
+            tmp_f_Omega_z = Omega_z
+            tmp_f_Phi_z = Phi_z
+
+            # Forward
+            n11 = cos(R_z / 2) + 1j * sin(R_z / 2) * cos(2 * Phi_z)
+            n12 = 1j * sin(R_z / 2) * sin(2 * Phi_z)
+            n21 = 1j * sin(R_z / 2) * sin(2 * Phi_z)
+            n22 = cos(R_z / 2) - 1j * sin(R_z / 2) * cos(2 * Phi_z)
+            M_R_f = np.array([[n11, n12], [n21, n22]])
+            M_Omega_f = np.array([[cos(Omega_z), -sin(Omega_z)], [sin(Omega_z), cos(Omega_z)]])
 
     def stacking_matrix_rotation(self, V_Ip, Vin=None):
         V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
