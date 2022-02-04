@@ -645,7 +645,7 @@ if __name__ == '__main__':
         ax2.set(xlim=(0, 18e6), ylim=(-0.08, 0.08))
         ax2.legend().set_visible(False)
 
-        ax2ins = inset_axes(ax2, width="45%", height=0.8, loc=1)
+        ax2ins = inset_axes(ax2, width="55%", height=0.8, loc=1)
 
         x1,x2,y1,y2 = 0, 8e6, -0.005, 0.005
         ax2ins.set_xlim(x1,x2)
