@@ -576,7 +576,7 @@ if __name__ == '__main__':
     len_lf = 1  # lead fiber
     len_ls = 1   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 1
+    mode = 2
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
