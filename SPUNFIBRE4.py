@@ -9,6 +9,8 @@ from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
 import matplotlib.ticker
 from matplotlib.ticker import (MaxNLocator,
                                FormatStrFormatter, ScalarFormatter)
+from mpl_toolkits.mplot3d import Axes3D
+
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
@@ -453,31 +455,35 @@ class SPUNFIBER:
 
         if fig is None:
             fig, ax = plt.subplots(figsize=(12/2.54, 10/2.54))
+            fig.set_dpi(91.79)  # DPI of My office monitor
 
         if is_reuse is False:
             if V_I[0] == 0:
-                ax.plot(V_I[1:], relErrorlimit[1:], 'r', label='ITER specification')
-                ax.plot(V_I[1:], -relErrorlimit[1:], 'r')
+                ax.plot(V_I[1:], relErrorlimit[1:], 'r--', label='ITER specification')
+                ax.plot(V_I[1:], -relErrorlimit[1:], 'r--')
             else:
-                ax.plot(V_I, relErrorlimit, 'r', label='ITER specification')
-                ax.plot(V_I, -relErrorlimit, 'r')
+                ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
+                ax.plot(V_I, -relErrorlimit, 'r--')
 
+        color = 'k'
         if V_I[0] == 0:
+            if is_reuse is True:
+                color = 'b'
             df_mean = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).mean(axis=1).drop(0, axis=0)
             df_std = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).std(axis=1).drop(0, axis=0)
-            ax.plot(V_I[1:], df_mean[:], label=label)
-            ax.errorbar(V_I[1::3], df_mean[::3], yerr=df_std[::3], ls='None', c='black', ecolor='g', capsize=4)
+            ax.plot(V_I[1:], df_mean[:], color, label=label)
+            ax.errorbar(V_I[1::3], df_mean[::3], yerr=df_std[::3], ls='None', c='black', ecolor=color, capsize=4)
         else:
             df_mean = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).mean(axis=1)
             df_std = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).std(axis=1)
-            ax.plot(V_I, df_mean, label=label)
-            ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], ls='None', c='black', ecolor='g', capsize=4)
+            ax.plot(V_I, df_mean, color, label=label)
+            ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], ls='None', c='black', ecolor=color, capsize=4)
 
         lines = []
 
         ax.legend(loc="lower right")
 
-        plt.rc('text', usetex=True)
+        #plt.rc('text', usetex=True)
         ax.set_xlabel(r'Plasma current $I_{p}(A)$')
         ax.set_ylabel(r'Relative error on $I_{P}$')
 
@@ -495,7 +501,7 @@ class SPUNFIBER:
         # fig.align_ylabels(ax)
         fig.subplots_adjust(left = 0.195, hspace=0.4, right=0.95, top=0.93, bottom=0.2)
         # fig.set_size_inches(6,4)
-        plt.rc('text', usetex=False)
+        #plt.rc('text', usetex=False)
 
         return fig, ax, lines
 
@@ -531,16 +537,119 @@ class SPUNFIBER:
                                                                                                                   axis=0)
             df_std = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).std(axis=1).drop(0,
                                                                                                                 axis=0)
-            ax.plot(V_I[1:], df_mean[:])
-            ax.errorbar(V_I[1::3], df_mean[::3], yerr=df_std[::3], ls='None', c='black', ecolor='g', capsize=4)
+            ax.plot(V_I[1:], df_mean[:], 'k')
+            ax.errorbar(V_I[1::3], df_mean[::3], yerr=df_std[::3], ls='None', c='black', ecolor='k', capsize=4)
         else:
             df_mean = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).mean(axis=1)
             df_std = data.drop(['Ip'], axis=1).sub(data['Ip'], axis=0).div(data['Ip'], axis=0).std(axis=1)
-            ax.plot(V_I, df_mean)
-            ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], ls='None', c='black', ecolor='g', capsize=4)
+            ax.plot(V_I, df_mean, 'r')
+            ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], ls='None', c='black', ecolor='r', capsize=4)
 
         return ax
     #plt.show()
+
+
+    def plot_errorbar_byStokes(self, filename, fig=None, ax=None, label=None, V_custom=None, cal_init=None):
+        is_reuse = bool(fig)
+        #print(is_reuse)
+        data = pd.read_csv(filename)
+        V_I = np.array(data['Ip'])
+        E = Jones_vector('Output')
+        S = create_Stokes('Output_S')
+        V_ang = zeros(len(V_I))
+
+        Ip = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
+
+        if fig is None:
+            fig, ax = plt.subplots(figsize=(12/2.54, 10/2.54))
+            fig.set_dpi(91.79)  # DPI of My office monitor
+            fig.subplots_adjust(hspace=0.4, left=0.195, right=0.95, top=0.93, bottom=0.2)
+
+        ## Requirement specificaion for ITER
+        absErrorlimit = zeros(len(V_I))
+        relErrorlimit = zeros(len(V_I))
+
+        # Calcuation ITER specification
+        for nn in range(len(V_I)):
+            if V_I[nn] < 1e6:
+                absErrorlimit[nn] = 10e3
+            else:
+                absErrorlimit[nn] = V_I[nn] * 0.01
+            if V_I[nn] == 0:
+                pass
+            else:
+                relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
+
+        if is_reuse is False:
+            if V_I[0] == 0:
+                ax.plot(V_I[1:], relErrorlimit[1:], 'r--', label='ITER specification')
+                ax.plot(V_I[1:], -relErrorlimit[1:], 'r--')
+            else:
+                ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
+                ax.plot(V_I, -relErrorlimit, 'r--')
+
+
+        for nn in range(int((data.shape[1] - 1) / 2)):
+            str_Ex = str(nn) + ' Ex'
+            str_Ey = str(nn) + ' Ey'
+            Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
+                            [complex(y) for y in data[str_Ey].to_numpy()]])
+
+            E.from_matrix(M=Vout)
+            S.from_Jones(E)
+            # Azimuth angle calcuation
+
+            m = 0
+            for kk in range(len(V_I)):
+                if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+                    m = m + 1
+                elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+                    m = m - 1
+                V_ang[kk] = E[kk].parameters.azimuth() + m * pi
+
+                if cal_init is None:
+                    c = pi/2
+                else:
+                    c = V_ang[0]
+                if V_custom is not None:
+                    Ip[nn][kk] = (V_ang[kk] - c) / (2 * spunfiber.V) * V_custom
+                    #print(cal_init)
+                else:
+                    Ip[nn][kk] = (V_ang[kk] - c) / (2 * spunfiber.V)
+
+        color = 'k'
+        if V_I[0] == 0:
+            if is_reuse is True:
+                color = 'b'
+            df_mean = ((Ip[...,1:]-V_I[1:])/V_I[1:]).mean(axis=0)
+            df_std = ((Ip[...,1:]-V_I[1:])/V_I[1:]).std(axis=0)
+
+            ax.plot(V_I[1:], df_mean, color, label=label)
+            ax.errorbar(V_I[2::3], df_mean[1::3], yerr=df_std[1::3], ls='None', c='black', ecolor=color, capsize=3)
+        else:
+            df_mean = Ip.mean(axis=1)
+            df_std = Ip.std(axis=1)
+            ax.plot(V_I, df_mean, color, label=label)
+            ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], ls='None', c='black', ecolor=color, capsize=4)
+
+        ax.legend(loc="lower right")
+        plt.rc('text', usetex=True)
+        ax.set_xlabel(r'Plasma current $I_{p}(A)$')
+        ax.set_ylabel(r'Relative error on $I_{P}$')
+
+        # plt.title('Output power vs Plasma current')
+        ax.set(xlim=(0, 18e6), ylim=(-0.012, 0.012))
+        ax.yaxis.set_major_locator(MaxNLocator(4))
+        ax.xaxis.set_major_locator(MaxNLocator(10))
+
+        ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
+        ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+
+        ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
+        ax.grid(ls='--', lw=0.5)
+        plt.rc('text', usetex=False)
+        plt.grid(True)
+        return fig, ax
 
     def add_plot(self, filename, ax, str_label):
 
@@ -562,6 +671,87 @@ class SPUNFIBER:
         fig, ax= S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         return fig, ax
 
+    def draw_PS(self):
+        '''
+           plot Poincare Sphere, ver. 20/03/2020
+           return:
+           ax, fig
+           '''
+        fig = plt.figure(figsize=(6, 6))
+        #    plt.figure(constrained_layout=True)
+        ax = Axes3D(fig)
+        # white panes
+        ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+        ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+        ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+
+        # no ticks
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        ax.set_zticklabels([])
+        # no panes
+        ax.set_axis_off()
+
+        # plot greed
+        u = np.linspace(0, 2 * np.pi, 61)  # azimuth
+        v = np.linspace(0, np.pi, 31)  # elevation
+        sprad = 1
+        x = sprad * np.outer(np.cos(u), np.sin(v))
+        y = sprad * np.outer(np.sin(u), np.sin(v))
+        z = sprad * np.outer(np.ones(np.size(u)), np.cos(v))
+
+        ax.plot_surface(x, y, z,
+                        color='w',  # (0.5, 0.5, 0.5, 0.0),
+                        # edgecolor='k',
+                        edgecolor=(3 / 256, 3 / 256, 3 / 256),
+                        linestyle=(0, (5, 5)),
+                        rstride=3, cstride=3,
+                        linewidth=.5, alpha=0.8, shade=
+                        0)
+
+        # main circles
+        # ax.plot(np.sin(u), np.cos(u), np.zeros_like(u), 'g-.', linewidth=0.75)  # equator
+        #    ax.plot(np.sin(u), np.zeros_like(u), np.cos(u), 'b-', linewidth=0.5)
+        #    ax.plot(np.zeros_like(u), np.sin(u), np.cos(u), 'b-', linewidth=0.5)
+
+        # axes and captions
+        amp = 1.5 * sprad
+        ax.plot([-amp, amp], [0, 0], [0, 0], 'k-.', lw=1, alpha=0.5, zorder=1)
+        ax.plot([0, 0], [-amp, amp], [0, 0], 'k-.', lw=1, alpha=0.5, zorder=1)
+        ax.plot([0, 0], [0, 0], [-amp*1.2/1.5, amp*1.2/1.5], 'k-.', lw=1, alpha=0.5, zorder=1)
+
+        distance = 1.5 * sprad
+        ax.text(-distance*1.3, 0, 0, '$S_1$', fontsize=18)
+        ax.text(0, distance, 0, '$S_2$', fontsize=18)
+        ax.text(0, 0, distance/1.5*1.2, '$S_3$', fontsize=18)
+
+        # points
+        px = [1, -1, 0, 0, 0, 0]
+        py = [0, 0, 1, -1, 0, 0]
+        pz = [0, 0, 0, 0, 1, -1]
+
+        ax.plot(px, py, pz,
+                color='black', marker='o', markersize=4, alpha=1, linewidth=0)
+        #
+
+        max_size = 1.05 * sprad
+        ax.set_xlim(-max_size, max_size)
+        ax.set_ylim(-max_size, max_size)
+        ax.set_zlim(-max_size, max_size)
+
+        # ax.view_init(elev=-21, azim=-54)
+        ax.view_init(elev=18, azim=-148)
+        #    ax.view_init(elev=0/np.pi, azim=0/np.pi)
+
+        #    ax.set_title(label = shot, loc='left', pad=10)
+        #    ax.set_title(label="  " + shot, loc='left', pad=-10, fontsize=8)
+
+        #    ax.legend()
+
+        ax.set_box_aspect([1, 1, 1])
+
+        return ax, fig
+
 # Progress bar is not easy/
 # Todo comparison between transmission and reflection
 # Todo FM effect
@@ -576,13 +766,13 @@ if __name__ == '__main__':
     len_lf = 1  # lead fiber
     len_ls = 1   # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-    mode = 2
+    mode =2
 
     # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
     # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
     if mode == 0:
         num_iter = 50
-        strfile1 = 'Hibi_42FM_errdeg1x5.csv'
+        strfile1 = 'Hibi_IdealFM_errdeg1x5.csv'
         strfile2 = 'A.csv'
         num_processor = 16
         V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
@@ -590,7 +780,7 @@ if __name__ == '__main__':
         outdict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 42
+        ang_FM = 45
         Vin = np.array([[1], [0]])
 
         fig1, ax1 = spunfiber.init_plot_SOP()
@@ -631,7 +821,6 @@ if __name__ == '__main__':
         df2 = pd.DataFrame(outdict2)
         df2.to_csv(strfile2 + "_S", index=False)
         '''
-
     elif mode == 1:
 
         strfile0 = 'IdealFM_Errdeg1x5_2.csv'
@@ -643,9 +832,9 @@ if __name__ == '__main__':
         fig, ax, lines = spunfiber.plot_error(strfile1)
         fig2, ax2, lines = spunfiber.plot_errorbar(strfile1, fig2, ax2, 'hi-bi spun fiber')
         ax2.set(xlim=(0, 18e6), ylim=(-0.08, 0.08))
-        ax2.legend().set_visible(False)
+        #ax2.legend().set_visible(False)
 
-        ax2ins = inset_axes(ax2, width="55%", height=0.8, loc=1)
+        ax2ins = inset_axes(ax2, width="45%", height=0.8, loc=1)
 
         x1,x2,y1,y2 = 0, 8e6, -0.005, 0.005
         ax2ins.set_xlim(x1,x2)
@@ -670,184 +859,63 @@ if __name__ == '__main__':
         fig2, ax2, lines = spunfiber.plot_errorbar(strfile11, fig2, ax2)
         '''
     elif mode == 2:
-        strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
-        #strfile2 = 'IdealFM_Vib5trans2.csv'
-        fig, ax, lines = spunfiber.plot_error(strfile1)
-        #fig, ax, lines = spunfiber.plot_errorbar(strfile1)
+        strfile0 = 'IdealFM_errdeg1x5_2.csv'
+        # strfile1 = '44FM_errdeg1x5_0_2.csv'
+        fig, ax, lines = spunfiber.plot_error(strfile0)
+        fig2, ax2, lines = spunfiber.plot_errorbar(strfile0, label='Lo-bi spun fiber')
 
-        '''
-        ax.set(xlim=(-0.5e5, 18e6), ylim=(-0.019, 0.125))
-        ax.yaxis.set_major_locator(MaxNLocator(8))
-        ax.xaxis.set_major_locator(MaxNLocator(10))
-        '''
-        #fig, ax, lines = spunfiber.plot_error(strfile2)
-        #ax.legend(lines[:], ['line A', 'line B'], loc='upper right')
+        strfile1 = 'Hibi_IdealFM_errdeg1x5.csv'
+        #fig, ax, lines = spunfiber.plot_error(strfile1)
+        strfile1 = 'Hibi_IdealFM_errdeg1x5.csv_S'
+        #fig2, ax2, lines = spunfiber.plot_errorbar(strfile1, fig2, ax2, 'Hi-bi spun fiber')
+        fig2, ax2 = spunfiber.plot_errorbar_byStokes(strfile1, fig2, ax2, label='Hi-bi spun fiber', V_custom=1.0365)
 
-        #spunfiber.add_plot('mp3.csv', ax, '45')
+        ax2.set(xlim=(0, 18e6), ylim=(-0.08, 0.08))
+        # ax2.legend().set_visible(False)
+
+        ax2ins = inset_axes(ax2, width="45%", height=0.8, loc=1)
+
+        x1, x2, y1, y2 = 0, 8e6, -0.005, 0.005
+        ax2ins.set_xlim(x1, x2)
+        ax2ins.set_ylim(y1, y2)
+        ax2ins = spunfiber.plot_errorbar_inset(strfile0, ax2ins)
     elif mode == 3:
-        strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv_S'
-        data = pd.read_csv(strfile1)
-        V_I = data['Ip']
-        E = Jones_vector('Output')
-        V_ang = zeros(len(V_I))
-        Ip0 = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
-        Ip1 = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
+        strfile0 = 'Hibi_44FM_errdeg1x5.csv'
+        strfile1 = 'Hibi_44FM_errdeg1x5.csv_S'
 
-        fig1, ax1 = plt.subplots(figsize=(6, 3))  # error calculation with previous method
-        fig2, ax2 = plt.subplots(figsize=(6, 3))  # error calculation with new method
+        #fig, ax, lines = spunfiber.plot_errorbar(strfile0, label='with considering FM error')
+        fig, ax = spunfiber.plot_errorbar_byStokes(strfile1, label='w/o considering FM error', V_custom=1.038)
 
-        for nn in range(int((data.shape[1] - 1) / 2)):
-            if nn == 2:
-                break
-            str_Ex = str(nn) + ' Ex'
-            str_Ey = str(nn) + ' Ey'
-            Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
-                            [complex(y) for y in data[str_Ey].to_numpy()]])
+        strfile1 = 'Hibi_44FM_errdeg1x5.csv_S'
+        fig, ax = spunfiber.plot_errorbar_byStokes(strfile1, fig, ax, label='wtih considering FM error', V_custom=1.038, cal_init=1)
+        #fig, ax = spunfiber.plot_errorbar_byStokes(strfile1, fig, ax, label='w/o considering FM error2', V_custom=1.037, cal_init=1)
+        ax.set(xlim=(0, 18e6), ylim=(-0.08, 0.08))
+        ax.legend(loc='upper right')
 
-            E.from_matrix(M=Vout)
 
-            # SOP evolution in Lead fiber (Forward)
-            S = create_Stokes('Output_S')
-            S.from_Jones(E)
-            # Azimuth angle calcuation
-            V_ang1 = zeros(len(V_I))
-            V_ang2 = zeros(len(V_I))
+        strfile0 = '44FM_errdeg1x5_0.csv'
+        fig, ax, lines = spunfiber.plot_errorbar(strfile0, label='with considering FM error')
+        ax2ins = inset_axes(ax, width="45%", height=0.8, loc=1)
+        x1, x2, y1, y2 = 0, 8e6, -0.005, 0.005
+        ax2ins.set_xlim(x1, x2)
+        ax2ins.set_ylim(y1, y2)
+        ax2ins = spunfiber.plot_errorbar_inset(strfile0, ax2ins)
 
-            m = 0
-            for kk in range(len(V_I)):
-                if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang1[kk - 1] < -pi * 0.8:
-                    m = m + 1
-                elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang1[kk - 1] > pi * 0.8:
-                    m = m - 1
-                V_ang1[kk] = E[kk].parameters.azimuth() + m * pi
-                #Ip0[nn][kk] = (V_ang1[kk] - V_ang1[0]) / (2*spunfiber.V)
-
-                Ip0[nn][kk] = (V_ang1[kk] - pi/2) / (2 * spunfiber.V)
-            # print(Ip0[nn])
-
-            # calculate trace length
-            # https://en.wikipedia.org/wiki/Spherical_trigonometry
-            # The angles A, B, C of the triangle are equal to the angles between the planes that
-            # intersect the surface of the sphere or, equivalently, the angles between the tangent vectors of
-            # the great circle arcs where they meet at the vertices. Angles are in radians.
-            V_ang2 = zeros(len(V_I))
-            flag = 0
-            for kk in range(len(V_I)-1):
-                c = pi / 2 - S[kk].parameters.ellipticity_angle()  # Ellipticity angle of Starting point (Ip = 0)
-                b = pi / 2 - S[kk+1].parameters.ellipticity_angle()  # Ellipticity angle of End point (Ip != 0)
-                A = S[kk+1].parameters.azimuth() - S[kk].parameters.azimuth()  # Azimuth angle between two point
-
-                if A > pi/2:
-                    A = A-pi
-                elif A < -pi/2:
-                    A = A+pi
-                ang_Poincare = arccos(cos(b) * cos(c) + sin(b) * sin(c) * cos(A))
-                '''
-                if kk > 2 and ang_Poincare < -pi / 2 * 0.5:
-                    ang_Poincare = ang_Poincare + pi/2
-                elif kk > 2 and ang_Poincare > pi / 2 * 0.5:
-                    ang_Poincare = ang_Poincare - pi/2
-                '''
-                V_ang2[kk+1] = V_ang2[kk] + ang_Poincare
-                print("V_ang", (V_ang2[kk]*180/pi) % (360), "ang_poincare = ", ang_Poincare)
-                '''
-                if ang_Poincare > 1:
-                    print("c= ", c)
-                    print("b= ", b)
-                    print("A= ", A)
-                if kk == 0:
-                    print("kk == 0")
-                    print("c= ", c)
-                    print("b= ", b)1
-                    print("A= ", A)
-                '''
-                if flag == 0:
-                    sf = (V_I[kk+1]-V_I[kk])/(V_ang2[kk+1]-V_ang2[kk])
-                    #sf = (V_I[-2] - V_I[-1]) / (V_ang2[-2] - V_ang2[-1])
-                    flag = 1
-                #Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) / spunfiber.V
-                Ip1[nn][kk] = abs((V_ang2[kk] - V_ang2[0])) * sf*0.95
-            Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) / spunfiber.V
-            #Ip1[nn][-1] = abs((V_ang2[-1] - V_ang2[0])) * sf
-                #if kk < 0.2 * len(V_I):
-                #    print(c, b, A, ang_Poincare, V_ang2[kk])
-
-            if nn != 0:
-                draw_stokes_points(fig[0], S, kind='line', color_line='b')
-            else:
-                fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-                                      color_line='b')
-            if V_I[0] == 0:
-                ax1.plot(V_I[1:], abs((Ip0[nn][1:] - V_I[1:]) / V_I[1:]))
-                ax2.plot(V_I[1:], abs((Ip1[nn][1:] - V_I[1:]) / V_I[1:]))
-            else:
-                ax1.plot(V_I, abs((Ip0[nn] - V_I) / V_I))
-                ax2.plot(V_I, abs((Ip1[nn] - V_I) / V_I))
-
-            ax.legend(loc="upper right")
-            plt.rc('text', usetex=True)
-            ax1.set_xlabel(r'Plasma current $I_{p}(A)$')
-            ax1.set_ylabel(r'Relative error on $I_{P}$')
-            ax2.set_xlabel(r'Plasma current $I_{p}(A)$')
-            ax2.set_ylabel(r'Relative error on $I_{P}$')
-
-            # plt.title('Output power vs Plasma current')
-            ax1.set(xlim=(0, 18e6), ylim=(0, 0.1))
-            ax1.yaxis.set_major_locator(MaxNLocator(4))
-            ax1.xaxis.set_major_locator(MaxNLocator(10))
-            ax2.set(xlim=(0, 18e6), ylim=(0, 0.1))
-            ax2.yaxis.set_major_locator(MaxNLocator(4))
-            ax2.xaxis.set_major_locator(MaxNLocator(10))
-
-            ax1.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
-            ax1.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
-            ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
-            ax2.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
-
-            ax1.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
-            ax1.grid(ls='--', lw=0.5)
-            ax2.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
-            ax2.grid(ls='--', lw=0.5)
-
-            # fig.align_ylabels(ax)
-            fig1.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
-            fig2.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
-            # fig.set_size_inches(6,4)
-            plt.rc('text', usetex=False)
+        strfile1 = '44FM_errdeg1x5_0.csv_S'
+        fig, ax = spunfiber.plot_errorbar_byStokes(strfile1, fig, ax, label='w/o considering FM error')
+        ax.set(xlim=(0, 18e6), ylim=(-0.08, 0.08))
     else:
-        strfile1 = '44FM_Errdeg1x5_0.csv_S'
+        strfile1 = 'IdealFM_Errdeg1x5_2.csv_S'
+        #strfile1 = 'Hibi_IdealFM_errdeg1x5.csv_S'
         data = pd.read_csv(strfile1)
         V_I = data['Ip']
         E = Jones_vector('Output')
         V_ang = zeros(len(V_I))
-        Ip0 = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
-        Ip1 = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
+        ax, fig = spunfiber.draw_PS()
 
-        fig1, ax1 = plt.subplots(figsize=(6, 3))  # error calculation with previous method
+        pnt = [0, 3, 7, 11, 15, 19]
+        for nn in range(50):
 
-        ## Requirement specificaion for ITER
-        absErrorlimit = zeros(len(V_I))
-        relErrorlimit = zeros(len(V_I))
-
-        # Calcuation ITER specification
-        for nn in range(len(V_I)):
-            if V_I[nn] < 1e6:
-                absErrorlimit[nn] = 10e3
-            else:
-                absErrorlimit[nn] = V_I[nn] * 0.01
-            if V_I[nn] == 0:
-                pass
-            else:
-                relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
-
-        if V_I[0] == 0:
-            ax1.plot(V_I[1:], relErrorlimit[1:], 'r', label='ITER specification')
-            ax1.plot(V_I[1:], -relErrorlimit[1:], 'r')
-        else:
-            ax1.plot(V_I, relErrorlimit, 'r', label='ITER specification')
-            ax1.plot(V_I, -relErrorlimit, 'r')
-
-        for nn in range(int((data.shape[1] - 1) / 2)):
             str_Ex = str(nn) + ' Ex'
             str_Ey = str(nn) + ' Ey'
             Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
@@ -861,74 +929,45 @@ if __name__ == '__main__':
             # Azimuth angle calcuation
             V_ang1 = zeros(len(V_I))
 
-            m = 0
-            for kk in range(len(V_I)):
-                if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang1[kk - 1] < -pi * 0.8:
-                    m = m + 1
-                elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang1[kk - 1] > pi * 0.8:
-                    m = m - 1
-                V_ang1[kk] = E[kk].parameters.azimuth() + m * pi
-                Ip0[nn][kk] = (V_ang1[kk] - V_ang1[0]) / (2 * spunfiber.V)
-                Ip1[nn][kk] = (V_ang1[kk] - pi / 2) / (2 * spunfiber.V)
+            S1 = S[pnt].parameters.components()[1]
+            S2 = S[pnt].parameters.components()[2]
+            S3 = S[pnt].parameters.components()[3]
+            line1 = ax.plot(S1, S2, S3, marker='o', markersize=5, alpha=1.0, linewidth=0, zorder=3, color='b', label='Ideal FM')
 
-            if nn != 0:
-                draw_stokes_points(fig[0], S[0], kind='scatter', color_line='b')
-            else:
-                fig, ax = S[0].draw_poincare(figsize=(7, 7), angle_view=[31 * pi / 180, 164 * pi / 180], kind='scatter',
-                                             color_line='b')
-            if nn != 0:
-                draw_stokes_points(fig[0], S[3], kind='scatter', color_line='r')
-                draw_stokes_points(fig[0], S[7], kind='scatter', color_line='r')
-                draw_stokes_points(fig[0], S[11], kind='scatter', color_line='r')
-                draw_stokes_points(fig[0], S[15], kind='scatter', color_line='r')
-                draw_stokes_points(fig[0], S[19], kind='scatter', color_line='r')
+        strfile1 = '44FM_Errdeg1x5_0.csv_S'
+        #strfile1 = 'Hibi_44FM_errdeg1x5.csv_S'
+        data = pd.read_csv(strfile1)
+        V_I = data['Ip']
+        E = Jones_vector('Output')
+        V_ang = zeros(len(V_I))
 
+        # for nn in range(int((data.shape[1] - 1) / 2)):
 
-            else:
-                #fig, ax = S[30].draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-                #                             color_line='b')
-                draw_stokes_points(fig[0], S[3], kind='scatter', color_line='r')
-                draw_stokes_points(fig[0], S[7], kind='scatter', color_line='r')
-                draw_stokes_points(fig[0], S[11], kind='scatter', color_line='r')
-                draw_stokes_points(fig[0], S[15], kind='scatter', color_line='r')
-                draw_stokes_points(fig[0], S[19], kind='scatter', color_line='r')
-            print(Ip0[-1][3])
-            print(Ip0[-1][7])
-            print(Ip0[-1][11])
-            print(Ip0[-1][15])
-            print(Ip0[-1][19])
+        pnt = [0, 3, 7, 11, 15, 19]
+        #plt.rc('text', usetex=True)
 
-            # fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-            #                          color_line='b')
-            if V_I[0] == 0:
-                ax1.plot(V_I[1:], abs((Ip0[nn][1:] - V_I[1:]) / V_I[1:]))
-                ax1.plot(V_I[1:], abs((Ip1[nn][1:] - V_I[1:]) / V_I[1:]))
+        for nn in range(50):
+            str_Ex = str(nn) + ' Ex'
+            str_Ey = str(nn) + ' Ey'
+            Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
+                             [complex(y) for y in data[str_Ey].to_numpy()]])
 
-            else:
-                ax1.plot(V_I, abs((Ip0[nn] - V_I) / V_I))
-                ax1.plot(V_I, abs((Ip1[nn] - V_I) / V_I))
+            E.from_matrix(M=Vout)
 
-            ax1.legend(loc="upper right")
-            plt.rc('text', usetex=True)
-            ax1.set_xlabel(r'Plasma current $I_{p}(A)$')
-            ax1.set_ylabel(r'Relative error on $I_{P}$')
+            # SOP evolution in Lead fiber (Forward)
+            S = create_Stokes('Output_S')
+            S.from_Jones(E)
+            # Azimuth angle calcuation
+            V_ang1 = zeros(len(V_I))
 
+            S1 = S[pnt].parameters.components()[1]
+            S2 = S[pnt].parameters.components()[2]
+            S3 = S[pnt].parameters.components()[3]
+            line2 = ax.plot(S1, S2, S3, marker='x', markersize=5, alpha=1.0, linewidth=0, zorder=3, color='r',
+                            label=r'Nonideal FM ($\theta_{err}=1^{\circ}$)')
 
-            # plt.title('Output power vs Plasma current')
-            ax1.set(xlim=(0, 18e6), ylim=(0, 0.1))
-            ax1.yaxis.set_major_locator(MaxNLocator(4))
-            ax1.xaxis.set_major_locator(MaxNLocator(10))
-
-
-            ax1.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
-            ax1.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
-
-            ax1.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
-            ax1.grid(ls='--', lw=0.5)
-
-
-            # fig.align_ylabels(ax)
-            fig1.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
-            # fig.set_size_inches(6,4)
-            plt.rc('text', usetex=False)
+        lns = line1 + line2
+        labs = [l.get_label() for l in lns]
+        ax.legend(lns, labs, loc=0)
+        #plt.rc('text', usetex=False)
 plt.show()
