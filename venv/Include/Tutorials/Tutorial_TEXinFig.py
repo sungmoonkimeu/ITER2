@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-plt.rc('text',usetex = True)
+#plt.rc('text',usetex = True)
 x = range(0,10)
 y = [t**2 for t in x]
 z = [t**2+1 for t in x]
