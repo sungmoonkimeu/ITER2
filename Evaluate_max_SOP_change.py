@@ -44,13 +44,13 @@ M = Mueller('cal')
 
 azi = np.arange(0, pi/2, 0.1)
 #ell = np.arange(0, pi/6, 0.1)
-E.general_azimuth_ellipticity(azimuth=0, ellipticity=azi)
+E.general_azimuth_ellipticity(azimuth=azi, ellipticity=pi/12)
 S.from_Jones(E)
 fig, ax = S.draw_poincare(kind='line', color_line='k')
 
-phi0 = -pi/3
+phi0 = -pi/12
 Mp = np.array([[exp(1j*phi0/2), 0], [0, exp(-1j*phi0/2)]])
-phi1 = pi/6
+phi1 = pi/12
 Mr = np.array([[cos(phi1),-sin(phi1)], [sin(phi1), cos(phi1)]])
 
 J1.from_matrix(Mr)
@@ -69,6 +69,8 @@ for nn in range(3):
     c = b/(b[0]**2 + b[1]**2 + b[2]**2)**0.5
     print(c)
 
+fig[0].plot([0, c[0]],[0, c[1]],[0,c[2]], 'r-', lw=1,)
+
 z = [0,0,1]
 y = [0,1,0]
 x = [1,0,0]
@@ -82,16 +84,19 @@ Rx = np.array([[cos(th_x), -sin(th_x), 0], [sin(th_x), cos(th_x), 0], [0, 0, 1]]
 Ry = np.array([[1, 0, 0], [0, cos(th_y), -sin(th_y)], [0, sin(th_y), cos(th_y)]])
 Rz = np.array([[cos(th_z), 0, sin(th_z)], [0,1,0], [-sin(th_z), 0, cos(th_z)]])
 
-th = 0
+
+th = th_x
+if th_y > pi/2:
+    th = -th_x
 Rr = np.array([[cos(th), -sin(th), 0], [sin(th), cos(th), 0], [0, 0, 1]])  # S3, R 기준 rotation
 
-th =0
+th = th_z
 R45 = np.array([[cos(th), 0, sin(th)], [0,1,0], [-sin(th), 0, cos(th)]])     # S2, + 기준 rotation
 
-th = -th_z
+th = 0
 Rh = np.array([[1, 0, 0], [0, cos(th), -sin(th)], [0, sin(th), cos(th)]])   # S1, H 기준 rotation
 
-TT = Rr@R45@Rh@a
+TT = R45.T@Rh.T@Rr.T@a
 zT = ones(np.shape(TT)[1])
 
 Sp = np.vstack((zT,TT))
@@ -99,7 +104,14 @@ S.from_matrix(Sp)
 
 draw_stokes_points(fig[0], S, kind='line', color_line='b')
 
-
+a = S.parameters.matrix()[1:]
+for nn in range(3):
+    b0 = a[:,0] - a[:,nn+1]
+    b1 = a[:, 0]-a[:, nn+2]
+    b = np.cross(b0,b1)
+    c = b/(b[0]**2 + b[1]**2 + b[2]**2)**0.5
+    print(c)
+fig[0].plot([0, c[0]],[0, c[1]],[0,c[2]], 'b-', lw=1,)
 
 '''
 azi, ell = S2.parameters.azimuth_ellipticity()
