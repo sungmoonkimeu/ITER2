@@ -103,7 +103,7 @@ M_phi = np.array([[exp(1j*phi), 0],[0, exp(-1j*phi)]])
 M_co = M_rot @ M_theta @ M_phi @ M_theta_T
 
 # input matrix
-V_I = arange(0e6, 200e3 + 1e3, 50e3)
+V_I = arange(0e6, 20e3 + 1e3, 5e3)
 
 V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
 V = 0.7 * 4 * pi * 1e-7
