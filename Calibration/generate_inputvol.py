@@ -60,7 +60,7 @@ if __name__ == "__main__":
     # RC filters for continuous signals
     """
     sample_rate = 1000
-    duration_points = 30000
+    duration_points = 50000
     sec_duration = duration_points/sample_rate
 
     frequency_low = 1/12
@@ -89,17 +89,17 @@ if __name__ == "__main__":
                              rc_filters(sig, sample_rate,
                                         highpass_cutoff, lowpass_cutoff)])
 
-    plt.plot(time_s, sig, label="Input signal")
+    plt.plot(time_s, 10*sig, label="Supply current")
     #plt.plot(time_s,filt_signals[:, 0], label="High-pass")
-    plt.plot(time_s,filt_signals[:, 1], label="Low-pass")
-    plt.title("RC Low-pass Filter Response")
+    plt.plot(time_s, 40*filt_signals[:, 1], label="Calibration current outside of VV")
+    plt.title("VS3 coil current & Calibration current")
     plt.legend()
     plt.xlabel("time [s]")
-    plt.ylabel("Voltage [V]")
-    plt.xlim([5.98, 6.06])
-    plt.ylim([-0.05, 1.05])
-    plt.plot(6.01,1-np.exp(-1), 'ro')
-    plt.text(6.011,1-np.exp(-1), '(6.01, 0.632) = (tc, 1-exp(-1)')
+    plt.ylabel("Ampare [kA]")
+    #plt.xlim([5.98, 6.06])
+    #plt.ylim([-0.05, 1.05])
+    #plt.plot(6.01,1-np.exp(-1), 'ro')
+    #plt.text(6.011,1-np.exp(-1), '(6.01, 0.632) = (tc, 1-exp(-1)')
     plt.show()
 
     sig_dir = 'Filteredsignal.csv'
