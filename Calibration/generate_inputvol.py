@@ -60,7 +60,7 @@ if __name__ == "__main__":
     # RC filters for continuous signals
     """
     sample_rate = 1000
-    duration_points = 50000
+    duration_points = 1000*18
     sec_duration = duration_points/sample_rate
 
     frequency_low = 1/12
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     plt.plot(time_s, 10*sig, label="Supply current")
     #plt.plot(time_s,filt_signals[:, 0], label="High-pass")
-    plt.plot(time_s, 40*filt_signals[:, 1], label="Calibration current outside of VV")
+    plt.plot(time_s, 40*filt_signals[:, 1], label="Calibration current outside of VV (tc = 0.5s)")
     plt.title("VS3 coil current & Calibration current")
     plt.legend()
     plt.xlabel("time [s]")
@@ -103,6 +103,6 @@ if __name__ == "__main__":
 
     sig_dir = 'Filteredsignal.csv'
     outx = time_s
-    outy = filt_signals[:, 1]
+    outy = filt_signals[:, 1]*40000
     df = pd.DataFrame(outy)
     df.to_csv(sig_dir, index=False)

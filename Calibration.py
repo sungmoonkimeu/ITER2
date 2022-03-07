@@ -27,40 +27,6 @@ from matplotlib.ticker import (MaxNLocator,
 from multiprocessing import Process, Queue, Manager,Lock
 import pandas as pd
 
-
-def cart2sph(x, y, z):
-    # r, theta, phi cooridinate
-    # theta is inclination angle between the zenith direction and the line segment (0,0,0) - (x,y,z)
-    # phi is the azimuthal angle between the azimuth reference direction and
-    # the orthogonal projection of the line segment OP on the reference plane.
-
-    hxy = np.hypot(x, y)
-    r = np.hypot(hxy, z)
-    theta = np.arctan2(hxy, z)
-    phi = np.arctan2(y, x)
-    return np.array([r, theta, phi])
-
-
-def sph2cart(r, theta, phi):
-
-    x = r * np.cos(phi) * np.sin(theta)
-    y = r * np.sin(phi) * np.sin(theta)
-    z = r * np.cos(theta)
-    return np.array([x, y, z])
-
-
-class Arrow3D(FancyArrowPatch):
-    def __init__(self, xs, ys, zs, *args, **kwargs):
-        FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
-        self._verts3d = xs, ys, zs
-
-    def draw(self, renderer):
-        xs3d, ys3d, zs3d = self._verts3d
-        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
-        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
-        FancyArrowPatch.draw(self, renderer)
-
-
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
         self.oom = order
@@ -74,7 +40,6 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
             self.format = r'$\mathdefault{%s}$' % self.format
 
 # _______________________________Parameters#1___________________________________#
-
 # Circulator input matrix
 
 theta = 0 * pi / 180   # birefringence axis of LB
@@ -89,12 +54,10 @@ M_phi = np.array([[exp(1j*phi), 0],[0, exp(-1j*phi)]])
 M_ci = M_rot @ M_theta @ M_phi @ M_theta_T
 
 # Circulator output matrix
-
 theta = 0 * pi / 180  # random axis of LB
 phi = 0 * pi / 180  # ellipticity angle change from experiment
 theta_e = 0 * pi / 180  # azimuth angle change from experiment
 
-# Mci
 M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
 M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
 M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
@@ -103,7 +66,12 @@ M_phi = np.array([[exp(1j*phi), 0],[0, exp(-1j*phi)]])
 M_co = M_rot @ M_theta @ M_phi @ M_theta_T
 
 # input matrix
-V_I = arange(0e6, 40e3 + 1e3, 5e3)
+strfile0 = 'Calibration//Filteredsignal.csv'
+data = pd.read_csv(strfile0)
+V_I = np.array(data)
+V_I = V_I.reshape(V_I.size,)
+
+#V_I = arange(0e6, 40e3 + 1e3, 5e3)
 
 V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
 V = 0.7 * 4 * pi * 1e-7
