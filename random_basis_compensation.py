@@ -1,39 +1,18 @@
+# Compensate the randomly rotated basis by adjusting the SOP rotation is aligned to the parallel to the equator.
+# 1. Calculate the normal vector of SOP rotation
+# 2. Basis rotation based on the axis 'R (S3)'
+# 3. Another basis rotation base don the axis '+(S2)'
+
+
 import numpy as np
 from numpy import pi, cos, sin, ones, zeros, einsum, arange, arcsin, arctan, tan, arccos, savetxt, exp
-from numpy.linalg import norm, eig
-import matplotlib.pyplot as plt
+
 from py_pol.jones_matrix import Jones_matrix
 from py_pol.jones_vector import Jones_vector, degrees
 from py_pol.mueller import Mueller
 from py_pol.stokes import Stokes, create_Stokes
 from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
-import matplotlib.ticker
-from matplotlib.ticker import (MaxNLocator,
-                               FormatStrFormatter, ScalarFormatter)
-from mpl_toolkits.mplot3d import Axes3D
-
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from mpl_toolkits.axes_grid1.inset_locator import mark_inset
-
-from multiprocessing import Process, Queue, Manager,Lock
-import pandas as pd
 import matplotlib.pyplot as plt
-
-
-class OOMFormatter(matplotlib.ticker.ScalarFormatter):
-    def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
-        self.oom = order
-        self.fformat = fformat
-        matplotlib.ticker.ScalarFormatter.__init__(self, useOffset=offset, useMathText=mathText)
-
-    def _set_order_of_magnitude(self):
-        self.orderOfMagnitude = self.oom
-
-    def _set_format(self, vmin=None, vmax=None):
-        self.format = self.fformat
-        if self._useMathText:
-            self.format = r'$\mathdefault{%s}$' % self.format
-
 
 E = Jones_vector('Input')
 S = create_Stokes('Output')
@@ -51,29 +30,27 @@ fig, ax = S.draw_poincare(kind='line', color_line='k')
 phi0 = -pi/12
 Mp = np.array([[exp(1j*phi0/2), 0], [0, exp(-1j*phi0/2)]])
 phi1 = pi/12
-Mr = np.array([[cos(phi1),-sin(phi1)], [sin(phi1), cos(phi1)]])
+Mr = np.array([[cos(phi1), -sin(phi1)], [sin(phi1), cos(phi1)]])
 
 J1.from_matrix(Mr)
 J2.from_matrix(Mp)
 Out = J2*J1*E
 S.from_Jones(Out)
-#S.from_Jones(Out).draw_poincare()
-
 draw_stokes_points(fig[0], S, kind='line', color_line='r')
 
 a = S.parameters.matrix()[1:]
 for nn in range(3):
-    b0 = a[:,0] - a[:,nn+1]
-    b1 = a[:, 0]-a[:, nn+2]
-    b = np.cross(b0,b1)
+    b0 = a[:, 0] - a[:, nn+1]
+    b1 = a[:, 0] - a[:, nn+2]
+    b = np.cross(b0, b1)
     c = b/(b[0]**2 + b[1]**2 + b[2]**2)**0.5
     print(c)
 
-fig[0].plot([0, c[0]],[0, c[1]],[0,c[2]], 'r-', lw=1,)
+fig[0].plot([0, c[0]], [0, c[1]], [0, c[2]], 'r-', lw=1,)
 
-z = [0,0,1]
-y = [0,1,0]
-x = [1,0,0]
+z = [0, 0, 1]
+y = [0, 1, 0]
+x = [1, 0, 0]
 
 th_x = np.arccos(np.dot(x,c))
 th_y = np.arccos(np.dot(y,c))

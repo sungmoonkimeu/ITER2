@@ -69,11 +69,10 @@ if __name__ == "__main__":
     # Design the cutoff
     #number_octaves = 3
     highpass_cutoff = 100
-    tc = 0.01 # time constant 10 ms
+    tc = 0.5 # time constant 0.5 s
     fc = 1/tc/(2*pi)
     lowpass_cutoff = fc
 
-    print('Two-tone test')
     print('Sample rate, Hz:', sample_rate)
     print('Record duration, s:', sec_duration)
     #print('Low, high tone frequency:', frequency_low, frequency_high)

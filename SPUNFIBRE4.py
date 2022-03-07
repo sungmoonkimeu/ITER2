@@ -501,7 +501,7 @@ class SPUNFIBER:
         # fig.align_ylabels(ax)
         fig.subplots_adjust(left = 0.195, hspace=0.4, right=0.95, top=0.93, bottom=0.2)
         # fig.set_size_inches(6,4)
-        #plt.rc('text', usetex=False)
+        # plt.rc('text', usetex=False)
 
         return fig, ax, lines
 
@@ -510,7 +510,7 @@ class SPUNFIBER:
 
         V_I = data['Ip']
 
-        ## Requirement specificaion for ITER
+        # Requirement specificaion for ITER
         absErrorlimit = zeros(len(V_I))
         relErrorlimit = zeros(len(V_I))
 
@@ -551,7 +551,7 @@ class SPUNFIBER:
 
     def plot_errorbar_byStokes(self, filename, fig=None, ax=None, label=None, V_custom=None, cal_init=None):
         is_reuse = bool(fig)
-        #print(is_reuse)
+        # print(is_reuse)
         data = pd.read_csv(filename)
         V_I = np.array(data['Ip'])
         E = Jones_vector('Output')
@@ -565,11 +565,11 @@ class SPUNFIBER:
             fig.set_dpi(91.79)  # DPI of My office monitor
             fig.subplots_adjust(hspace=0.4, left=0.195, right=0.95, top=0.93, bottom=0.2)
 
-        ## Requirement specificaion for ITER
+        # Requirement specification for ITER
         absErrorlimit = zeros(len(V_I))
         relErrorlimit = zeros(len(V_I))
 
-        # Calcuation ITER specification
+        # Calculation ITER specification
         for nn in range(len(V_I)):
             if V_I[nn] < 1e6:
                 absErrorlimit[nn] = 10e3
@@ -588,7 +588,6 @@ class SPUNFIBER:
                 ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
                 ax.plot(V_I, -relErrorlimit, 'r--')
 
-
         for nn in range(int((data.shape[1] - 1) / 2)):
             str_Ex = str(nn) + ' Ex'
             str_Ey = str(nn) + ' Ey'
@@ -597,7 +596,7 @@ class SPUNFIBER:
 
             E.from_matrix(M=Vout)
             S.from_Jones(E)
-            # Azimuth angle calcuation
+            # Azimuth angle calculation
 
             m = 0
             for kk in range(len(V_I)):
