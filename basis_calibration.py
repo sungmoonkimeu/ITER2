@@ -113,7 +113,7 @@ if __name__ == '__main__':
     J2 = Jones_matrix('Random element')
     M = Mueller('cal')
 
-    azi = np.arange(0, pi/2, 0.1)
+    azi = np.arange(0, pi/4, 0.1)
     # ell = np.arange(0, pi/6, 0.1)
     E.general_azimuth_ellipticity(azimuth=azi, ellipticity=pi/12)
     S.from_Jones(E)
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     # S.from_Jones(Out).draw_poincare()
 
     draw_stokes_points(fig[0], S, kind='line', color_line='r')
-    S2 = cal_basis1(S)
+    S2 = calib_basis1(S)
     draw_stokes_points(fig[0], S2, kind='line', color_line='b')
 
     plt.show()
