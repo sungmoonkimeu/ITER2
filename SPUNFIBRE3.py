@@ -1,5 +1,5 @@
 import numpy as np
-from numpy import pi, cos, sin, ones, zeros, einsum, arange, arcsin, arctan, tan, arccos, savetxt
+from numpy import pi, cos, sin, ones, zeros, einsum, arange, arcsin, arctan, tan, arccos, savetxt, log10
 from numpy.linalg import norm, eig
 import matplotlib.pyplot as plt
 from py_pol.jones_vector import Jones_vector, degrees
@@ -480,20 +480,13 @@ class SPUNFIBER:
 
         return Ip, Vout
 
-
     def single_rotation1(self, V_Ip, Vin=None):
         # cal rotation angle using lamming method (variable dL)
-
         s_t_r = 2 * pi / self.SP
-
-        mm = 0
-        # Lead fiber vector with V_theta_lf
-        V_L_lf = arange(0, self.LF + self.dz, self.dz)
-        V_theta_lf = V_L_lf * s_t_r
 
         # Sensing fiber vector with V_theta
         V_L = arange(0, self.L + self.dz, self.dz)
-        V_theta = V_theta_lf[-1] + V_L * s_t_r
+        V_theta = V_L * s_t_r
 
         # Faraday mirror
         ksi = ang_FM * pi / 180
@@ -501,18 +494,9 @@ class SPUNFIBER:
         Jm = np.array([[1, 0], [0, 1]])
         M_FR = Rot @ Jm @ Rot
 
-        M_lf_f = self.lamming(0, 1, V_theta_lf)
         M_f = self.lamming(V_Ip, 1, V_theta)
         M_b = self.lamming(V_Ip, -1, V_theta)
-        M_lf_b = self.lamming(0, -1, V_theta_lf)
-        Vout = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
-
-        E = Jones_vector('Output')
-        E.from_matrix(M=Vout)
-
-        # SOP evolution in Lead fiber (Forward)
-        S = create_Stokes('Output_S')
-        S.from_Jones(E)
+        Vout = M_b @ M_FR @ M_f  @ Vin
 
         return Vout
 
@@ -541,7 +525,7 @@ class SPUNFIBER:
         rho = self.V * H
 
         # --------Laming: orientation of the local slow axis ------------
-        # --------Laming matrix on lead fiber --------------------------
+        # --------Laming matrix on spun fiber --------------------------
         qu = 2 * (s_t_r + rho) / delta
         gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
 
@@ -579,8 +563,11 @@ class SPUNFIBER:
         n22 = cos(R_z / 2) - 1j * sin(R_z / 2) * cos(2 * Phi_z)
         M_R_f = np.array([[n11, n12], [n21, n22]])
         M_Omega_f = np.array([[cos(Omega_z), -sin(Omega_z)], [sin(Omega_z), cos(Omega_z)]])
+
+
         # Backward
-        rho = -self.V * H
+        #rho = -self.V * H
+        s_t_r = -s_t_r
         qu = 2 * (s_t_r + rho) / delta
         gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
 
@@ -614,7 +601,7 @@ class SPUNFIBER:
         n21 = 1j * sin(R_z / 2) * sin(2 * Phi_z)
         n22 = cos(R_z / 2) - 1j * sin(R_z / 2) * cos(2 * Phi_z)
         M_R_b = np.array([[n11, n12], [n21, n22]])
-        M_Omega_b = np.array([[cos(Omega_z), sin(Omega_z)], [-sin(Omega_z), cos(Omega_z)]])
+        M_Omega_b = np.array([[cos(Omega_z), -sin(Omega_z)], [sin(Omega_z), cos(Omega_z)]])
 
         # Faraday mirror
         ang_FM = 45
@@ -914,28 +901,65 @@ if __name__ == '__main__':
         strfile1 = 'b1.csv'
         strfile2 = 'b2.csv'
 
-        V_I = 1e6
-        outdict = {'Ip': V_I}
-        outdict2 = {'Ip': V_I}
+        V_I = 1e3
         nM_vib = 0
         ang_FM = 45
         Vin = np.array([[1], [0]])
 
-        #fig1, ax1 = spunfiber.init_plot_SOP()
-        Vout = spunfiber.single_rotation1(V_I, Vin)         # cal rotation angle using lamming method (variable dL)
-        print(Vout)
-        Vout = spunfiber.single_rotation2(V_I, Vin)         # cal rotation angle using lamming method (dL=Fiber length)
-        print(Vout)
-        Vout = spunfiber.single_rotation3(V_I, Vin)         # cal rotation angle using stacking method (dL=variable)
+        E = Jones_vector('Output')
+        S_dL = create_Stokes('Laming_dL')
+        S_L = create_Stokes('Laming_L')
+        S_S = create_Stokes('Stacking')
 
-        print(Vout)
+        V_dL = np.array([])
+        V_St = np.array([])
+
+        Vout = spunfiber.single_rotation2(V_I, Vin)  # cal rotation angle using lamming method (dL=Fiber length)
+        V_L = S_L.from_Jones(E.from_matrix(Vout)).parameters.matrix()
+        print(V_L)
+        var_dL = SP*10**(-np.arange(2, 3, 0.5, dtype=float))
+
+        for nn, var in enumerate(var_dL):
+            spunfiber.dz = var
+
+            Vout = spunfiber.single_rotation1(V_I, Vin)         # cal rotation angle using lamming method (variable dL)
+            V_dL = np.append(V_dL, S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix())
+
+            Vout = spunfiber.single_rotation3(V_I, Vin)         # cal rotation angle using stacking method (dL=variable)
+            V_St = np.append(V_St, S_S.from_Jones(E.from_matrix(Vout)).parameters.matrix())
+
+        V_dL = V_dL.reshape(len(var_dL), 4)
+        V_St = V_St.reshape(len(var_dL), 4)
+        print(V_dL)
+        print(V_St)
+        V_L = np.ones(len(var_dL))*V_L
+        figure, ax = plt.subplots(3, figsize=(5, 8))
+        figure.subplots_adjust(hspace=0.46, top=0.938, bottom=0.093)
+
+        ax[0].plot(var_dL, V_dL[...,1], label='Laming')
+        ax[0].plot(var_dL, V_St[...,1], label='Stacking')
+        ax[0].plot(var_dL, V_L[1,...], label='Laming_not_slicing')
+        ax[0].set_xscale('log')
+        ax[0].legend(loc='upper right')
+        ax[0].set_title('S1')
+
+        ax[1].plot(var_dL, V_dL[..., 2], label='Laming')
+        ax[1].plot(var_dL, V_St[..., 2], label='Stacking')
+        ax[1].plot(var_dL, V_L[2,...], label='Laming_not_slicing')
+        ax[1].set_xscale('log')
+        ax[1].legend(loc='upper right')
+        ax[1].set_title('S2')
+
+        ax[2].plot(var_dL, V_dL[..., 3], label='Laming')
+        ax[2].plot(var_dL, V_St[..., 3], label='Stacking')
+        ax[2].plot(var_dL, V_L[3,...], label='Laming_not_slicing')
+        ax[2].set_xscale('log')
+        ax[2].set_xlabel('dL [m]')
+        ax[2].legend(loc='upper right')
+        ax[2].set_title('S3')
+
 
 plt.show()
-
-
-
-
-
 
 
 
