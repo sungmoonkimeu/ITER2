@@ -530,31 +530,8 @@ class SPUNFIBER:
         gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
 
         R_z = 2 * arcsin(sin(gma * self.L) / ((1 + qu ** 2) ** 0.5))
-        Omega_z = s_t_r * self.L + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.L)) - n2 * pi
+        Omega_z = s_t_r * self.L + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.L)) + n2 * pi
         Phi_z = ((s_t_r * self.L) - Omega_z) / 2 + m2 * (pi / 2)
-
-        if tmp_f_Omega_z == 0:
-            tmp_f_Omega_z = Omega_z
-        if tmp_f_Phi_z == 0:
-            tmp_f_Phi_z = Phi_z
-
-        if Omega_z - tmp_f_Omega_z > pi/2:
-            n = n-1
-            Omega_z = Omega_z - pi
-        elif Omega_z - tmp_f_Omega_z < -pi/2:
-            n = n + 1
-            Omega_z = Omega_z + pi
-        if Phi_z - tmp_f_Phi_z > pi/4:
-            m = m-1
-            Phi_z = Phi_z -pi/2
-        elif Phi_z - tmp_f_Phi_z < -pi/4:
-            m = m+1
-            Phi_z = Phi_z +pi/2
-
-        #print(I, "Forward: = ", Omega_z-tmp_f_Omega_z, Phi_z-tmp_f_Phi_z)
-
-        tmp_f_Omega_z = Omega_z
-        tmp_f_Phi_z = Phi_z
 
         # Forward
         n11 = cos(R_z / 2) + 1j * sin(R_z / 2) * cos(2 * Phi_z)
@@ -563,8 +540,7 @@ class SPUNFIBER:
         n22 = cos(R_z / 2) - 1j * sin(R_z / 2) * cos(2 * Phi_z)
         M_R_f = np.array([[n11, n12], [n21, n22]])
         M_Omega_f = np.array([[cos(Omega_z), -sin(Omega_z)], [sin(Omega_z), cos(Omega_z)]])
-
-
+        print("Omega_z=", Omega_z)
         # Backward
         #rho = -self.V * H
         s_t_r = -s_t_r
@@ -573,28 +549,7 @@ class SPUNFIBER:
 
         R_z = 2 * arcsin(sin(gma * self.L) / ((1 + qu ** 2) ** 0.5))
         Omega_z = s_t_r * self.L + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.L)) + n2 * pi
-        Phi_z = ((s_t_r * self.L) - Omega_z) / 2 + m2 * (pi / 2)
-
-        if tmp_b_Omega_z == 0:
-            tmp_b_Omega_z = Omega_z
-        if tmp_b_Phi_z == 0:
-            tmp_b_Phi_z = Phi_z
-
-        if Omega_z - tmp_b_Omega_z > pi/2:
-            n2 = n2-1
-            Omega_z = Omega_z - pi
-        elif Omega_z - tmp_b_Omega_z < -pi/2:
-            n2 = n2 + 1
-            Omega_z = Omega_z + pi
-        if Phi_z - tmp_b_Phi_z > pi/4:
-            m2 = m2-1
-            Phi_z = Phi_z -pi/2
-        elif Phi_z - tmp_b_Phi_z < -pi/4:
-            m2 = m2+1
-            Phi_z = Phi_z +pi/2
-
-        tmp_b_Omega_z = Omega_z
-        tmp_b_Phi_z = Phi_z
+        Phi_z = ((s_t_r * self.L) - Omega_z) / 2 + m2 * (pi / 2) + -s_t_r * self.L
 
         n11 = cos(R_z / 2) + 1j * sin(R_z / 2) * cos(2 * Phi_z)
         n12 = 1j * sin(R_z / 2) * sin(2 * Phi_z)
@@ -602,15 +557,15 @@ class SPUNFIBER:
         n22 = cos(R_z / 2) - 1j * sin(R_z / 2) * cos(2 * Phi_z)
         M_R_b = np.array([[n11, n12], [n21, n22]])
         M_Omega_b = np.array([[cos(Omega_z), -sin(Omega_z)], [sin(Omega_z), cos(Omega_z)]])
-
+        print("M_R_b=", M_R_b)
+        print("M_R_f=", M_R_f)
         # Faraday mirror
         ang_FM = 45
         ksi = ang_FM * pi / 180
         Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
         Jm = np.array([[1, 0], [0, 1]])
         M_FR = Rot @ Jm @ Rot
-
-        V_out = M_R_b @ M_Omega_b @ M_FR @ M_Omega_f @ M_R_f @ Vin
+        V_out = M_Omega_b @ M_R_b @ M_FR @ M_Omega_f @ M_R_f @ Vin
 
         return V_out
 
@@ -846,9 +801,9 @@ if __name__ == '__main__':
         num_iter = 3
         strfile1 = 'AAAA1.csv'
         strfile2 = 'AAAA2.csv'
-        num_processor = 16
-        #V_I = arange(0e6, 4e6 + 0.1e6, 1e6)
-        V_I = 1e6
+        num_processor = 8
+        V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
+        #V_I = 1e6
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
         nM_vib = 0
@@ -864,8 +819,7 @@ if __name__ == '__main__':
                 Ip, Vout = spunfiber.stacking_matrix_rotation(V_I, Vin)
                 outdict[str(nn)] = Ip
             elif nn ==2:
-                #Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
-                Ip, Vout = spunfiber.cal_rotation2(V_I, fig1, Vin)
+                Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
                 outdict[str(nn)] = Ip
             else:
                 Ip, Vout = spunfiber.total_rotation(V_I, fig1, Vin)
@@ -891,17 +845,21 @@ if __name__ == '__main__':
         ax2.set(xlim=(0, 4e6), ylim=(0, 0.05))
         ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
     if mode == 1:
-        LB = 0.1
-        SP = 0.02
+        LB = 0.009
+        SP = 0.005
         # dz = SP / 1000
         dz = 0.0002
-        len_lf = 1  # lead fiber
+        len_lf = 0  # lead fiber
         len_ls = 1  # sensing fiber
         spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
         strfile1 = 'b1.csv'
         strfile2 = 'b2.csv'
 
-        V_I = 1e3
+        fig1, ax1 = spunfiber.init_plot_SOP()
+
+        vV_I = [3e5, 5e5, 7e5]
+
+
         nM_vib = 0
         ang_FM = 45
         Vin = np.array([[1], [0]])
@@ -911,22 +869,29 @@ if __name__ == '__main__':
         S_L = create_Stokes('Laming_L')
         S_S = create_Stokes('Stacking')
 
-        V_dL = np.array([])
-        V_St = np.array([])
+        for V_I in vV_I:
 
-        Vout = spunfiber.single_rotation2(V_I, Vin)  # cal rotation angle using lamming method (dL=Fiber length)
-        V_L = S_L.from_Jones(E.from_matrix(Vout)).parameters.matrix()
-        print(V_L)
-        var_dL = SP*10**(-np.arange(2, 3, 0.5, dtype=float))
+            V_dL = np.array([])
+            V_St = np.array([])
 
-        for nn, var in enumerate(var_dL):
-            spunfiber.dz = var
+            Vout = spunfiber.single_rotation2(V_I, Vin)  # cal rotation angle using lamming method (dL=Fiber length)
+            V_L = S_L.from_Jones(E.from_matrix(Vout)).parameters.matrix()
+            draw_stokes_points(fig1[0], S_L, kind='scatter', color_scatter='r')
 
-            Vout = spunfiber.single_rotation1(V_I, Vin)         # cal rotation angle using lamming method (variable dL)
-            V_dL = np.append(V_dL, S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix())
+            print(V_L)
+            var_dL = SP*10**(-np.arange(2, 3, 0.5, dtype=float))
 
-            Vout = spunfiber.single_rotation3(V_I, Vin)         # cal rotation angle using stacking method (dL=variable)
-            V_St = np.append(V_St, S_S.from_Jones(E.from_matrix(Vout)).parameters.matrix())
+            for nn, var in enumerate(var_dL):
+                spunfiber.dz = var
+
+                Vout = spunfiber.single_rotation1(V_I, Vin)         # cal rotation angle using lamming method (variable dL)
+                V_dL = np.append(V_dL, S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix())
+                draw_stokes_points(fig1[0], S_dL, kind='scatter', color_scatter='b')
+
+
+                Vout = spunfiber.single_rotation3(V_I, Vin)         # cal rotation angle using stacking method (dL=variable)
+                V_St = np.append(V_St, S_S.from_Jones(E.from_matrix(Vout)).parameters.matrix())
+                draw_stokes_points(fig1[0], S_S, kind='scatter', color_scatter='k')
 
         V_dL = V_dL.reshape(len(var_dL), 4)
         V_St = V_St.reshape(len(var_dL), 4)
