@@ -520,7 +520,7 @@ class SPUNFIBER:
         n = 0
         m = 0
         n2 = 0
-        m2 = 0
+        m2 = 1
 
         tmp_f_Omega_z = 0
         tmp_f_Phi_z = 0
@@ -793,10 +793,10 @@ class SPUNFIBER:
 
 
 if __name__ == '__main__':
-    mode = 1
+    mode = 0
     if mode == 0:
-        LB = 0.1
-        SP = 0.02
+        LB = 0.009
+        SP = 0.005
         # dz = SP / 1000
         dz = 0.0002
         len_lf = 1  # lead fiber
@@ -809,7 +809,7 @@ if __name__ == '__main__':
         strfile1 = 'AAAA1.csv'
         strfile2 = 'AAAA2.csv'
         num_processor = 8
-        V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
+        V_I = arange(0e6, 4e6 + 0.1e6, 0.2e6)
         #V_I = 1e6
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
@@ -844,16 +844,17 @@ if __name__ == '__main__':
         df2.to_csv(strfile1 + "_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
 
-        labelTups = [('Stacking matrix (dz = 0.0001)', 0), ('Lamming method with small step (dz = 0.0001)', 1),
+        labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
                      ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
 
         #ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
         ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right')
-        ax2.set(xlim=(0, 4e6), ylim=(0, 0.05))
+        ax2.set(xlim=(0, 4e6), ylim=(0, 0.2))
         ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
+        ax2.yaxis.set_major_formatter(OOMFormatter(-1, "%1.1f"))
     if mode == 1:
-        LB = 1
-        SP = 0.005
+        LB = 0.009
+        SP = 0.0048
         # dz = SP / 1000
         dz = 0.0002
         len_lf = 0  # lead fiber
@@ -885,7 +886,7 @@ if __name__ == '__main__':
             draw_stokes_points(fig1[0], S_L, kind='scatter', color_scatter='r')
 
             print(V_L.T)
-            var_dL = SP*10**(-np.arange(2, 5, 0.5, dtype=float))
+            var_dL = SP*10**(-np.arange(1.5, 4, 0.5, dtype=float))
 
             for nn, var in enumerate(var_dL):
                 spunfiber.dz = var
@@ -904,29 +905,37 @@ if __name__ == '__main__':
         print(V_St)
         V_L = np.ones(len(var_dL))*V_L
         figure, ax = plt.subplots(3, figsize=(5, 8))
-        figure.subplots_adjust(hspace=0.46, top=0.938, bottom=0.093)
+        figure.subplots_adjust(left=0.179, bottom=0.15, right=0.94, hspace=0.226, top=0.938)
 
-        ax[0].plot(var_dL, V_dL[...,1], label='Laming')
-        ax[0].plot(var_dL, V_St[...,1], label='Stacking')
-        ax[0].plot(var_dL, V_L[1,...], label='Laming_not_slicing')
+        ax[0].plot(var_dL, V_dL[...,1], 'r', label='Laming')
+        ax[0].plot(var_dL, V_St[...,1], 'b', label='Stacking')
+        ax[0].plot(var_dL, V_L[1,...], 'k--', label='Laming(w/o slicing)')
         ax[0].set_xscale('log')
-        ax[0].legend(loc='upper right')
-        ax[0].set_title('S1')
+        ax[0].set_ylabel('S1')
+        ax[0].legend(loc='upper left')
+        #ax[0].set_title('S1')
+        ax[0].set_xticklabels('')
 
-        ax[1].plot(var_dL, V_dL[..., 2], label='Laming')
-        ax[1].plot(var_dL, V_St[..., 2], label='Stacking')
-        ax[1].plot(var_dL, V_L[2,...], label='Laming_not_slicing')
+        ax[1].plot(var_dL, V_dL[..., 2], 'r',  label='Laming')
+        ax[1].plot(var_dL, V_St[..., 2], 'b', label='Stacking')
+        ax[1].plot(var_dL, V_L[2,...], 'k--', label='Laming(w/o slicing)')
+        ax[1].set_ylabel('S2')
         ax[1].set_xscale('log')
-        ax[1].legend(loc='upper right')
-        ax[1].set_title('S2')
+        ax[1].legend(loc='upper left')
+        #ax[1].set_title('S2')
+        ax[1].set_xticklabels('')
 
-        ax[2].plot(var_dL, V_dL[..., 3], label='Laming')
-        ax[2].plot(var_dL, V_St[..., 3], label='Stacking')
-        ax[2].plot(var_dL, V_L[3,...], label='Laming_not_slicing')
+        ax[2].plot(var_dL, V_dL[..., 3], 'r', label='Laming')
+        ax[2].plot(var_dL, V_St[..., 3], 'b', label='Stacking')
+        ax[2].plot(var_dL, V_L[3,...], 'k--', label='Laming(w/o slicing)')
         ax[2].set_xscale('log')
         ax[2].set_xlabel('dL [m]')
-        ax[2].legend(loc='upper right')
-        ax[2].set_title('S3')
+        ax[2].set_ylabel('S3')
+        ax[2].legend(loc='lower left')
+        #ax[2].set_title('S3')
+        ax[2].set_xticks(var_dL)
+        str_xtick = ['SP/50', 'SP/100', 'SP/500', 'SP/1000', 'SP/5000']
+        ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
 
 
 plt.show()
