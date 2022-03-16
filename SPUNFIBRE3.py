@@ -296,7 +296,7 @@ class SPUNFIBER:
         # --------Laming: orientation of the local slow axis ------------
 
         qu = 2 * (s_t_r - rho) / delta
-
+        # See Note/Note 1 (sign of Farday effect in Laming's method).jpg
         # The sign of farday rotation (rho) is opposite to that of the Laming paper, inorder
         # to be consistant with anti-clockwise (as in Jones paper) orientation for both
         # spin and farday rotation.
@@ -820,7 +820,7 @@ if __name__ == '__main__':
 
         fig1, ax1 = spunfiber.init_plot_SOP()
         for nn in range(num_iter):
-            M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
+            M_vib = spunfiber.create_Mvib(nM_vib, 0, 0)
             #Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
             if nn == 1:
                 Ip, Vout = spunfiber.stacking_matrix_rotation(V_I, Vin)
@@ -852,8 +852,8 @@ if __name__ == '__main__':
         ax2.set(xlim=(0, 4e6), ylim=(0, 0.05))
         ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
     if mode == 1:
-        LB = 0.009
-        SP = 0.0048
+        LB = 1
+        SP = 0.005
         # dz = SP / 1000
         dz = 0.0002
         len_lf = 0  # lead fiber
@@ -864,7 +864,7 @@ if __name__ == '__main__':
 
         fig1, ax1 = spunfiber.init_plot_SOP()
 
-        vV_I = [7e5]
+        vV_I = [1e6]
 
         nM_vib = 0
         ang_FM = 45
@@ -885,7 +885,7 @@ if __name__ == '__main__':
             draw_stokes_points(fig1[0], S_L, kind='scatter', color_scatter='r')
 
             print(V_L.T)
-            var_dL = SP*10**(-np.arange(2, 4, 0.5, dtype=float))
+            var_dL = SP*10**(-np.arange(2, 5, 0.5, dtype=float))
 
             for nn, var in enumerate(var_dL):
                 spunfiber.dz = var
