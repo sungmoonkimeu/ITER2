@@ -41,7 +41,6 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 
 # _______________________________Parameters#1___________________________________#
 # Circulator input matrix
-
 theta = 0 * pi / 180   # birefringence axis of LB
 phi = 0 * pi / 180  # ellipticity angle change from experiment
 theta_e = 0 * pi / 180  # azimuth angle change from experiment
