@@ -60,7 +60,7 @@ def cal_arclength(S):
     for nn in range(len(S)-1):
         c = pi / 2 - S.parameters.ellipticity_angle()[nn]
         b = pi / 2 - S.parameters.ellipticity_angle()[nn+1]
-
+        #gg
         A0 = S.parameters.azimuth()[nn]
         A1 = S.parameters.azimuth()[nn+1]
         A = A1-A0
