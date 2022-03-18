@@ -79,3 +79,4 @@ websocket-client==0.57.0
 
 parmap~=1.5.2
 oct2py~=5.3.0
+imageio~=2.16.1
