@@ -313,12 +313,12 @@ def f(x, Mci, Mco, fig, strfile):
 
 if __name__ == '__main__':
     strfile = 'calibration_log.csv'
-    mode = 1
+    mode = 0
     if mode == 0:
 
         #Mci = create_M(pi/6,pi/8,pi/10)
-        Mci = create_M(pi/6,pi/8,pi/10)
-        Mco = create_M(-pi/6,pi/15,-pi/3)
+        Mci = create_M(pi/3,pi/8,pi/10)
+        Mco = create_M(-pi/5,pi/15,-pi/3)
         #Mco = create_M(0,0,0)
         init_polstate = np.array([[0,0], [pi/4,0], [pi/4, pi/4]])
         Stmp = create_Stokes('tmp')
