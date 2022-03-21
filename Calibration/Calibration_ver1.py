@@ -5,7 +5,7 @@ from numpy.linalg import norm, eig
 import matplotlib.pyplot as plt
 from py_pol.jones_vector import Jones_vector, degrees
 from py_pol.stokes import Stokes, create_Stokes
-from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
+from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse, draw_empty_sphere
 import matplotlib.pylab as pl
 from matplotlib.colors import rgb2hex
 from matplotlib.patches import FancyArrowPatch
@@ -108,6 +108,82 @@ def eval_result(strfile):
     ax.set_ylabel('Error (%)')
     ax.legend()
 
+def simplex_trace2(strfiel, ax,fig):
+    data = pd.read_csv(strfile)
+    E0 = Jones_vector('input')
+    E0.general_azimuth_ellipticity(azimuth=data['x0'], ellipticity=data['x1'])
+    S = create_Stokes('output')
+    Stmp = create_Stokes('tmp')
+
+    S.from_Jones(E0)
+
+    numpnt = [0, 1, 2]
+
+    colors = pl.cm.BuPu(np.linspace(0.2, 1, len(data['x0'])))
+    # pl.cm.
+    # todo to replace the way showing simplex triangle on the sphere
+
+    u = np.linspace(0, 2 * np.pi, 61)  # azimuth
+
+    for nn in range(len(data['x0']) - 3):
+
+        if nn > 1:
+            plt.cla()
+            draw_empty_sphere(ax, angle_view=[24 * pi / 180, 31 * pi / 180])
+            ax.plot([xp0[0], xp1[0]], [xp0[1], xp1[1]], [xp0[2], xp1[2]], color=colors[nn-1])
+            draw_stokes_points(ax, S[xnumpnt[0]], kind='scatter', color_scatter=rgb2hex(colors[nn-1]))
+            ax.plot([xp1[0], xp2[0]], [xp1[1], xp2[1]], [xp1[2], xp2[2]], color=colors[nn - 1])
+            draw_stokes_points(ax, S[xnumpnt[1]], kind='scatter', color_scatter=rgb2hex(colors[nn - 1]))
+            ax.plot([xp2[0], xp0[0]], [xp2[1], xp0[1]], [xp2[2], xp0[2]], color=colors[nn - 1])
+            draw_stokes_points(ax, S[xnumpnt[2]], kind='scatter', color_scatter=rgb2hex(colors[nn - 1]))
+
+        ax.plot(np.sin(u)*1.1, np.cos(u)*1.1, np.zeros_like(u), 'g-.', linewidth=2)  # equator
+
+        azi0 = data['x0'][numpnt[0]] * 2
+        azi1 = data['x0'][numpnt[1]] * 2
+        ell0 = data['x1'][numpnt[0]] * 2
+        ell1 = data['x1'][numpnt[1]] * 2
+        p0 = np.array([cos(azi0) * sin(pi / 2 - ell0), sin(azi0) * sin(pi / 2 - ell0), cos(pi / 2 - ell0)])
+        p1 = np.array([cos(azi1) * sin(pi / 2 - ell1), sin(azi1) * sin(pi / 2 - ell1), cos(pi / 2 - ell1)])
+        ax.plot([p0[0], p1[0]], [p0[1], p1[1]], [p0[2], p1[2]], color=colors[nn])
+        draw_stokes_points(ax, S[numpnt[0]], kind='scatter', color_scatter=rgb2hex(colors[nn]))
+
+        xp0 = p0
+        '''
+            V_azi = np.linspace(azi0, azi1, 100)
+            V_ell = np.linspace(ell0,ell1,100)
+            p = np.array([np.cos(V_azi)*np.sin(pi/2-V_ell), np.sin(V_azi)*np.sin(pi/2-V_ell), np.cos(pi/2-V_ell)])
+            ax.plot(p[0,:], p[1,:], p[2,:], 'k--')
+        '''
+        azi0 = data['x0'][numpnt[1]] * 2
+        azi1 = data['x0'][numpnt[2]] * 2
+        ell0 = data['x1'][numpnt[1]] * 2
+        ell1 = data['x1'][numpnt[2]] * 2
+        p0 = np.array([cos(azi0) * sin(pi / 2 - ell0), sin(azi0) * sin(pi / 2 - ell0), cos(pi / 2 - ell0)])
+        p1 = np.array([cos(azi1) * sin(pi / 2 - ell1), sin(azi1) * sin(pi / 2 - ell1), cos(pi / 2 - ell1)])
+        ax.plot([p0[0], p1[0]], [p0[1], p1[1]], [p0[2], p1[2]], color=colors[nn])
+        draw_stokes_points(ax, S[numpnt[1]], kind='scatter', color_scatter=rgb2hex(colors[nn]))
+
+        xp1 = p0
+
+        azi0 = data['x0'][numpnt[2]] * 2
+        azi1 = data['x0'][numpnt[0]] * 2
+        ell0 = data['x1'][numpnt[2]] * 2
+        ell1 = data['x1'][numpnt[0]] * 2
+        p0 = np.array([cos(azi0) * sin(pi / 2 - ell0), sin(azi0) * sin(pi / 2 - ell0), cos(pi / 2 - ell0)])
+        p1 = np.array([cos(azi1) * sin(pi / 2 - ell1), sin(azi1) * sin(pi / 2 - ell1), cos(pi / 2 - ell1)])
+        ax.plot([p0[0], p1[0]], [p0[1], p1[1]], [p0[2], p1[2]], color=colors[nn])
+        draw_stokes_points(ax, S[numpnt[2]], kind='scatter', color_scatter=rgb2hex(colors[nn]))
+
+        xp2 = p0
+
+        # print(data['L'][numpnt[0]],data['L'][numpnt[1]],data['L'][numpnt[2]])
+        xnumpnt = numpnt
+        minindex = np.argmin(data['L'][numpnt])
+        numpnt[minindex] = nn + 3
+        plt.savefig(str(nn) + '.png')
+    create_gif('mygif3.gif')
+
 
 def simple_trace(strfile, ax, fig):
     data = pd.read_csv(strfile)
@@ -166,6 +242,7 @@ def simplex_trace(strfile, ax, fig):
         minindex = np.argmin(data['L'][numpnt])
 
         numpnt[minindex] = nn+3
+        plt.savefig(str(nn) + '.png')
 
     ax.set_axis_off()
 
@@ -218,7 +295,7 @@ def f(x, Mci, Mco, fig, strfile):
 
     #print(S.parameters.ellipticity_angle()[0])
 
-    draw_stokes_points(fig[0], S, kind='line', color_scatter='k')
+    draw_stokes_points(fig[0], S  , kind='line', color_scatter='k')
     draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter='b')
     draw_stokes_points(fig[0], S[-1], kind='scatter', color_scatter='r')
     #print(S.parameters.azimuth()[-1])
@@ -255,17 +332,18 @@ if __name__ == '__main__':
         fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         #fig = plt.figure()
         #ax = fig.add_subplot(111, projection='3d')
-        simplex_trace(strfile, fig[0], ax)
-        simple_trace(strfile, fig[0], ax)
+        #simplex_trace(strfile, fig[0], ax)
+        #simple_trace(strfile, fig[0], ax)
+        simplex_trace2(strfile, fig[0], ax)
         eval_result(strfile)
         Mci = create_M(pi/6,pi/8,pi/10)
         Mco = create_M(-pi/6,pi/15,-pi/3)
-
+        '''
         fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         eval_result2(strfile, Mci, fig[0], ax)
         fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         eval_result3(strfile, Mci, Mco, fig[0], ax)
-
+        '''
     # show figure
 
     #track = minimum[1]
