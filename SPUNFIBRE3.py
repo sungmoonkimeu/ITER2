@@ -299,7 +299,7 @@ class SPUNFIBER:
         # See Note/Note 1 (sign of Farday effect in Laming's method).jpg
         # The sign of farday rotation (rho) is opposite to that of the Laming paper, inorder
         # to be consistant with anti-clockwise (as in Jones paper) orientation for both
-        # spin and farday rotation.
+        # spin and faraday rotation.
 
         gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
         omega = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) + n * pi
@@ -327,7 +327,7 @@ class SPUNFIBER:
 
         N = np.array([[n11, n21], [n12, n22]]).T
         # Note that [[n11,n21],[n21,n22]].T calculation is [[n11[0], n12[0]],[n21[0],n22[0]], ...
-        # Therefore, N array is defined as transposed matrix to fix it.
+        # Therefore, N array should be defined as transposed matrix to have correct matrix after it.
 
         N_integral = self._eigen_expm(N)
         tmp = np.array([])  # for test

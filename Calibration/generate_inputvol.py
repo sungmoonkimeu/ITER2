@@ -88,21 +88,35 @@ if __name__ == "__main__":
                              rc_filters(sig, sample_rate,
                                         highpass_cutoff, lowpass_cutoff)])
 
-    plt.plot(time_s, 10*sig, label="Supply current")
+    plt.plot(time_s, 10*sig, 'r', label="Supply current")
     #plt.plot(time_s,filt_signals[:, 0], label="High-pass")
-    plt.plot(time_s, 40*filt_signals[:, 1], label="Calibration current outside of VV (tc = 0.5s)")
+    plt.plot(time_s, 40*filt_signals[:, 1], 'k', label="Calibration current outside of VV (tc = 0.5s)")
     plt.title("VS3 coil current & Calibration current")
     plt.legend()
     plt.xlabel("time [s]")
-    plt.ylabel("Ampare [kA]")
+    plt.ylabel("Current [kA]")
     #plt.xlim([5.98, 6.06])
     #plt.ylim([-0.05, 1.05])
     #plt.plot(6.01,1-np.exp(-1), 'ro')
     #plt.text(6.011,1-np.exp(-1), '(6.01, 0.632) = (tc, 1-exp(-1)')
-    plt.show()
 
     sig_dir = 'Filteredsignal.csv'
     outx = time_s
     outy = filt_signals[:, 1]*40000
     df = pd.DataFrame(outy)
     df.to_csv(sig_dir, index=False)
+
+    x = time_s
+    y = filt_signals[:, 1]*40000
+
+    for nn in range(10):
+        x = np.hstack((x, x[-1] + time_s[6000:]))
+        y = np.hstack((y, filt_signals[6000:, 1]*40000))
+
+    fig, ax = plt.subplots(1,1)
+    ax.plot(x,y/1000, 'k', label="Calibration current outside of VV (tc = 0.5s)")
+    ax.set_xlabel("time [s]")
+    ax.set_ylabel("Current [kA]")
+    ax.legend()
+    plt.show()
+
