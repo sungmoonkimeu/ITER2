@@ -344,7 +344,6 @@ def cal_arclength(S):
 
     return L
 
-
 def create_M(r, omega, phi):
 
     M_rot = np.array([[cos(phi), -sin(phi)], [sin(phi), cos(phi)]])
@@ -353,7 +352,7 @@ def create_M(r, omega, phi):
 
     return M_rot @ M_theta.T @ M_phi @ M_theta
 
-def f(x, Mci, Mco, fig, strfile):
+def f(x, Mci, Mco, strfile):
     E0 = Jones_vector('input')
     E1 = Jones_vector('output')
     #E0.general_azimuth_ellipticity(azimuth=x[0], ellipticity=x[1])
@@ -376,9 +375,9 @@ def f(x, Mci, Mco, fig, strfile):
 
     #print(S.parameters.ellipticity_angle()[0])
 
-    draw_stokes_points(fig[0], S  , kind='line', color_scatter='k')
-    draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter='b')
-    draw_stokes_points(fig[0], S[-1], kind='scatter', color_scatter='r')
+    #draw_stokes_points(fig[0], S  , kind='line', color_scatter='k')
+    #draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter='b')
+    #draw_stokes_points(fig[0], S[-1], kind='scatter', color_scatter='r')
     #print(S.parameters.azimuth()[-1])
     L = cal_arclength(S)    # Arc length is orientation angle psi -->
     Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
@@ -392,54 +391,104 @@ def f(x, Mci, Mco, fig, strfile):
 
     return errV
 
+
+def f2(x, Mci, Mco):
+    E0 = Jones_vector('input')
+    E1 = Jones_vector('output')
+    E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
+    V = 0.7 * 4 * pi * 1e-7
+    MaxIp = 40e3
+    dIp = MaxIp/100
+    V_Ip = arange(0e6,MaxIp+dIp,dIp)
+    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+
+    for mm, iter_I in enumerate(V_Ip):
+        # Faraday rotation matirx
+        th_FR = iter_I * V*2
+        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
+        V_out[mm] = Mco @ M_FR @ Mci @ E0.parameters.matrix()
+
+    E1.from_matrix(M=V_out)
+    S = create_Stokes('output')
+    S.from_Jones(E1)
+
+    L = cal_arclength(S)    # Arc length is orientation angle psi -->
+    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    errV = abs((Veff-V)/V)
+    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
+    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
+
+    return errV
+
 if __name__ == '__main__':
+
+    ## first step
+    '''
     strfile = 'calibration1D_log.csv'
-    mode = 1
-    theta = 10
-    phi = 10
-    theta_e = 10
-    Mci = create_M(theta*pi/180, phi*pi/180, theta_e*pi/180)
+    if os.path.exists(strfile):
+        os.remove(strfile)
 
-    theta = 20
-    phi = 30
-    theta_e = 40
-    Mco = create_M(theta*pi/180, phi*pi/180, theta_e*pi/180)
+    # Define Minput Moutput
+    theta0, phi0, theta_e0 = np.random.rand(3)*360
+    Mci = create_M(theta0*pi/180, phi0*pi/180, theta_e0*pi/180)
 
-    if mode == 0:
+    theta1, phi1, theta_e1 = np.random.rand(3)*360
+    Mco = create_M(theta1*pi/180, phi1*pi/180, theta_e1*pi/180)
 
-        #Mci = create_M(pi/6,pi/8,pi/10)
+    # initial point
+    init_polstate = np.array([[0], [pi / 4]])
 
-        #Mco = create_M(0,0,0)
-        init_polstate = np.array([[0], [pi/4]])
-        Stmp = create_Stokes('tmp')
+    out = optimize.fmin(f, 0, (Mci, Mco, strfile), maxiter=20, xtol=1, ftol=0.0001,
+                            initial_simplex=init_polstate, retall=True, full_output=1)
 
-        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
-        minimum = optimize.fmin(f, 0, (Mci, Mco, fig, strfile), maxiter=20, xtol=1, ftol=0.0001, initial_simplex=init_polstate, retall=True)
-        print(minimum[0])
+    #print("minimum[0]", minimum[0])
+    print(out[3])
 
-    elif mode ==1:
-        Stmp = create_Stokes('tmp')
-        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
-        #fig = plt.figure()
-        #ax = fig.add_subplot(111, projection='3d')
-        #simplex_trace(strfile, fig[0], ax)
-        #simple_trace1D(strfile, fig[0], ax)
-        #simplex_trace2(strfile, fig[0], ax)
-        eval_result(strfile)
-        eval_result3_1D(strfile, Mci, Mco, fig[0],ax)
+    Stmp = create_Stokes('tmp')
+    fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
 
-        '''
-        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
-        eval_result2(strfile, Mci, fig[0], ax)
-        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
-        eval_result3(strfile, Mci, Mco, fig[0], ax)
-        '''
-    # show figure
+    eval_result(strfile)
+    eval_result3_1D(strfile, Mci, Mco, fig[0], ax)
+    '''
 
-    #track = minimum[1]
-    #fig2, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
-    #for nn, val in enumerate(track):
-    #    f(val, Mci, Mco, fig2)
+    ## 2nd step
+
+    start = pd.Timestamp.now()
+    strfile = 'Multiple_Calibration.csv'
+
+    # Define Minput Moutput
+
+    n_iter = 100
+    n_iter2 = 100
+    fig, ax = plt.subplots(figsize=(6, 6))
+    for mm in range(n_iter2):
+
+        v_out = np.zeros(n_iter)
+        for nn in range(n_iter):
+            theta0, phi0, theta_e0 = np.random.rand(3)*360
+            Mci = create_M(theta0*pi/180, phi0*pi/180, theta_e0*pi/180)
+
+            theta1, phi1, theta_e1 = np.random.rand(3)*360
+            Mco = create_M(theta1*pi/180, phi1*pi/180, theta_e1*pi/180)
+
+            # initial point
+            init_polstate = np.array([[0], [pi / 4]])
+
+            fmin_result = optimize.fmin(f2, 0, (Mci, Mco), maxiter=30, xtol=1, ftol=0.0001,
+                                initial_simplex=init_polstate, retall=True, full_output=1)
+
+            v_out[nn] = fmin_result[3]
+
+
+        ax.plot(v_out)
+
+        outdict = {'out': v_out}
+        df = pd.DataFrame(outdict)
+        df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
+
+    end = pd.Timestamp.now()
+    print("Total time = ", (end-start).total_seconds())
+
+
     plt.show()
-
 
