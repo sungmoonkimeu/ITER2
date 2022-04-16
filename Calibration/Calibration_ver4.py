@@ -474,7 +474,7 @@ if __name__ == '__main__':
             # initial point
             init_polstate = np.array([[0], [pi / 4]])
 
-            fmin_result = optimize.fmin(f2, 0, (Mci, Mco), maxiter=30, xtol=1, ftol=0.0001,
+            fmin_result = optimize.fmin(f2, 0, (Mci, Mco), maxiter=50, xtol=1, ftol=0.0001,
                                 initial_simplex=init_polstate, retall=True, full_output=1)
 
             v_out[nn] = fmin_result[3]
