@@ -313,7 +313,7 @@ if __name__ == '__main__':
 
     M_co = create_M_arb(theta, phi, theta_e)
 
-    mode = 3
+    mode =2
 
     if mode == 0:
         strfile = 'scanning.csv'

@@ -344,6 +344,7 @@ def cal_arclength(S):
 
     return L
 
+
 def create_M(r, omega, phi):
 
     M_rot = np.array([[cos(phi), -sin(phi)], [sin(phi), cos(phi)]])
@@ -351,6 +352,7 @@ def create_M(r, omega, phi):
     M_phi = np.array([[exp(1j * r/2), 0], [0, exp(-1j * r/2)]])
 
     return M_rot @ M_theta.T @ M_phi @ M_theta
+
 
 def f(x, Mci, Mco, strfile):
     E0 = Jones_vector('input')
@@ -420,6 +422,39 @@ def f2(x, Mci, Mco):
 
     return errV
 
+
+def f3(x, Mci, Mco):
+    E0 = Jones_vector('input')
+    E1 = Jones_vector('output')
+    noise = np.random.rand(1)*0 * pi/180
+    E0.general_azimuth_ellipticity(azimuth=x+noise, ellipticity=0)
+
+    noise2 = 1+np.random.rand(1) * 0.01
+    V = 0.7 * 4 * pi * 1e-7
+    MaxIp = 40e3
+    dIp = MaxIp/100
+    V_Ip = arange(0e6,MaxIp+dIp,dIp)
+    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+
+    for mm, iter_I in enumerate(V_Ip):
+        # Faraday rotation matirx
+        th_FR = iter_I * V*2
+        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
+        V_out[mm] = Mco @ M_FR @ Mci @ E0.parameters.matrix()
+
+    E1.from_matrix(M=V_out)
+    S = create_Stokes('output')
+    S.from_Jones(E1)
+
+    L = cal_arclength(S)*noise2    # Arc length is orientation angle psi -->
+    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    errV = abs((Veff-V)/V)
+    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
+    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
+
+    return errV
+
+
 if __name__ == '__main__':
 
     ## first step
@@ -450,7 +485,7 @@ if __name__ == '__main__':
     eval_result(strfile)
     eval_result3_1D(strfile, Mci, Mco, fig[0], ax)
     '''
-
+    ''' 
     ## 2nd step
 
     start = pd.Timestamp.now()
@@ -489,6 +524,46 @@ if __name__ == '__main__':
     end = pd.Timestamp.now()
     print("Total time = ", (end-start).total_seconds())
 
+    '''
 
-    plt.show()
+    ## 3rd step
+
+    start = pd.Timestamp.now()
+    strfile = 'Multiple_Calibration_withnoise.csv'
+
+    # Define Minput Moutput
+
+    n_iter = 10
+    n_iter2 = 1000
+    fig, ax = plt.subplots(figsize=(6, 6))
+    for mm in range(n_iter2):
+
+        v_out = np.zeros(n_iter)
+        for nn in range(n_iter):
+            theta0, phi0, theta_e0 = np.random.rand(3) * 360
+            Mci = create_M(theta0 * pi / 180, phi0 * pi / 180, theta_e0 * pi / 180)
+
+            theta1, phi1, theta_e1 = np.random.rand(3) * 360
+            Mco = create_M(theta1 * pi / 180, phi1 * pi / 180, theta_e1 * pi / 180)
+
+            # initial point
+            init_polstate = np.array([[0], [pi / 4]])
+
+            fmin_result = optimize.fmin(f3, 0, (Mci, Mco), maxiter=100, xtol=1, ftol=0.0001,
+                                        initial_simplex=init_polstate, retall=True, full_output=1)
+
+            v_out[nn] = fmin_result[3]
+
+        ax.plot(v_out)
+
+        outdict = {'out': v_out}
+        df = pd.DataFrame(outdict)
+        df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
+        ax.plot(v_out)
+
+    end = pd.Timestamp.now()
+    print("Total time = ", (end - start).total_seconds())
+
+
+plt.show()
 
