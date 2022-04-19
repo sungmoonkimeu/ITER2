@@ -72,12 +72,12 @@ def create_gif(gif_name = None):
     imageio.mimsave(gif_name, images, fps=2)
 
 
-def trace_poincare(strfile, Mci, Mco, ax, fig):
+def show_result_poincare(strfile, Mci, Mco, ax, fig):
     data = pd.read_csv(strfile)
     E0 = Jones_vector('input')
     E1 = Jones_vector('output')
 
-    E0.general_azimuth_ellipticity(azimuth=data['x0'], ellipticity=data['x1'])
+    E0.general_azimuth_ellipticity(azimuth=data['x'], ellipticity=0)
     S = create_Stokes('output')
 
     Et = Jones_vector('trace')
@@ -91,7 +91,8 @@ def trace_poincare(strfile, Mci, Mco, ax, fig):
     V_Ip = arange(0e6,MaxIp+dIp,dIp)
     V_out_trace = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
 
-    colors = pl.cm.BuPu(np.linspace(0.2, 1, len(data['x0'])))
+    colors = pl.cm.BuPu(np.linspace(0.2, 1, len(data['x'])))
+    Stmp = create_Stokes('tmp')
 
     for mm, val in enumerate(E0):
         V_out[mm] = Mco @ Mci @ E0[mm].parameters.matrix()
@@ -111,32 +112,29 @@ def trace_poincare(strfile, Mci, Mco, ax, fig):
             arrow_prop_dict = dict(mutation_scale=15, arrowstyle='-|>', color=rgb2hex(colors[mm]), shrinkA=0, shrinkB=0)
             a = Arrow3D([o[1][0], x0[1][0]], [o[2][0], x0[2][0]], [o[3][0], x0[3][0]], **arrow_prop_dict)
             ax.add_artist(a)
-            if mm > 2 :
+            if mm > 1:
                 plt.savefig(str(mm)+'.png')
         o = St[0].parameters.matrix()
 
-    create_gif('mygif2.gif')
+    create_gif('mygif3.gif')
 
-def eval_result_1D(strfile, Mci, Mco, ax, fig):
+def show_result_aziellspace(strfile, aziell, sensitivity, ax, fig):
     data = pd.read_csv(strfile)
-    E0 = Jones_vector('input')
-    E1 = Jones_vector('output')
-    E0.general_azimuth_ellipticity(azimuth=data['x'], ellipticity=0)
 
-    V_out = np.einsum('...i,jk->ijk', ones(len(E0)) * 1j, np.mat([[0], [0]]))
-    for mm, val in enumerate(E0):
-        V_out[mm] = Mco @ Mci @ E0[mm].parameters.matrix()
-
-    E1.from_matrix(V_out)
-
-    azi0 = E1[0].parameters.azimuth()
-    ell0 = E1[0].parameters.ellipticity_angle()
+    azi0 = data['x'][0]
+    ell0 = 0
+    prop = dict(arrowstyle="-|>,head_width=0.4,head_length=0.8", shrinkA=0, shrinkB=0)
 
     for nn in range(len(data['x'])-1):
-        azi = E1[nn+1].parameters.azimuth()
-        ell = E1[nn+1].parameters.ellipticity_angle()
-        #print(azi,azi0,ell,ell0)
-        ax.arrow(azi0*180/pi,ell0*180/pi,azi*180/pi,ell*180/pi)
+        if nn> 1:
+            plt.cla()
+            plot_contour(aziell, sensitivity, fig,ax, True)
+        azi = data['x'][nn+1]
+        ell = 0
+        print(azi, ell)
+        ax.annotate("", xy=(azi*180/pi, ell*180/pi),
+                    xytext=(azi0*180/pi, ell0*180/pi), arrowprops=prop)
+
         azi0 = azi
         ell0 = ell
 
@@ -182,7 +180,6 @@ def f(x, Mci, Mco, fig, strfile):
     df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
 
     return errV
-
 
 def f2(x, Mci, Mco, strfile):
     E0 = Jones_vector('input')
@@ -256,7 +253,6 @@ def create_M_arb(theta, phi, theta_e):
 
     return M_rot @ M_theta @ M_phi @ M_theta_T
 
-
 def eval_result_gif(strfile):
     data = pd.read_csv(strfile)
     fig, ax = plt.subplots(figsize=(6, 3))
@@ -284,30 +280,28 @@ def eval_result(strfile):
     ax.set_ylabel('Error (%)')
     ax.legend()
 
-
 if __name__ == '__main__':
 
     # _______________________________Parameters#1___________________________________#
     # Circulator input matrix
     theta = 15* pi / 180   # birefringence axis of LB
-    phi = 15 * pi / 180  # ellipticity angle change from experiment
+    phi = -20 * pi / 180  # ellipticity angle change from experiment
     theta_e = 10* pi / 180  # azimuth angle change from experiment
 
     Mci = create_M_arb(theta, phi, theta_e)
 
     # Circulator output matrix
     theta = 10* pi / 180  # random axis of LB
-    phi = 15* pi / 180  # ellipticity angle change from experiment
+    phi = 25* pi / 180  # ellipticity angle change from experiment
     theta_e =35 * pi / 180  # azimuth angle change from experiment
 
     Mco = create_M_arb(theta, phi, theta_e)
 
     mode = 2
-
     if mode == 0:
         strfile = 'scanning.csv'
-        n_azi = 20
-        n_ell = 25
+        n_azi = 40 #20
+        n_ell = 50 #25
         # input matrix
         '''
         strfile0 = 'Filteredsignal.csv'
@@ -355,7 +349,7 @@ if __name__ == '__main__':
                 draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=rgb2hex(colors[nn]))
             else:
                 fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[23 * pi / 180, 32 * pi / 180], kind='line',
-                                             color_line=rgb2hex(colors[nn]))
+                                          color_line=rgb2hex(colors[nn]))
                 draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=rgb2hex(colors[nn]))
             print(S[-1])
 
@@ -374,6 +368,22 @@ if __name__ == '__main__':
         df1 = pd.DataFrame(l_measured)
         df1.to_csv(strfile.split('.')[0]+'_z.'+strfile.split('.')[1], index=False, mode='w', header=not os.path.exists(strfile))
 
+        '''
+        outdict0 = {'azi': azi_o}
+        df0 = pd.DataFrame(outdict0)
+        df0.to_csv(strfile2.split('.')[0] + '_x.' + strfile2.split('.')[1], index=False, mode='w',
+                   header=not os.path.exists(strfile2))
+
+        outdict1 = {'ell': ell_o}
+        df0 = pd.DataFrame(outdict1)
+        df0.to_csv(strfile2.split('.')[0] + '_y.' + strfile2.split('.')[1], index=False, mode='w',
+                   header=not os.path.exists(strfile2))
+
+        df1 = pd.DataFrame(l_measured)
+        df1.to_csv(strfile2.split('.')[0] + '_z.' + strfile2.split('.')[1], index=False, mode='w',
+                   header=not os.path.exists(strfile2))
+
+        '''
         #labelTups = [('LP0', 0), ('LP45', 1), ('RCP', 2)]
         #colors = color_code
         #custom_lines = [plt.Line2D([0], [0], ls="", marker='.',mec='k', mfc=c, mew=.1, ms=20) for c in colors]
@@ -396,7 +406,6 @@ if __name__ == '__main__':
         contour = ax.contourf(aziell[0]*180/pi*2,aziell[1]*180/pi*2,sensitivity, levels=np.linspace(0,1,21),cmap='Reds')
         contour2 = ax.contour(aziell[0]*180/pi*2,aziell[1]*180/pi*2,sensitivity, levels=[0.995], colors=('y'), linestyles=('-',), linewidths=(2,))
         #contour3 = ax.contour(aziell[0]*180/pi,aziell[1]*180/pi*2,sensitivity, levels=[0.999], colors=('y'), linestyles=('-',), linewidths=(2,))
-
 
         ax.clabel(contour2, fmt='%4.3f', colors='y', fontsize=14) #contour line labels
         #ax.clabel(contour3, fmt='%4.3f', colors='y', fontsize=14) #contour line labels
@@ -436,12 +445,11 @@ if __name__ == '__main__':
         fig, ax = plt.subplots(1,1)
         strfile = 'calibration_log.csv'
         plot_contour(aziell, sensitivity, fig, ax, False)
-        eval_result_1D(strfile, Mci, Mco, ax, fig)
-
+        show_result_aziellspace(strfile, aziell, sensitivity, ax, fig)
 
         Stmp = create_Stokes('tmp')
-        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
-        #trace_poincare(strfile, Mci, Mco, fig[0], ax)
+        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[4 * pi / 180, 124 * pi / 180], kind='line')
+        show_result_poincare(strfile, Mci, Mco, fig[0], ax)
     elif mode == 3:
         strfile = 'calibration_log.csv'
         eval_result(strfile)
@@ -449,5 +457,3 @@ if __name__ == '__main__':
 
     plt.show()
 
-#prop = dict(arrowstyle="-|>,head_width=0.4,head_length=0.8",shrinkA=0,shrinkB=0)
-# plt.annotate("", xy=(.2,.5), xytext=(1,2), arrowprops=prop)
