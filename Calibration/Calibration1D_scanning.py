@@ -448,3 +448,6 @@ if __name__ == '__main__':
         eval_result_gif(strfile)
 
     plt.show()
+
+#prop = dict(arrowstyle="-|>,head_width=0.4,head_length=0.8",shrinkA=0,shrinkB=0)
+# plt.annotate("", xy=(.2,.5), xytext=(1,2), arrowprops=prop)
