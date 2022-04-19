@@ -316,6 +316,9 @@ if __name__ == '__main__':
     mode = 3
 
     if mode == 0:
+        # calculating the sensitivity values of 3D poincare surface
+        # and transform into 2D space value (x: azi, y: ell, z:value)
+
         strfile = 'scanning.csv'
         n_azi = 20
         n_ell = 25
@@ -418,6 +421,8 @@ if __name__ == '__main__':
         ax.set_ylabel('elevation angle [deg]')
 
     elif mode == 1:
+        # Running optimization function
+
         strfile = 'calibration_log.csv'
 
         if os.path.exists(strfile):
@@ -431,6 +436,8 @@ if __name__ == '__main__':
         print(minimum[0])
 
     elif mode == 2:
+        # 1. Load sensitivity values for whole surface
+        # 2. Load the iteration of the optimization
         strfile = 'scanning.csv'
         V = 0.7 * 4 * pi * 1e-7
         maxVI = 40e3
@@ -453,6 +460,8 @@ if __name__ == '__main__':
         fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         trace_poincare(strfile, M_ci, M_co, fig[0], ax)
     elif mode == 3:
+        # make gif
+
         strfile = 'calibration_log.csv'
         eval_result(strfile)
         eval_result_gif(strfile)

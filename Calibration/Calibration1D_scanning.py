@@ -117,75 +117,32 @@ def trace_poincare(strfile, Mci, Mco, ax, fig):
 
     create_gif('mygif2.gif')
 
-def simplex_trace2(strfiel, ax,fig, aziell, sensitivity):
-    data = pd.read_csv(strfile) * 180/pi*2
-    numpnt = [0, 1, 2]
+def eval_result_1D(strfile, Mci, Mco, ax, fig):
+    data = pd.read_csv(strfile)
+    E0 = Jones_vector('input')
+    E1 = Jones_vector('output')
+    E0.general_azimuth_ellipticity(azimuth=data['x'], ellipticity=0)
 
-    colors = pl.cm.autumn(np.linspace(0.2, 1, len(data['x0'])))
-    # pl.cm.
-    # todo to replace the way showing simplex triangle on the sphere
+    V_out = np.einsum('...i,jk->ijk', ones(len(E0)) * 1j, np.mat([[0], [0]]))
+    for mm, val in enumerate(E0):
+        V_out[mm] = Mco @ Mci @ E0[mm].parameters.matrix()
 
-    for nn in range(len(data['x0']) - 3):
+    E1.from_matrix(V_out)
 
-        if nn > 1:
-            plt.cla()
-            plot_contour(aziell, sensitivity, fig, ax, True)
-            ax.plot([xp0[0], xp1[0]], [xp0[1], xp1[1]], color=colors[nn-1])
-            ax.plot([xp1[0], xp2[0]], [xp1[1], xp2[1]], color=colors[nn - 1])
-            ax.plot([xp2[0], xp0[0]], [xp2[1], xp0[1]], color=colors[nn - 1])
+    azi0 = E1[0].parameters.azimuth()
+    ell0 = E1[0].parameters.ellipticity_angle()
 
-        azi0 = data['x0'][numpnt[0]]
-        azi1 = data['x0'][numpnt[1]]
-        ell0 = data['x1'][numpnt[0]]
-        ell1 = data['x1'][numpnt[1]]
+    for nn in range(len(data['x'])-1):
+        azi = E1[nn+1].parameters.azimuth()
+        ell = E1[nn+1].parameters.ellipticity_angle()
+        #print(azi,azi0,ell,ell0)
+        ax.arrow(azi0*180/pi,ell0*180/pi,azi*180/pi,ell*180/pi)
+        azi0 = azi
+        ell0 = ell
 
-        azi0 = azi0 + 360 if azi0 < 0 else azi0 - 360 if azi0 > 360 else azi0
-        azi1 = azi1 + 360 if azi1 < 0 else azi1 - 360 if azi1 > 360 else azi1
-        ell0 = ell0 - 180 if ell0 > 90 else ell0 + 180 if ell0 < -90 else ell0
-        ell1 = ell1 - 180 if ell1 > 90 else ell1 + 180 if ell1 < -90 else ell1
+        plt.savefig(str(nn)+'.png')
 
-        p0 = np.array([azi0, ell0])
-        p1 = np.array([azi1, ell1])
-        ax.plot( [p0[0],p1[0]],[p0[1],p1[1]], color=colors[nn])
-        xp0 = p0
-
-        azi0 = data['x0'][numpnt[1]]
-        azi1 = data['x0'][numpnt[2]]
-        ell0 = data['x1'][numpnt[1]]
-        ell1 = data['x1'][numpnt[2]]
-
-        azi0 = azi0 + 360 if azi0 < 0 else azi0 - 360 if azi0 > 360 else azi0
-        azi1 = azi1 + 360 if azi1 < 0 else azi1 - 360 if azi1 > 360 else azi1
-        ell0 = ell0 - 180 if ell0 > 90 else ell0 + 180 if ell0 < -90 else ell0
-        ell1 = ell1 - 180 if ell1 > 90 else ell1 + 180 if ell1 < -90 else ell1
-
-        p0 = np.array([azi0, ell0])
-        p1 = np.array([azi1, ell1])
-        ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color=colors[nn])
-        xp1 = p0
-
-        azi0 = data['x0'][numpnt[2]]
-        azi1 = data['x0'][numpnt[0]]
-        ell0 = data['x1'][numpnt[2]]
-        ell1 = data['x1'][numpnt[0]]
-
-        azi0 = azi0 + 360 if azi0 < 0 else azi0 - 360 if azi0 > 360 else azi0
-        azi1 = azi1 + 360 if azi1 < 0 else azi1 - 360 if azi1 > 360 else azi1
-        ell0 = ell0 - 180 if ell0 > 90 else ell0 + 180 if ell0 < -90 else ell0
-        ell1 = ell1 - 180 if ell1 > 90 else ell1 + 180 if ell1 < -90 else ell1
-
-        p0 = np.array([azi0, ell0])
-        p1 = np.array([azi1, ell1])
-        ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color=colors[nn])
-
-        xp2 = p0
-
-        # print(data['L'][numpnt[0]],data['L'][numpnt[1]],data['L'][numpnt[2]])
-        xnumpnt = numpnt
-        minindex = np.argmin(data['L'][numpnt])
-        numpnt[minindex] = nn + 3
-        plt.savefig(str(nn) + '.png')
-    create_gif('mygif3.gif')
+    create_gif('mygif2.gif')
 
 def f(x, Mci, Mco, fig, strfile):
     E0 = Jones_vector('input')
@@ -226,6 +183,40 @@ def f(x, Mci, Mco, fig, strfile):
 
     return errV
 
+
+def f2(x, Mci, Mco, strfile):
+    E0 = Jones_vector('input')
+    E1 = Jones_vector('output')
+    E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
+    V = 0.7 * 4 * pi * 1e-7
+    MaxIp = 40e3
+    dIp = MaxIp/100
+    V_Ip = arange(0e6,MaxIp+dIp,dIp)
+    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+
+    for mm, iter_I in enumerate(V_Ip):
+        # Faraday rotation matirx
+        th_FR = iter_I * V*2
+        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
+        V_out[mm] = Mco @ M_FR @ Mci @ E0.parameters.matrix()
+
+    E1.from_matrix(M=V_out)
+    S = create_Stokes('output')
+    S.from_Jones(E1)
+
+    L = cal_arclength(S)    # Arc length is orientation angle psi -->
+    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    errV = abs((Veff-V)/V)
+
+    outdict = {'x': x, 'L': np.array(L), 'errV': np.array(errV)}
+    df = pd.DataFrame(outdict)
+    df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
+
+    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
+    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
+
+    return errV
+
 def plot_contour(aziell, sensitivity, fig, ax, redraw):
 
     contour = ax.contourf(aziell[0] * 180 / pi * 2, aziell[1] * 180 / pi * 2, sensitivity, levels=np.linspace(0, 1, 21),
@@ -256,7 +247,6 @@ def cal_arclength(S):
 
     return L
 
-
 def create_M_arb(theta, phi, theta_e):
 
     M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
@@ -284,7 +274,6 @@ def eval_result_gif(strfile):
             plt.savefig(str(nn) + '.png')
     create_gif('mygif4.gif')
 
-
 def eval_result(strfile):
 
     data = pd.read_csv(strfile)
@@ -301,19 +290,19 @@ if __name__ == '__main__':
     # _______________________________Parameters#1___________________________________#
     # Circulator input matrix
     theta = 15* pi / 180   # birefringence axis of LB
-    phi = 25 * pi / 180  # ellipticity angle change from experiment
-    theta_e = 50* pi / 180  # azimuth angle change from experiment
+    phi = 15 * pi / 180  # ellipticity angle change from experiment
+    theta_e = 10* pi / 180  # azimuth angle change from experiment
 
-    M_ci = create_M_arb(theta, phi, theta_e)
+    Mci = create_M_arb(theta, phi, theta_e)
 
     # Circulator output matrix
     theta = 10* pi / 180  # random axis of LB
-    phi = 25* pi / 180  # ellipticity angle change from experiment
-    theta_e =5 * pi / 180  # azimuth angle change from experiment
+    phi = 15* pi / 180  # ellipticity angle change from experiment
+    theta_e =35 * pi / 180  # azimuth angle change from experiment
 
-    M_co = create_M_arb(theta, phi, theta_e)
+    Mco = create_M_arb(theta, phi, theta_e)
 
-    mode = 0
+    mode = 2
 
     if mode == 0:
         strfile = 'scanning.csv'
@@ -354,7 +343,7 @@ if __name__ == '__main__':
                 th_FR = iter_I * V*2
                 M_FR = np.array([[cos(th_FR), sin(th_FR)], [-sin(th_FR), cos(th_FR)]])
                 #V_out[mm] = M_co @ M_FR @ M_ci @ V_in[nn]
-                V_out[mm] = M_co @ M_FR @ M_ci @ E0[nn].parameters.matrix()
+                V_out[mm] = Mco @ M_FR @ Mci @ E0[nn].parameters.matrix()
 
             E.from_matrix(M=V_out)
             S.from_Jones(E)
@@ -421,14 +410,14 @@ if __name__ == '__main__':
         strfile = 'calibration_log.csv'
 
         if os.path.exists(strfile):
-            print("existed file(", strfile, ") has been deleted")
+            print("previous data(", strfile, ") has been deleted")
             os.remove(strfile)
 
-        init_polstate = np.array([[0,0], [pi/2,0], [pi/4, pi/4]])
-        Stmp = create_Stokes('tmp')
-        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
-        minimum = optimize.fmin(f, [0,0], (M_ci, M_co, fig, strfile), maxiter=50, xtol=1, ftol=0.0001, initial_simplex=init_polstate, retall=True)
-        print(minimum[0])
+        # initial point
+        init_polstate = np.array([[0], [pi / 4]])
+
+        fmin_result = optimize.fmin(f2, 0, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
+                                    initial_simplex=init_polstate, retall=True, full_output=1)
 
     elif mode == 2:
         strfile = 'scanning.csv'
@@ -447,11 +436,12 @@ if __name__ == '__main__':
         fig, ax = plt.subplots(1,1)
         strfile = 'calibration_log.csv'
         plot_contour(aziell, sensitivity, fig, ax, False)
-        simplex_trace2(strfile, ax, fig, aziell, sensitivity)
+        eval_result_1D(strfile, Mci, Mco, ax, fig)
+
 
         Stmp = create_Stokes('tmp')
         fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
-        trace_poincare(strfile, M_ci, M_co, fig[0], ax)
+        #trace_poincare(strfile, Mci, Mco, fig[0], ax)
     elif mode == 3:
         strfile = 'calibration_log.csv'
         eval_result(strfile)

@@ -452,7 +452,7 @@ if __name__ == '__main__':
     '''
 
     ## 2nd step
-
+    '''
     start = pd.Timestamp.now()
     strfile = 'Multiple_Calibration.csv'
 
@@ -489,6 +489,22 @@ if __name__ == '__main__':
     end = pd.Timestamp.now()
     print("Total time = ", (end-start).total_seconds())
 
+    '''
+
+    '''
+    # Step3 Plotting
+    strfile = 'Multiple_Calibration.csv'
+    data = pd.read_csv(strfile)
+
+    colors = pl.cm.BuPu(np.linspace(0.2, 1, len(data['out'])))
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.plot(data['out'])
+
+    bins = [1,3,5,7,9,11,13,15,17,19]
+    #bins = [3, 7, 11, 15, 19]
+    ax.hist(data['out'], bins)
+    '''
 
     plt.show()
 
