@@ -71,7 +71,6 @@ def create_gif(gif_name = None):
         os.remove(img)
     imageio.mimsave(gif_name, images, fps=2)
 
-
 def show_result_poincare(strfile, Mci, Mco, ax, fig):
     data = pd.read_csv(strfile)
     E0 = Jones_vector('input')
@@ -131,7 +130,8 @@ def show_result_aziellspace(strfile, aziell, sensitivity, ax, fig):
             plot_contour(aziell, sensitivity, fig,ax, True)
         azi = data['x'][nn+1]
         ell = 0
-        print(azi, ell)
+        print("azi0, azi ", azi0*180/pi, azi*180/pi)
+
         ax.annotate("", xy=(azi*180/pi, ell*180/pi),
                     xytext=(azi0*180/pi, ell0*180/pi), arrowprops=prop)
 
@@ -141,6 +141,39 @@ def show_result_aziellspace(strfile, aziell, sensitivity, ax, fig):
         plt.savefig(str(nn)+'.png')
 
     create_gif('mygif2.gif')
+
+def show_result_cal_azimuth(strfile_background, strfile_calibration, fig, ax):
+    V = 0.7 * 4 * pi * 1e-7
+    maxVI = 40e3
+
+    # draw background
+    data_bg = pd.read_csv(strfile_background)
+    azi_bg = np.array(data_bg['azi'])
+    l_bg = np.array(data_bg['l'])
+    Ip_bg = l_bg / 4 / V
+    sensitivity_bg = Ip_bg / maxVI
+    ax.plot(azi_bg*180/pi*2, sensitivity_bg)
+    ax.set_xlabel('azimuth angle [deg]')
+    ax.set_ylabel('Normalized sensitivity')
+
+    # draw calibration footstep
+    prop = dict(arrowstyle="-|>,head_width=0.2,head_length=0.4", shrinkA=0, shrinkB=0)
+    data = pd.read_csv(strfile_calibration)
+    x0 = data['x'][0]
+    y0 = data['L'][0]/(4*V)/maxVI
+
+    for nn in range(len(data['x'])-1):
+        x = data['x'][nn]
+        y = data['L'][nn]/(4*V)/maxVI
+
+        ax.annotate("", xy=(x*180/pi*2, y),
+                    xytext=(x0*180/pi*2, y0), arrowprops=prop)
+        x0 = x
+        y0 = y
+        plt.savefig(str(nn)+'.png')
+
+    create_gif('mygif2.gif')
+
 
 def f(x, Mci, Mco, fig, strfile):
     E0 = Jones_vector('input')
@@ -213,6 +246,9 @@ def f2(x, Mci, Mco, strfile):
     #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
 
     return errV
+
+#def plot_sensitivity_1D(aziell, sensitivity, fig,ax):
+
 
 def plot_contour(aziell, sensitivity, fig, ax, redraw):
 
@@ -297,11 +333,11 @@ if __name__ == '__main__':
 
     Mco = create_M_arb(theta, phi, theta_e)
 
-    mode = 2
+    mode =4
     if mode == 0:
         strfile = 'scanning.csv'
-        n_azi = 40 #20
-        n_ell = 50 #25
+        n_azi = 20 #20
+        n_ell = 25 #25
         # input matrix
         '''
         strfile0 = 'Filteredsignal.csv'
@@ -423,10 +459,11 @@ if __name__ == '__main__':
             os.remove(strfile)
 
         # initial point
-        init_polstate = np.array([[0], [pi / 4]])
+        init_polstate = np.array([[pi/6], [pi / 3]])
 
-        fmin_result = optimize.fmin(f2, 0, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
+        fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
                                     initial_simplex=init_polstate, retall=True, full_output=1)
+        print(fmin_result[0])
 
     elif mode == 2:
         strfile = 'scanning.csv'
@@ -444,6 +481,7 @@ if __name__ == '__main__':
 
         fig, ax = plt.subplots(1,1)
         strfile = 'calibration_log.csv'
+        #plot_sensitivity_1D(aziell, sensitivity, fig,ax)
         plot_contour(aziell, sensitivity, fig, ax, False)
         show_result_aziellspace(strfile, aziell, sensitivity, ax, fig)
 
@@ -451,9 +489,84 @@ if __name__ == '__main__':
         fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[4 * pi / 180, 124 * pi / 180], kind='line')
         show_result_poincare(strfile, Mci, Mco, fig[0], ax)
     elif mode == 3:
-        strfile = 'calibration_log.csv'
-        eval_result(strfile)
-        eval_result_gif(strfile)
+        strfile = 'scanning1D.csv'
+        n_azi = 40  # 20
 
+        # input matrix
+        '''
+        strfile0 = 'Filteredsignal.csv'
+        data = pd.read_csv(strfile0)
+        V_I = np.array(data)
+        V_I = V_I.reshape(V_I.size,)
+        '''
+        V_I = arange(0e6, 40e3 + 1e3, 5e3)
+
+        V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
+        V = 0.7 * 4 * pi * 1e-7
+
+        E0 = Jones_vector('input')
+        E = Jones_vector('Output')
+
+        azi = np.linspace(0, 180, n_azi) * pi / 180
+
+        colors = pl.cm.hsv(np.linspace(0, 1, len(azi)))
+
+        E0.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
+
+        OV = np.array([])
+        midpnt = int(len(V_I) / 2)
+        length_S = []
+        S = create_Stokes('Output_S')
+
+        for nn in range(len(E0)):
+            for mm, iter_I in enumerate(V_I):
+                # Faraday rotation matirx
+                th_FR = iter_I * V * 2
+                M_FR = np.array([[cos(th_FR), sin(th_FR)], [-sin(th_FR), cos(th_FR)]])
+                # V_out[mm] = M_co @ M_FR @ M_ci @ V_in[nn]
+                V_out[mm] = Mco @ M_FR @ Mci @ E0[nn].parameters.matrix()
+
+            E.from_matrix(M=V_out)
+            S.from_Jones(E)
+
+            length_S.append(cal_arclength(S)[0])
+
+            if nn != 0:
+                draw_stokes_points(fig[0], S, kind='line', color_line=rgb2hex(colors[nn]))
+                draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=rgb2hex(colors[nn]))
+            else:
+                fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[23 * pi / 180, 32 * pi / 180], kind='line',
+                                          color_line=rgb2hex(colors[nn]))
+                draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=rgb2hex(colors[nn]))
+            print(S[-1])
+
+        print(length_S)
+
+        l_measured = np.array(length_S)
+
+        outdict0 = {'azi': azi, 'l' : l_measured}
+        df0 = pd.DataFrame(outdict0)
+        df0.to_csv(strfile.split('.')[0] + '_xy.' + strfile.split('.')[1], index=False, mode='w',
+                   header=not os.path.exists(strfile))
+
+        fig, ax = plt.subplots(1, 1)
+
+        Ip_measured = l_measured / 4 / V
+        sensitivity = Ip_measured / max(V_I)
+        errV = abs(sensitivity - 1)
+
+        ax.plot(azi*180/pi*2,sensitivity)
+        ax.plot(azi*180/pi*2, errV)
+        ax.set_xlabel('azimuth angle [deg]')
+        ax.set_ylabel('elevation angle [deg]')
+    elif mode ==4:
+        strfile1 = 'scanning1D_xy.csv'
+        fig, ax = plt.subplots(1, 1)
+        strfile2 = 'calibration_log.csv'
+        show_result_cal_azimuth(strfile1,strfile2, fig, ax)
+
+        Stmp = create_Stokes('tmp')
+        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[4 * pi / 180, 124 * pi / 180], kind='line')
+        show_result_poincare(strfile2, Mci, Mco, fig[0], ax)
     plt.show()
 
