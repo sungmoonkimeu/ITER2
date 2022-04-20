@@ -155,6 +155,7 @@ def show_result_cal_azimuth(strfile_background, strfile_calibration, fig, ax):
     ax.plot(azi_bg*180/pi*2, sensitivity_bg)
     ax.set_xlabel('azimuth angle [deg]')
     ax.set_ylabel('Normalized sensitivity')
+    ax.set(xlim=(0,360),ylim=(0,1.1))
 
     # draw calibration footstep
     prop = dict(arrowstyle="-|>,head_width=0.2,head_length=0.4", shrinkA=0, shrinkB=0)
@@ -220,7 +221,7 @@ def f2(x, Mci, Mco, strfile):
     E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
     V = 0.7 * 4 * pi * 1e-7
     MaxIp = 40e3
-    dIp = MaxIp/100
+    dIp = MaxIp/50
     V_Ip = arange(0e6,MaxIp+dIp,dIp)
     V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
 
@@ -237,6 +238,94 @@ def f2(x, Mci, Mco, strfile):
     L = cal_arclength(S)    # Arc length is orientation angle psi -->
     Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
     errV = abs((Veff-V)/V)
+
+    outdict = {'x': x, 'L': np.array(L), 'errV': np.array(errV)}
+    df = pd.DataFrame(outdict)
+    df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
+
+    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
+    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
+
+    return errV
+
+def f3(x, Mci, Mco, strfile):
+    E0 = Jones_vector('input')
+    E1 = Jones_vector('output')
+    #x = x + (np.random.rand(1)-0.5)*pi/180 # 0.5 deg SOP control uncertainty
+    x = x + (np.random.rand(1)*2 - 1) * pi / 180  # 1 deg SOP control uncertainty
+    E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
+    V = 0.7 * 4 * pi * 1e-7
+    MaxIp = 40e3
+    dIp = MaxIp/50
+    V_Ip = arange(0e6,MaxIp+dIp,dIp)
+    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+
+    for mm, iter_I in enumerate(V_Ip):
+        [theta, phi, theta_e] = (np.random.rand(3) *
+                                 [90, 1, 1] - [45, .5, 0.5]) * np.pi / 180
+        #                        [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
+
+        Mn = create_M_arb(theta, phi, theta_e)
+
+        # Faraday rotation matirx
+        th_FR = iter_I * V*2
+        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
+        V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0.parameters.matrix()
+
+    E1.from_matrix(M=V_out)
+    S = create_Stokes('output')
+    S.from_Jones(E1)
+
+    L = cal_arclength(S)    # Arc length is orientation angle psi -->
+    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    errV = abs((Veff-V)/V)
+
+    outdict = {'x': x, 'L': np.array(L), 'errV': np.array(errV)}
+    df = pd.DataFrame(outdict)
+    df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
+
+    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
+    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
+
+    return errV
+
+def f4(x, Mci, Mco, strfile):
+    E0 = Jones_vector('input')
+    E1 = Jones_vector('output')
+    #x = x + (np.random.rand(1)-0.5)*pi/180 # 0.5 deg SOP control uncertainty
+    x = x + (np.random.rand(1)*2 - 1) * pi / 180  # 1 deg SOP control uncertainty
+    E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
+    V = 0.7 * 4 * pi * 1e-7
+    MaxIp = 40e3
+    dIp = MaxIp/50
+    V_Ip = arange(0e6,MaxIp+dIp,dIp)
+    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+
+    for mm, iter_I in enumerate(V_Ip):
+        [theta, phi, theta_e] = (np.random.rand(3) *
+                                 #[90, 1, 1] - [45, .5, 0.5]) * np.pi / 180
+                                [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
+
+        Mn = create_M_arb(theta, phi, theta_e)
+
+        # Faraday rotation matirx
+        th_FR = iter_I * V*2
+        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
+        V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0.parameters.matrix()
+
+    E1.from_matrix(M=V_out)
+    S = create_Stokes('output')
+    S.from_Jones(E1)
+
+    L = cal_arclength(S)    # Arc length is orientation angle psi -->
+    L0 = L
+    L = L*(1+np.random.rand(1)*0.01-0.005) # 1% error including
+    #print((L0 - L) /L0)
+    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    #print("veff=", Veff)
+
+    errV = abs((Veff-V)/V)
+    #print("err=", errV)
 
     outdict = {'x': x, 'L': np.array(L), 'errV': np.array(errV)}
     df = pd.DataFrame(outdict)
@@ -320,21 +409,24 @@ if __name__ == '__main__':
 
     # _______________________________Parameters#1___________________________________#
     # Circulator input matrix
-    theta = 15* pi / 180   # birefringence axis of LB
-    phi = -20 * pi / 180  # ellipticity angle change from experiment
-    theta_e = 10* pi / 180  # azimuth angle change from experiment
-
+    '''
+    theta = 40* pi / 180   # birefringence axis of LB
+    phi = -10 * pi / 180  # ellipticity angle change from experiment
+    theta_e = 30* pi / 180  # azimuth angle change from experiment
+    '''
+    inputa = [30, -35, 30]
+    [theta, phi, theta_e] = np.array(inputa)*pi/180
     Mci = create_M_arb(theta, phi, theta_e)
 
     # Circulator output matrix
-    theta = 10* pi / 180  # random axis of LB
-    phi = 25* pi / 180  # ellipticity angle change from experiment
-    theta_e =35 * pi / 180  # azimuth angle change from experiment
 
+    inputb = [15, -25, 10]
+    [theta, phi, theta_e] = np.array(inputb)*pi/180
     Mco = create_M_arb(theta, phi, theta_e)
 
-    mode =4
+    mode = 4
     if mode == 0:
+        # scanning 2D space
         strfile = 'scanning.csv'
         n_azi = 20 #20
         n_ell = 25 #25
@@ -449,9 +541,9 @@ if __name__ == '__main__':
         fig.colorbar(contour, ticks = [0, 0.2, 0.4, 0.6, 0.8, 1]) # Add a colorbar to a plot
 
         ax.set_xlabel('azimuth angle [deg]')
-        ax.set_ylabel('elevation angle [deg]')
-
+        ax.set_ylabel('ellipticity angle [deg]')
     elif mode == 1:
+        #Calbiratoin_1D space
         strfile = 'calibration_log.csv'
 
         if os.path.exists(strfile):
@@ -461,44 +553,16 @@ if __name__ == '__main__':
         # initial point
         init_polstate = np.array([[pi/6], [pi / 3]])
 
-        fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
+        #fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
+        #                            initial_simplex=init_polstate, retall=True, full_output=1)
+        fmin_result = optimize.fmin(f4, pi / 6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.01,
                                     initial_simplex=init_polstate, retall=True, full_output=1)
         print(fmin_result[0])
-
     elif mode == 2:
-        strfile = 'scanning.csv'
-        V = 0.7 * 4 * pi * 1e-7
-        maxVI = 40e3
-        data_x = pd.read_csv(strfile.split('.')[0]+'_x.csv')
-        data_y = pd.read_csv(strfile.split('.')[0] + '_y.csv')
-        data_z = pd.read_csv(strfile.split('.')[0] + '_z.csv')
-
-        aziell = np.meshgrid(data_x,data_y)
-
-        l_measured = data_z
-        Ip_measured = l_measured / 4 / V
-        sensitivity = Ip_measured / maxVI
-
-        fig, ax = plt.subplots(1,1)
-        strfile = 'calibration_log.csv'
-        #plot_sensitivity_1D(aziell, sensitivity, fig,ax)
-        plot_contour(aziell, sensitivity, fig, ax, False)
-        show_result_aziellspace(strfile, aziell, sensitivity, ax, fig)
-
-        Stmp = create_Stokes('tmp')
-        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[4 * pi / 180, 124 * pi / 180], kind='line')
-        show_result_poincare(strfile, Mci, Mco, fig[0], ax)
-    elif mode == 3:
+        #Scanning 1D space w/o noise
         strfile = 'scanning1D.csv'
-        n_azi = 40  # 20
+        n_azi = 100  # 20
 
-        # input matrix
-        '''
-        strfile0 = 'Filteredsignal.csv'
-        data = pd.read_csv(strfile0)
-        V_I = np.array(data)
-        V_I = V_I.reshape(V_I.size,)
-        '''
         V_I = arange(0e6, 40e3 + 1e3, 5e3)
 
         V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
@@ -508,7 +572,6 @@ if __name__ == '__main__':
         E = Jones_vector('Output')
 
         azi = np.linspace(0, 180, n_azi) * pi / 180
-
         colors = pl.cm.hsv(np.linspace(0, 1, len(azi)))
 
         E0.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
@@ -549,24 +612,138 @@ if __name__ == '__main__':
         df0.to_csv(strfile.split('.')[0] + '_xy.' + strfile.split('.')[1], index=False, mode='w',
                    header=not os.path.exists(strfile))
 
-        fig, ax = plt.subplots(1, 1)
+        fig, ax = plt.subplots(figsize=(5,3))
 
         Ip_measured = l_measured / 4 / V
         sensitivity = Ip_measured / max(V_I)
         errV = abs(sensitivity - 1)
 
         ax.plot(azi*180/pi*2,sensitivity)
-        ax.plot(azi*180/pi*2, errV)
+        #ax.plot(azi*180/pi*2, errV)
         ax.set_xlabel('azimuth angle [deg]')
-        ax.set_ylabel('elevation angle [deg]')
-    elif mode ==4:
-        strfile1 = 'scanning1D_xy.csv'
-        fig, ax = plt.subplots(1, 1)
-        strfile2 = 'calibration_log.csv'
-        show_result_cal_azimuth(strfile1,strfile2, fig, ax)
+        ax.set_ylabel('normalized sensitivity')
+        ax.set(xlim=(0,360), ylim=(0, 1.1))
+    elif mode == 3:
+        #scanning 1D space with noise
+        strfile = 'scanning1D_noise.csv'
+        n_azi = 100  # 20
 
-        Stmp = create_Stokes('tmp')
-        fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[4 * pi / 180, 124 * pi / 180], kind='line')
-        show_result_poincare(strfile2, Mci, Mco, fig[0], ax)
+        V_I = arange(0e6, 40e3 + 1e3, 5e3)
+
+        V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
+        V = 0.7 * 4 * pi * 1e-7
+
+        E0 = Jones_vector('input')
+        E = Jones_vector('Output')
+
+        azi = np.linspace(0, 180, n_azi) * pi / 180
+        azi_noise = azi + (np.random.rand(len(azi)) - 0.5) * pi / 180
+        colors = pl.cm.hsv(np.linspace(0, 1, len(azi)))
+
+        E0.general_azimuth_ellipticity(azimuth=azi_noise, ellipticity=0)
+
+        OV = np.array([])
+        midpnt = int(len(V_I) / 2)
+        length_S = []
+        S = create_Stokes('Output_S')
+
+        for nn in range(len(E0)):
+            for mm, iter_I in enumerate(V_I):
+                [theta, phi, theta_e] = (np.random.rand(3) *
+                                        [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
+                Mn = create_M_arb(theta, phi, theta_e)
+                # Faraday rotation matirx
+                th_FR = iter_I * V * 2
+                M_FR = np.array([[cos(th_FR), sin(th_FR)], [-sin(th_FR), cos(th_FR)]])
+                # V_out[mm] = M_co @ M_FR @ M_ci @ V_in[nn]
+                V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0[nn].parameters.matrix()
+
+            E.from_matrix(M=V_out)
+            S.from_Jones(E)
+
+            #L= cal_arclength(S)[0]
+            #L = L * (1 + np.random.rand(1) * 0.01 - 0.005)  # 1% error including
+            #length_S.append(L)
+            length_S.append(cal_arclength(S)[0])
+
+
+            if nn != 0:
+                draw_stokes_points(fig[0], S, kind='line', color_line=rgb2hex(colors[nn]))
+                draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=rgb2hex(colors[nn]))
+            else:
+                fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[23 * pi / 180, 32 * pi / 180], kind='line',
+                                          color_line=rgb2hex(colors[nn]))
+                draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=rgb2hex(colors[nn]))
+            print(S[-1])
+
+        print(length_S)
+
+        l_measured = np.array(length_S)
+        print(length_S)
+        print(l_measured)
+
+
+        fig, ax = plt.subplots(figsize=(5, 3))
+
+        Ip_measured = l_measured / 4 / V
+        sensitivity = Ip_measured / max(V_I)
+        errV = abs(sensitivity - 1)
+        ax.plot(azi * 180 / pi * 2, sensitivity, label='with SOP uncertainty')
+
+        # Calibration current noise
+        l_measured = l_measured * (1 + np.random.rand(len(l_measured)) * 0.1 - 0.05)
+        Ip_measured = l_measured / 4 / V
+        sensitivity = Ip_measured / max(V_I)
+        errV = abs(sensitivity - 1)
+
+        ax.plot(azi * 180 / pi * 2, sensitivity, label='with Ical. uncertainty')
+
+        outdict0 = {'azi': azi, 'l': l_measured}
+        df0 = pd.DataFrame(outdict0)
+        df0.to_csv(strfile.split('.')[0] + '_xy.' + strfile.split('.')[1], index=False, mode='w',
+                   header=not os.path.exists(strfile))
+
+        # ax.plot(azi*180/pi*2, errV)
+        ax.set_xlabel('azimuth angle [deg]')
+        ax.set_ylabel('normalized sensitivity')
+        ax.set(xlim=(0, 360), ylim=(0, 1.1))
+        ax.legend(loc='lower right')
+    elif mode == 4:
+        strfile1 = 'scanning1D_noise_xy.csv'
+        fig, ax = plt.subplots(figsize=(5,4))
+        strfile2 = 'calibration_log.csv'
+        show_result_cal_azimuth(strfile1, strfile2, fig, ax)
+
+        #Stmp = create_Stokes('tmp')
+        #fig, ax = Stmp.draw_poincare(figsize=(5, 5), angle_view=[4 * pi / 180, 124 * pi / 180], kind='line')
+        #show_result_poincare(strfile2, Mci, Mco, fig[0], ax)
+    elif mode == 5:
+
+        #comparing noise included normalized sensitivity
+        V = 0.7 * 4 * pi * 1e-7
+        maxVI = 40e3
+        fig, ax = plt.subplots(figsize=(5, 4))
+        # draw strfile1
+        strfile1 = 'scanning1D_xy.csv'
+        data = pd.read_csv(strfile1)
+        azi = np.array(data['azi'])
+        l = np.array(data['l'])
+        Ip = l / 4 / V
+        sensitivity = Ip / maxVI
+        ax.plot(azi * 180 / pi * 2, sensitivity, label='ideal')
+
+        strfile1 = 'scanning1D_noise_xy.csv'
+        data = pd.read_csv(strfile1)
+        azi = np.array(data['azi'])
+        l = np.array(data['l'])
+        Ip = l / 4 / V
+        sensitivity = Ip / maxVI
+        ax.plot(azi * 180 / pi * 2, sensitivity, label='with SOP uncertainties')
+
+        ax.set_xlabel('azimuth angle [deg]')
+        ax.set_ylabel('Normalized sensitivity')
+        ax.set(xlim=(0, 360), ylim=(0, 1.1))
+        ax.legend(loc="lower right")
+
     plt.show()
 

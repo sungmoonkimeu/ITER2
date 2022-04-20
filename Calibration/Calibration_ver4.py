@@ -344,13 +344,14 @@ def cal_arclength(S):
 
     return L
 
-def create_M(r, omega, phi):
+def create_M_arb(theta, phi, theta_e):
 
-    M_rot = np.array([[cos(phi), -sin(phi)], [sin(phi), cos(phi)]])
-    M_theta = np.array([[cos(omega), -sin(omega)], [sin(omega), cos(omega)]])
-    M_phi = np.array([[exp(1j * r/2), 0], [0, exp(-1j * r/2)]])
+    M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
+    M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
+    M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
+    M_phi = np.array([[exp(1j*phi), 0],[0, exp(-1j*phi)]])
 
-    return M_rot @ M_theta.T @ M_phi @ M_theta
+    return M_rot @ M_theta @ M_phi @ M_theta_T
 
 def f(x, Mci, Mco, strfile):
     E0 = Jones_vector('input')
@@ -398,7 +399,7 @@ def f2(x, Mci, Mco):
     E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
     V = 0.7 * 4 * pi * 1e-7
     MaxIp = 40e3
-    dIp = MaxIp/100
+    dIp = MaxIp/50
     V_Ip = arange(0e6,MaxIp+dIp,dIp)
     V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
 
@@ -420,91 +421,144 @@ def f2(x, Mci, Mco):
 
     return errV
 
+# Noise included fuction
+def f3(x, Mci, Mco):
+    E0 = Jones_vector('input')
+    E1 = Jones_vector('output')
+    x = x + (np.random.rand(1)-0.5)*pi/180 # 0.5 deg SOP control uncertainty
+    E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
+    V = 0.7 * 4 * pi * 1e-7
+    MaxIp = 40e3
+    dIp = MaxIp/50
+    V_Ip = arange(0e6,MaxIp+dIp,dIp)
+    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+
+    for mm, iter_I in enumerate(V_Ip):
+        [theta, phi, theta_e] = (np.random.rand(3) *
+                                [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
+        Mn = create_M(theta, phi, theta_e)
+
+        # Faraday rotation matirx
+        th_FR = iter_I * V*2
+        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
+        V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0.parameters.matrix()
+
+    E1.from_matrix(M=V_out)
+    S = create_Stokes('output')
+    S.from_Jones(E1)
+
+    L = cal_arclength(S)    # Arc length is orientation angle psi -->
+    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    errV = abs((Veff-V)/V)
+    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
+    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
+
+    return errV
+
+# adding noise of calibration current
+def f4(x, Mci, Mco):
+    E0 = Jones_vector('input')
+    E1 = Jones_vector('output')
+    x = x + (np.random.rand(1)*2 - 1) * pi / 180  # 1 deg SOP control uncertainty
+    E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
+    V = 0.7 * 4 * pi * 1e-7
+    MaxIp = 40e3
+    dIp = MaxIp/50
+    V_Ip = arange(0e6,MaxIp+dIp,dIp)
+    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+
+    for mm, iter_I in enumerate(V_Ip):
+        [theta, phi, theta_e] = (np.random.rand(3) *
+                                [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
+        Mn = create_M_arb(theta, phi, theta_e)
+
+        # Faraday rotation matirx
+        th_FR = iter_I * V*2
+        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
+        V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0.parameters.matrix()
+
+    E1.from_matrix(M=V_out)
+    S = create_Stokes('output')
+    S.from_Jones(E1)
+
+    L = cal_arclength(S)    # Arc length is orientation angle psi -->
+    #L = L*(1+np.random.rand(1)*0.01-0.005) # 1% error including
+    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    print(Veff)
+    errV = abs((Veff-V)/V)
+    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
+    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
+
+    return errV
+
+
 if __name__ == '__main__':
 
-    ## first step
-    '''
-    strfile = 'calibration1D_log.csv'
-    if os.path.exists(strfile):
-        os.remove(strfile)
-
-    # Define Minput Moutput
-    theta0, phi0, theta_e0 = np.random.rand(3)*360
-    Mci = create_M(theta0*pi/180, phi0*pi/180, theta_e0*pi/180)
-
-    theta1, phi1, theta_e1 = np.random.rand(3)*360
-    Mco = create_M(theta1*pi/180, phi1*pi/180, theta_e1*pi/180)
-
-    # initial point
-    init_polstate = np.array([[0], [pi / 4]])
-
-    out = optimize.fmin(f, 0, (Mci, Mco, strfile), maxiter=20, xtol=1, ftol=0.0001,
-                            initial_simplex=init_polstate, retall=True, full_output=1)
-
-    #print("minimum[0]", minimum[0])
-    print(out[3])
-
-    Stmp = create_Stokes('tmp')
-    fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
-
-    eval_result(strfile)
-    eval_result3_1D(strfile, Mci, Mco, fig[0], ax)
-    '''
+    start = pd.Timestamp.now()
+    mode = 0
 
     ## 2nd step
-    '''
-    start = pd.Timestamp.now()
-    strfile = 'Multiple_Calibration.csv'
+    #strfile = 'Multiple_Calibration.csv'
+    strfile = 'Multiple_Cal_with_SOPnoise.csv'
 
-    # Define Minput Moutput
+    if mode == 0:
 
-    n_iter = 100
-    n_iter2 = 100
-    fig, ax = plt.subplots(figsize=(6, 6))
-    for mm in range(n_iter2):
+        n_iter = 5
+        n_iter2 = 5
+        fig, ax = plt.subplots(figsize=(6, 6))
+        for mm in range(n_iter2):
 
-        v_out = np.zeros(n_iter)
-        for nn in range(n_iter):
-            theta0, phi0, theta_e0 = np.random.rand(3)*360
-            Mci = create_M(theta0*pi/180, phi0*pi/180, theta_e0*pi/180)
+            v_out = np.zeros(n_iter)
+            for nn in range(n_iter):
+                theta0, phi0, theta_e0 = np.random.rand(3)*360
+                Mci = create_M_arb(theta0*pi/180, phi0*pi/180, theta_e0*pi/180)
 
-            theta1, phi1, theta_e1 = np.random.rand(3)*360
-            Mco = create_M(theta1*pi/180, phi1*pi/180, theta_e1*pi/180)
+                theta1, phi1, theta_e1 = np.random.rand(3)*360
+                Mco = create_M_arb(theta1*pi/180, phi1*pi/180, theta_e1*pi/180)
 
-            # initial point
-            init_polstate = np.array([[0], [pi / 4]])
+                # initial point
+                init_polstate = np.array([[pi/6], [pi / 3]])
 
-            fmin_result = optimize.fmin(f2, 0, (Mci, Mco), maxiter=30, xtol=1, ftol=0.0001,
-                                initial_simplex=init_polstate, retall=True, full_output=1)
+                fmin_result = optimize.fmin(f4, pi/6, (Mci, Mco), maxiter=30, xtol=1, ftol=0.01,
+                                    initial_simplex=init_polstate, retall=True, full_output=1)
 
-            v_out[nn] = fmin_result[3]
+                v_out[nn] = fmin_result[3]
 
 
-        ax.plot(v_out)
+            ax.plot(v_out)
 
-        outdict = {'out': v_out}
-        df = pd.DataFrame(outdict)
-        df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
+            outdict = {'out': v_out}
+            df = pd.DataFrame(outdict)
+            df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
+
+    elif mode ==1:
+
+        strfile = 'Multiple_Calibration.csv'
+        # Plotting
+        data = pd.read_csv(strfile)
+
+        colors = pl.cm.BuPu(np.linspace(0.2, 1, len(data['out'])))
+
+        fig, ax = plt.subplots(figsize=(6, 6))
+        ax.plot(data['out'])
+
+        bins = [1,3,5,7,9,11,13,15,17,19,21,23,25]
+        #bins = [3, 7, 11, 15, 19]
+        fig, ax = plt.subplots(figsize=(6, 6))
+
+        ax.hist(data['out'], bins, label='ideal')
+
+        strfile = 'Multiple_Cal_with_SOPnoise.csv'
+        data = pd.read_csv(strfile)
+        ax.hist(data['out'], bins, label='with SOP noise')
+        ax.set_xlabel('iteration')
+        ax.set_ylabel('n')
+        ax.legend(loc='upper left')
+
 
     end = pd.Timestamp.now()
     print("Total time = ", (end-start).total_seconds())
 
-    '''
-
-    '''
-    # Step3 Plotting
-    strfile = 'Multiple_Calibration.csv'
-    data = pd.read_csv(strfile)
-
-    colors = pl.cm.BuPu(np.linspace(0.2, 1, len(data['out'])))
-
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.plot(data['out'])
-
-    bins = [1,3,5,7,9,11,13,15,17,19]
-    #bins = [3, 7, 11, 15, 19]
-    ax.hist(data['out'], bins)
-    '''
 
     plt.show()
 
