@@ -424,7 +424,7 @@ if __name__ == '__main__':
     [theta, phi, theta_e] = np.array(inputb)*pi/180
     Mco = create_M_arb(theta, phi, theta_e)
 
-    mode = 4
+    mode = 5
     if mode == 0:
         # scanning 2D space
         strfile = 'scanning.csv'
@@ -628,9 +628,10 @@ if __name__ == '__main__':
         strfile = 'scanning1D_noise.csv'
         n_azi = 100  # 20
 
-        V_I = arange(0e6, 40e3 + 1e3, 5e3)
-
-        V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
+        MaxIp = 5e3
+        dIp = MaxIp / 50
+        V_Ip = arange(0e6, MaxIp + dIp, dIp)
+        V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
         V = 0.7 * 4 * pi * 1e-7
 
         E0 = Jones_vector('input')
@@ -643,12 +644,12 @@ if __name__ == '__main__':
         E0.general_azimuth_ellipticity(azimuth=azi_noise, ellipticity=0)
 
         OV = np.array([])
-        midpnt = int(len(V_I) / 2)
+        midpnt = int(len(V_Ip) / 2)
         length_S = []
         S = create_Stokes('Output_S')
 
         for nn in range(len(E0)):
-            for mm, iter_I in enumerate(V_I):
+            for mm, iter_I in enumerate(V_Ip):
                 [theta, phi, theta_e] = (np.random.rand(3) *
                                         [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
                 Mn = create_M_arb(theta, phi, theta_e)
@@ -686,14 +687,14 @@ if __name__ == '__main__':
         fig, ax = plt.subplots(figsize=(5, 3))
 
         Ip_measured = l_measured / 4 / V
-        sensitivity = Ip_measured / max(V_I)
+        sensitivity = Ip_measured / MaxIp
         errV = abs(sensitivity - 1)
         ax.plot(azi * 180 / pi * 2, sensitivity, label='with SOP uncertainty')
 
         # Calibration current noise
         l_measured = l_measured * (1 + np.random.rand(len(l_measured)) * 0.1 - 0.05)
         Ip_measured = l_measured / 4 / V
-        sensitivity = Ip_measured / max(V_I)
+        sensitivity = Ip_measured / MaxIp
         errV = abs(sensitivity - 1)
 
         ax.plot(azi * 180 / pi * 2, sensitivity, label='with Ical. uncertainty')
@@ -724,26 +725,46 @@ if __name__ == '__main__':
         maxVI = 40e3
         fig, ax = plt.subplots(figsize=(5, 4))
         # draw strfile1
-        strfile1 = 'scanning1D_xy.csv'
+        strfile1 = 'scanning1D_noise_xy_2.5kA.csv'
         data = pd.read_csv(strfile1)
         azi = np.array(data['azi'])
+        maxVI = 2.5e3
         l = np.array(data['l'])
         Ip = l / 4 / V
         sensitivity = Ip / maxVI
-        ax.plot(azi * 180 / pi * 2, sensitivity, label='ideal')
+        ax.plot(azi * 180 / pi * 2, sensitivity, label='Ical = 2.5kA')
 
-        strfile1 = 'scanning1D_noise_xy.csv'
+        strfile1 = 'scanning1D_noise_xy_5kA.csv'
         data = pd.read_csv(strfile1)
         azi = np.array(data['azi'])
+        maxVI = 5e3
         l = np.array(data['l'])
         Ip = l / 4 / V
         sensitivity = Ip / maxVI
-        ax.plot(azi * 180 / pi * 2, sensitivity, label='with SOP uncertainties')
+        ax.plot(azi * 180 / pi * 2, sensitivity, label='Ical = 5kA')
+
+        strfile1 = 'scanning1D_noise_xy_10kA.csv'
+        data = pd.read_csv(strfile1)
+        azi = np.array(data['azi'])
+        maxVI = 10e3
+        l = np.array(data['l'])
+        Ip = l / 4 / V
+        sensitivity = Ip / maxVI
+        ax.plot(azi * 180 / pi * 2, sensitivity, label='Ical = 10kA')
+
+        strfile1 = 'scanning1D_noise_xy_40kA.csv'
+        data = pd.read_csv(strfile1)
+        azi = np.array(data['azi'])
+        maxVI = 40e3
+        l = np.array(data['l'])
+        Ip = l / 4 / V
+        sensitivity = Ip / maxVI
+        ax.plot(azi * 180 / pi * 2, sensitivity, label='Ical = 40kA')
 
         ax.set_xlabel('azimuth angle [deg]')
         ax.set_ylabel('Normalized sensitivity')
-        ax.set(xlim=(0, 360), ylim=(0, 1.1))
-        ax.legend(loc="lower right")
+        ax.set(xlim=(0, 360), ylim=(0, 2))
+        ax.legend(loc="upper right")
 
     plt.show()
 

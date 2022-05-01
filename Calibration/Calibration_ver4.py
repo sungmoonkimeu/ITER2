@@ -436,7 +436,7 @@ def f3(x, Mci, Mco):
     for mm, iter_I in enumerate(V_Ip):
         [theta, phi, theta_e] = (np.random.rand(3) *
                                 [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
-        Mn = create_M(theta, phi, theta_e)
+        Mn = create_M_arb(theta, phi, theta_e)
 
         # Faraday rotation matirx
         th_FR = iter_I * V*2
@@ -459,10 +459,10 @@ def f3(x, Mci, Mco):
 def f4(x, Mci, Mco):
     E0 = Jones_vector('input')
     E1 = Jones_vector('output')
-    x = x + (np.random.rand(1)*2 - 1) * pi / 180  # 1 deg SOP control uncertainty
+    x = x + (np.random.rand(1)*1 - 0.5) * pi / 180  # 1 deg SOP control uncertainty
     E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
     V = 0.7 * 4 * pi * 1e-7
-    MaxIp = 40e3
+    MaxIp = 5e3
     dIp = MaxIp/50
     V_Ip = arange(0e6,MaxIp+dIp,dIp)
     V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
@@ -482,9 +482,9 @@ def f4(x, Mci, Mco):
     S.from_Jones(E1)
 
     L = cal_arclength(S)    # Arc length is orientation angle psi -->
-    #L = L*(1+np.random.rand(1)*0.01-0.005) # 1% error including
+    L = L*(1+np.random.rand(1)*0.01-0.005) # 1% error including
     Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
-    print(Veff)
+    #print(Veff)
     errV = abs((Veff-V)/V)
     #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
     #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
@@ -495,16 +495,17 @@ def f4(x, Mci, Mco):
 if __name__ == '__main__':
 
     start = pd.Timestamp.now()
-    mode = 0
+    mode =1
 
     ## 2nd step
-    #strfile = 'Multiple_Calibration.csv'
-    strfile = 'Multiple_Cal_with_SOPnoise.csv'
+    #strfile = 'Multiple_Cal_ideal.csv'
+    #strfile = 'Multiple_Cal_with_SOPnoise.csv'
+    strfile = 'Multiple_Cal_with_Cur5kA_noise_0.01.csv'
 
     if mode == 0:
 
-        n_iter = 5
-        n_iter2 = 5
+        n_iter = 10
+        n_iter2 = 100
         fig, ax = plt.subplots(figsize=(6, 6))
         for mm in range(n_iter2):
 
@@ -523,7 +524,7 @@ if __name__ == '__main__':
                                     initial_simplex=init_polstate, retall=True, full_output=1)
 
                 v_out[nn] = fmin_result[3]
-
+                print("mm=", mm, " nn=", nn)
 
             ax.plot(v_out)
 
@@ -532,25 +533,29 @@ if __name__ == '__main__':
             df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
 
     elif mode ==1:
-
-        strfile = 'Multiple_Calibration.csv'
         # Plotting
-        data = pd.read_csv(strfile)
 
-        colors = pl.cm.BuPu(np.linspace(0.2, 1, len(data['out'])))
-
-        fig, ax = plt.subplots(figsize=(6, 6))
-        ax.plot(data['out'])
-
-        bins = [1,3,5,7,9,11,13,15,17,19,21,23,25]
+        bins = np.arange(1, 100, 2)
+        #bins = np.append(bins, 40)
         #bins = [3, 7, 11, 15, 19]
         fig, ax = plt.subplots(figsize=(6, 6))
 
-        ax.hist(data['out'], bins, label='ideal')
+        # strfile = 'Multiple_Cal_ideal.csv'
+        # data = pd.read_csv(strfile)
+        # ax.hist(data['out'], bins, label='ideal', alpha=0.7, facecolor = 'g')
 
-        strfile = 'Multiple_Cal_with_SOPnoise.csv'
+        # strfile = 'Multiple_Cal_with_SOPnoise_0.001.csv'
+        # data = pd.read_csv(strfile)
+        # ax.hist(data['out'], bins, label='>99.9%',alpha=0.7, facecolor = 'r')
+        #
+        # strfile = 'Multiple_Cal_with_SOPnoise_0.0005.csv'
+        # data = pd.read_csv(strfile)
+        # ax.hist(data['out'], bins, label='>99.95%', alpha=0.7, facecolor='b')
+
+        strfile ='Multiple_Cal_with_Cur5kA_noise_0.01.csv'
         data = pd.read_csv(strfile)
-        ax.hist(data['out'], bins, label='with SOP noise')
+        ax.hist(data['out'], bins, label='>99%',alpha=0.7, facecolor = 'b')
+
         ax.set_xlabel('iteration')
         ax.set_ylabel('n')
         ax.legend(loc='upper left')

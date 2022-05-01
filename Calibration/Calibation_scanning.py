@@ -313,7 +313,7 @@ if __name__ == '__main__':
 
     M_co = create_M_arb(theta, phi, theta_e)
 
-    mode =2
+    mode =0
 
     if mode == 0:
         # calculating the sensitivity values of 3D poincare surface
@@ -419,10 +419,8 @@ if __name__ == '__main__':
 
         ax.set_xlabel('azimuth angle [deg]')
         ax.set_ylabel('elevation angle [deg]')
-
     elif mode == 1:
         # Running optimization function
-
         strfile = 'calibration_log.csv'
 
         if os.path.exists(strfile):

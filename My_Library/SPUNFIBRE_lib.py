@@ -13,6 +13,8 @@ from multiprocessing import Process, Queue, Manager,Lock
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from .basis_calibration_lib import calib_basis3
+
 # import parmap
 import tqdm
 
@@ -252,7 +254,7 @@ class SPUNFIBER:
 
         E = Jones_vector('Output')
         E.from_matrix(M=V_out)
-        V_ang = zeros(len(V_Ip))
+        V_ang = zeros(len(V_I))
 
         # SOP evolution in Lead fiber (Forward)
         S = create_Stokes('Output_S')
@@ -264,7 +266,7 @@ class SPUNFIBER:
             fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
                                       color_line='b')
         m = 0
-        for kk in range(len(V_Ip)):
+        for kk in range(len(V_I)):
             if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
                 m = m + 1
             elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
@@ -786,6 +788,119 @@ class SPUNFIBER:
         S = create_Stokes('Output_S')
         fig, ax= S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         return fig, ax
+
+    def plot_errorbar_byStokes(self, filename, fig=None, ax=None, label=None, V_custom=None, cal_init=None):
+        is_reuse = bool(fig)
+        print(is_reuse)
+        data = pd.read_csv(filename)
+        V_I = np.array(data['Ip'])
+        E = Jones_vector('Output')
+        S = create_Stokes('Output_S')
+        S2 = create_Stokes('Output_S2')
+        V_ang = zeros(len(V_I))
+
+        Ip = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
+
+        if fig is None:
+            fig, ax = plt.subplots(figsize=(12/2.54, 10/2.54))
+            fig.set_dpi(91.79)  # DPI of My office monitor
+            fig.subplots_adjust(hspace=0.4, left=0.195, right=0.95, top=0.93, bottom=0.2)
+
+        # Requirement specification for ITER
+        absErrorlimit = zeros(len(V_I))
+        relErrorlimit = zeros(len(V_I))
+
+        # Calculation ITER specification
+        for nn in range(len(V_I)):
+            if V_I[nn] < 1e6:
+                absErrorlimit[nn] = 10e3
+            else:
+                absErrorlimit[nn] = V_I[nn] * 0.01
+            if V_I[nn] == 0:
+                pass
+            else:
+                relErrorlimit[nn] = absErrorlimit[nn] / V_I[nn]
+
+        if is_reuse is False:
+            print(V_I[0])
+            if V_I[0] == 0:
+                ax.plot(V_I[1:], relErrorlimit[1:], 'r--', label='ITER specification')
+                ax.plot(V_I[1:], -relErrorlimit[1:], 'r--')
+            else:
+                ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
+                ax.plot(V_I, -relErrorlimit, 'r--')
+
+        for nn in range(int((data.shape[1] - 1) / 2)):
+            str_Ex = str(nn) + ' Ex'
+            str_Ey = str(nn) + ' Ey'
+            Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
+                            [complex(y) for y in data[str_Ey].to_numpy()]])
+
+            E.from_matrix(M=Vout)
+            S.from_Jones(E)
+            S2 = calib_basis3(S)
+            # Azimuth angle calculation
+            fig99, ax99 = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
+                                  color_line='b')
+            print(S2)
+            print(S)
+            draw_stokes_points(fig99[0], S2, kind='line', color_line='r')
+            draw_stokes_points(fig99[0], S, kind='line', color_line='k')
+
+
+            m = 0
+            for kk in range(len(V_I)):
+                if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+                    m = m + 1
+                elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+                    m = m - 1
+                V_ang[kk] = E[kk].parameters.azimuth() + m * pi
+
+                if cal_init is None:
+                    c = pi/2
+                else:
+                    c = V_ang[0]
+                if V_custom is not None:
+                    Ip[nn][kk] = (V_ang[kk] - c) / (2 * self.V) * V_custom
+                    #print(cal_init)
+                else:
+                    Ip[nn][kk] = (V_ang[kk] - c) / (2 * self.V)
+
+        color = 'k'
+        if V_I[0] == 0:
+            print(V_I[1:])
+            if is_reuse is True:
+                color = 'b'
+            df_mean = ((Ip[...,1:]-V_I[1:])/V_I[1:]).mean(axis=0)
+            df_std = ((Ip[...,1:]-V_I[1:])/V_I[1:]).std(axis=0)
+
+            ax.plot(V_I[1:], df_mean, color, label=label)
+            ax.errorbar(V_I[2::3], df_mean[1::3], yerr=df_std[1::3], ls='None', c='black', ecolor=color, capsize=3)
+        else:
+            df_mean = Ip.mean(axis=1)
+            df_std = Ip.std(axis=1)
+            ax.plot(V_I, df_mean, color, label=label)
+            ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], ls='None', c='black', ecolor=color, capsize=4)
+
+        ax.legend(loc="lower right")
+        plt.rc('text', usetex=True)
+        ax.set_xlabel(r'Plasma current $I_{p}(A)$')
+        ax.set_ylabel(r'Relative error on $I_{P}$')
+
+        # plt.title('Output power vs Plasma current')
+        ax.set(xlim=(0, 18e6), ylim=(-0.012, 0.012))
+        ax.yaxis.set_major_locator(MaxNLocator(4))
+        ax.xaxis.set_major_locator(MaxNLocator(10))
+
+        ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
+        ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+
+        ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
+        ax.grid(ls='--', lw=0.5)
+        plt.rc('text', usetex=False)
+        plt.grid(True)
+        return fig, ax
+
 
 # Progress bar is not easy/
 # Todo comparison between transmission and reflection

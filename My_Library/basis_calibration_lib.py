@@ -52,7 +52,7 @@ def calib_basis1(S):
     Rx = np.array([[cos(th_x), -sin(th_x), 0], [sin(th_x), cos(th_x), 0], [0, 0, 1]])
     Ry = np.array([[1, 0, 0], [0, cos(th_y), -sin(th_y)], [0, sin(th_y), cos(th_y)]])
     Rz = np.array([[cos(th_z), 0, sin(th_z)], [0, 1, 0], [-sin(th_z), 0, cos(th_z)]])
-    print(th_x, th_y, th_z)
+
     th = th_x
     if th_y > pi / 2:
         th = -th_x
@@ -104,7 +104,6 @@ def calib_basis2(S):  # first Point to -45 (S2)
     return S
 
 
-
 def calib_basis3(S):
     a = S.parameters.matrix()[1:]  # convert 4x1 Stokes vectors to 3x1 cartesian vectors
 
@@ -119,7 +118,7 @@ def calib_basis3(S):
     #diff_a = a.T - std_a
     diff_a = a.T - init_a
     # 대표 벡터와 나머지 벡터가 이루는 벡터 끼리 외적
-    cross_a = np.cross(diff_a[0], diff_a)
+    cross_a = np.cross(diff_a[1], diff_a[2:])
 
     # filtering out small vectors
     cross_a2 = cross_a[np.linalg.norm(cross_a, axis=1) > np.linalg.norm(cross_a, axis=1).mean() / 10]
@@ -140,12 +139,12 @@ def calib_basis3(S):
     th_x = np.arccos(np.dot(x, c))
     th_y = np.arccos(np.dot(y, c))
     th_z = np.arccos(np.dot(z, c))
-    # print("x=", th_x * 180 / pi, "y=", th_y * 180 / pi, "z=", th_z * 180 / pi)
+    print("x=", th_x * 180 / pi, "y=", th_y * 180 / pi, "z=", th_z * 180 / pi)
 
     Rx = np.array([[cos(th_x), -sin(th_x), 0], [sin(th_x), cos(th_x), 0], [0, 0, 1]])
     Ry = np.array([[1, 0, 0], [0, cos(th_y), -sin(th_y)], [0, sin(th_y), cos(th_y)]])
     Rz = np.array([[cos(th_z), 0, sin(th_z)], [0, 1, 0], [-sin(th_z), 0, cos(th_z)]])
-    print(th_x, th_y, th_z)
+    #print(th_x, th_y, th_z)
     th = th_x
     if th_y > pi / 2:
         th = -th_x
@@ -173,7 +172,7 @@ if __name__ == '__main__':
     J2 = Jones_matrix('Random element')
     M = Mueller('cal')
 
-    azi = np.arange(0, pi/4, 0.1)
+    azi = np.arange(0, pi/0.5, 0.1)
     # ell = np.arange(0, pi/6, 0.1)
     E.general_azimuth_ellipticity(azimuth=azi, ellipticity=pi/12)
     S.from_Jones(E)
@@ -191,7 +190,7 @@ if __name__ == '__main__':
     # S.from_Jones(Out).draw_poincare()
 
     draw_stokes_points(fig[0], S, kind='line', color_line='r')
-    S2 = calib_basis1(S)
+    S2 = calib_basis3(S)
     draw_stokes_points(fig[0], S2, kind='line', color_line='b')
 
     plt.show()
