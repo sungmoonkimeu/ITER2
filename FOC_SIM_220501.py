@@ -10,7 +10,7 @@ from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
 import matplotlib.ticker
 from matplotlib.ticker import (MaxNLocator,
                                FormatStrFormatter, ScalarFormatter)
-from multiprocessing import Process, Queue, Manager,Lock
+from multiprocessing import Process, Queue, Manager, Lock
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -19,7 +19,7 @@ import os
 # print(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
 # sys.path.append(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
 
-#from My_Library import SPUNFIBRE_lib
+# from My_Library import SPUNFIBRE_lib
 from My_Library.SPUNFIBRE_lib import SPUNFIBER
 from My_Library.draw_figures_FOCS import *
 
@@ -37,6 +37,7 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
         self.format = self.fformat
         if self._useMathText:
             self.format = r'$\mathdefault{%s}$' % self.format
+
 
 if __name__ == '__main__':
     mode = 0
@@ -60,8 +61,8 @@ if __name__ == '__main__':
         num_processor = 8
         V_I = arange(0e6, 20e6 + 0.1e6, 0.1e6)
         # V_I = 1e6
-        outdict = {'Ip': V_I}
-        outdict2 = {'Ip': V_I}
+        out_dict = {'Ip': V_I}
+        out_dict2 = {'Ip': V_I}
         nM_vib = 1
         start = pd.Timestamp.now()
         ang_FM = 45
@@ -78,24 +79,24 @@ if __name__ == '__main__':
         for nn in range(num_iter):
             M_vib = spunfiber.create_Mvib(nM_vib, 20, 0)
             Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
-            outdict[str(nn)] = Ip
+            out_dict[str(nn)] = Ip
 
-            outdict2[str(nn) + ' Ex'] = Vout[:, 0, 0]
-            outdict2[str(nn) + ' Ey'] = Vout[:, 1, 0]
+            out_dict2[str(nn) + ' Ex'] = Vout[:, 0, 0]
+            out_dict2[str(nn) + ' Ey'] = Vout[:, 1, 0]
             checktime = pd.Timestamp.now() - start
             print(nn, "/", num_iter, checktime)
             start = pd.Timestamp.now()
 
-        df = pd.DataFrame(outdict)
+        df = pd.DataFrame(out_dict)
         df.to_csv(strfile1, index=False)
-        df2 = pd.DataFrame(outdict2)
+        df2 = pd.DataFrame(out_dict2)
         df2.to_csv(strfile1 + "_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
 
         labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
                      ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
 
-        #ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+        # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
         ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right')
         ax2.set(xlim=(0, 4e6), ylim=(0, 0.002))
         ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
@@ -104,7 +105,7 @@ if __name__ == '__main__':
         fig3, ax3, lines3 = plot_error_byStokes(strfile1+"_S")
     elif mode == 1:
         strfile1 = 'AAAA1.csv'
-        #fig3, ax3 = spunfiber.plot_errorbar_byStokes(strfile1+"_S", label='Hi-bi spun fiber', cal_init=True)
+        # fig3, ax3 = spunfiber.plot_errorbar_byStokes(strfile1+"_S", label='Hi-bi spun fiber', cal_init=True)
         strfile2 = 'AAAA1.csv_S'
         fig4, ax4, lines = plot_error_byStokes(strfile2)
 
