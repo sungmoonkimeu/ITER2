@@ -21,6 +21,8 @@ import os
 
 #from My_Library import SPUNFIBRE_lib
 from My_Library.SPUNFIBRE_lib import SPUNFIBER
+from My_Library.draw_figures_FOCS import *
+
 
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
@@ -37,7 +39,7 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
             self.format = r'$\mathdefault{%s}$' % self.format
 
 if __name__ == '__main__':
-    mode = 1
+    mode = 0
     # Crystal Techno lobi spun fiber
     LB = 0.3
     SP = 0.005
@@ -52,24 +54,24 @@ if __name__ == '__main__':
         # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
         # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
 
-        num_iter = 3
+        num_iter = 2
         strfile1 = 'AAAA1.csv'
         strfile2 = 'AAAA2.csv'
         num_processor = 8
-        V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
-        #V_I = 1e6
+        V_I = arange(0e6, 20e6 + 0.1e6, 0.1e6)
+        # V_I = 1e6
         outdict = {'Ip': V_I}
         outdict2 = {'Ip': V_I}
         nM_vib = 1
         start = pd.Timestamp.now()
         ang_FM = 45
-        #Vin = np.array([[1/np.sqrt(0.5)], [1/np.sqrt(0.5)]])
+        Vin = np.array([[1/np.sqrt(0.5)], [1/np.sqrt(0.5)]])
 
         E = Jones_vector('input')
         E.general_azimuth_ellipticity(azimuth=pi/4, ellipticity=0)
-        #print(E)
+        # print(E)
         Vin = E.parameters.matrix()
-        #Vin = np.array([[0], [1]])
+        # Vin = np.array([[0], [1]])
 
         fig1, ax1 = spunfiber.init_plot_SOP()
         S = create_Stokes('O')
@@ -83,7 +85,6 @@ if __name__ == '__main__':
             checktime = pd.Timestamp.now() - start
             print(nn, "/", num_iter, checktime)
             start = pd.Timestamp.now()
-
 
         df = pd.DataFrame(outdict)
         df.to_csv(strfile1, index=False)
@@ -100,9 +101,11 @@ if __name__ == '__main__':
         ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
         ax2.yaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
 
-        fig3, ax3 = spunfiber.plot_errorbar_byStokes(strfile1+"_S", label='Hi-bi spun fiber', V_custom=1.0365)
+        fig3, ax3, lines3 = plot_error_byStokes(strfile1+"_S")
     elif mode == 1:
         strfile1 = 'AAAA1.csv'
-        fig3, ax3 = spunfiber.plot_errorbar_byStokes(strfile1+"_S", label='Hi-bi spun fiber', cal_init=True)
+        #fig3, ax3 = spunfiber.plot_errorbar_byStokes(strfile1+"_S", label='Hi-bi spun fiber', cal_init=True)
+        strfile2 = 'AAAA1.csv_S'
+        fig4, ax4, lines = plot_error_byStokes(strfile2)
 
     plt.show()
