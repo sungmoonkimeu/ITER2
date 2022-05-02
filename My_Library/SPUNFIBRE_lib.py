@@ -378,6 +378,10 @@ class SPUNFIBER:
         phi = (np.random.rand(nM_vib) - 0.5) * 2 * max_phi * pi / 180  # ellipticity angle change from experiment
         theta_e = (np.random.rand(nM_vib) - 0.5) * 2 * max_theta_e * pi / 180  # azimuth angle change from experiment
 
+        print("angle of Retarder's optic axis:", theta *180/pi, "deg")
+        print("retardation of Retarder:", phi * 180 / pi, "deg")
+        print("rotation angle of Rotator :", theta_e * 180 / pi, "deg")
+
         M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
         M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
         M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
@@ -796,6 +800,8 @@ class SPUNFIBER:
         V_I = np.array(data['Ip'])
         E = Jones_vector('Output')
         S = create_Stokes('Output_S')
+        fig99, ax99 = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
+                                      color_line='b')
         S2 = create_Stokes('Output_S2')
         V_ang = zeros(len(V_I))
 
@@ -830,6 +836,7 @@ class SPUNFIBER:
                 ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
                 ax.plot(V_I, -relErrorlimit, 'r--')
 
+        color = ['r','k','b']
         for nn in range(int((data.shape[1] - 1) / 2)):
             str_Ex = str(nn) + ' Ex'
             str_Ey = str(nn) + ' Ey'
@@ -840,13 +847,8 @@ class SPUNFIBER:
             S.from_Jones(E)
             S2 = calib_basis3(S)
             # Azimuth angle calculation
-            fig99, ax99 = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-                                  color_line='b')
-            print(S2)
-            print(S)
-            draw_stokes_points(fig99[0], S2, kind='line', color_line='r')
-            draw_stokes_points(fig99[0], S, kind='line', color_line='k')
 
+            draw_stokes_points(fig99[0], S, kind='line', color_line=color[nn])
 
             m = 0
             for kk in range(len(V_I)):
@@ -867,30 +869,37 @@ class SPUNFIBER:
                     Ip[nn][kk] = (V_ang[kk] - c) / (2 * self.V)
 
         color = 'k'
-        if V_I[0] == 0:
-            print(V_I[1:])
-            if is_reuse is True:
-                color = 'b'
-            df_mean = ((Ip[...,1:]-V_I[1:])/V_I[1:]).mean(axis=0)
-            df_std = ((Ip[...,1:]-V_I[1:])/V_I[1:]).std(axis=0)
+        # if V_I[0] == 0:
+        #     print(V_I[1:])
+        #     if is_reuse is True:
+        #         color = 'b'
+        #     df_mean = ((Ip[...,1:]-V_I[1:])/V_I[1:]).mean(axis=0)
+        #     df_std = ((Ip[...,1:]-V_I[1:])/V_I[1:]).std(axis=0)
+        #
+        #     ax.plot(V_I[1:], df_mean, color, label=label)
+        #     ax.errorbar(V_I[2::3], df_mean[1::3], yerr=df_std[1::3], ls='None', c='black', ecolor=color, capsize=3)
+        # else:
+        #     df_mean = Ip.mean(axis=1)
+        #     df_std = Ip.std(axis=1)
+        #     ax.plot(V_I, df_mean, color, label=label)
+        #     ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], ls='None', c='black', ecolor=color, capsize=4)
+        lines = []
+        lines += ax.plot(V_I[1:], abs((Ip[0,1:]-V_I[1:])/V_I[1:]), 'r')
+        lines += ax.plot(V_I[1:], abs((Ip[1, 1:] - V_I[1:]) / V_I[1:]),'k')
+        lines += ax.plot(V_I[1:], abs((Ip[2, 1:] - V_I[1:]) / V_I[1:]),'b')
 
-            ax.plot(V_I[1:], df_mean, color, label=label)
-            ax.errorbar(V_I[2::3], df_mean[1::3], yerr=df_std[1::3], ls='None', c='black', ecolor=color, capsize=3)
-        else:
-            df_mean = Ip.mean(axis=1)
-            df_std = Ip.std(axis=1)
-            ax.plot(V_I, df_mean, color, label=label)
-            ax.errorbar(V_I[::2], df_mean[::2], yerr=df_std[::2], ls='None', c='black', ecolor=color, capsize=4)
-
-        ax.legend(loc="lower right")
+        labelTups = [(r'[R, $\phi$] = [54$^\circ$, -19$^\circ$]', 0),
+                     (r'[R, $\phi$] = [32$^\circ$, 2$^\circ$]', 1),
+                     (r'[R, $\phi$] = [-30$^\circ$, 10$^\circ$]', 2)]
+        ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right')
         plt.rc('text', usetex=True)
         ax.set_xlabel(r'Plasma current $I_{p}(A)$')
         ax.set_ylabel(r'Relative error on $I_{P}$')
 
         # plt.title('Output power vs Plasma current')
-        ax.set(xlim=(0, 18e6), ylim=(-0.012, 0.012))
+        ax.set(xlim=(0, 4e6), ylim=(0, 0.06))
         ax.yaxis.set_major_locator(MaxNLocator(4))
-        ax.xaxis.set_major_locator(MaxNLocator(10))
+        ax.xaxis.set_major_locator(MaxNLocator(4))
 
         ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
         ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
@@ -1055,6 +1064,3 @@ if __name__ == '__main__':
 
 
 plt.show()
-
-
-

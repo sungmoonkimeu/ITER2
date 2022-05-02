@@ -55,7 +55,7 @@ if __name__ == '__main__':
         num_iter = 3
         strfile1 = 'AAAA1.csv'
         strfile2 = 'AAAA2.csv'
-        num_processor = 16
+        num_processor = 8
         V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
         #V_I = 1e6
         outdict = {'Ip': V_I}
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         fig1, ax1 = spunfiber.init_plot_SOP()
         S = create_Stokes('O')
         for nn in range(num_iter):
-            M_vib = spunfiber.create_Mvib(nM_vib, 20, 20)
+            M_vib = spunfiber.create_Mvib(nM_vib, 20, 0)
             Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
             outdict[str(nn)] = Ip
 
@@ -103,6 +103,6 @@ if __name__ == '__main__':
         fig3, ax3 = spunfiber.plot_errorbar_byStokes(strfile1+"_S", label='Hi-bi spun fiber', V_custom=1.0365)
     elif mode == 1:
         strfile1 = 'AAAA1.csv'
-        fig3, ax3 = spunfiber.plot_errorbar_byStokes(strfile1+"_S", label='Hi-bi spun fiber', V_custom=1.0365)
+        fig3, ax3 = spunfiber.plot_errorbar_byStokes(strfile1+"_S", label='Hi-bi spun fiber', cal_init=True)
 
     plt.show()
