@@ -18,7 +18,14 @@ from py_pol.stokes import Stokes, create_Stokes
 import pandas as pd
 
 # from .basis_calibration_lib import calib_basis3
-# from draw_poincare_plotly import *
+
+import os
+import sys
+#print(os.getcwd())
+#print(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
+sys.path.append(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
+
+from draw_poincare_plotly import *
 
 from cycler import cycler
 cc = (cycler(color=list('rkbgcmy')))
@@ -38,6 +45,18 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
         self.format = self.fformat
         if self._useMathText:
             self.format = r'$\mathdefault{%s}$' % self.format
+
+
+def cm_to_rgba_tuple(colors,alpha=1):
+    for nn in range(len(colors)):
+        r = int(colors[nn].split(",")[0].split("(")[1])/256
+        g = int(colors[nn].split(",")[1])/256
+        b = int(colors[nn].split(",")[2].split(")")[0])/256
+        if nn == 0:
+            tmp = np.array([r, g, b, alpha])
+        else:
+            tmp = np.vstack((tmp, np.array([r, g, b, alpha])))
+    return tmp
 
 
 # just plotting error (*.csv)
@@ -152,3 +171,68 @@ def plot_error_byStokes(filename, fig=None, ax=None, lines=None, v_calc_init=Non
     return fig, ax, lines
 
 
+def plot_Stokes_on_Poincare(filename, fig=None, lines=None):
+    data = pd.read_csv(filename)
+    if data['Ip'][0] == 0:
+        data.drop(0, inplace=True)
+        data.index -= 1
+    V_I = data['Ip']
+    E = Jones_vector('Output')
+    S = create_Stokes('Output_S')
+    V_ang = zeros(len(V_I))
+    Ip = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
+
+    if fig is None or lines is None:
+        opacity = 0.6
+        fig = PS5(opacity)
+
+    for nn in range(int((data.shape[1] - 1) / 2)):
+        if nn >1:
+            pass
+        str_Ex = str(nn) + ' Ex'
+        str_Ey = str(nn) + ' Ey'
+        Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
+                         [complex(y) for y in data[str_Ey].to_numpy()]])
+        E.from_matrix(Vout)
+        S.from_Jones(E)
+
+        S1 = S.parameters.matrix()[1]
+        S2 = S.parameters.matrix()[2]
+        S3 = S.parameters.matrix()[3]
+
+        fig.add_scatter3d(x=S1, y=S2, z=S3, mode="lines+markers",
+                          marker=dict(size=2.5,
+                                      opacity=1,
+                                      color=V_I,
+                                      colorscale='Viridis'),
+                          line=dict(width=8,
+                                    color=V_I,
+                                    colorscale='Viridis',
+                                    showscale=True),
+                          name='F1')
+
+    return fig, lines
+
+
+if (__name__ == "__main__"):
+
+    fig = PS5()
+    # inp = np.arange(0, np.pi, 0.01)
+    # S = create_Stokes('Output_S')
+    # S.linear_light(azimuth=inp)
+    #
+    # S1 = S.parameters.matrix()[1]
+    # S2 = S.parameters.matrix()[2]
+    # S3 = S.parameters.matrix()[3]
+    #
+    # fig.add_scatter3d(x=S1, y=S2, z=S3, mode="markers",
+    #                   marker=dict(size=3,
+    #                               opacity=1,
+    #                               color=S.parameters.azimuth(),
+    #                               colorscale='Viridis'),
+    #                   name='F1')
+
+    plot_Stokes_on_Poincare
+    fig.show()
+    #main()
+    #plt.show()

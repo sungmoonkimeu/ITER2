@@ -17,9 +17,10 @@ import matplotlib.pyplot as plt
 def calib_basis1(S):
     a = S.parameters.matrix()[1:]  # convert 4x1 Stokes vectors to 3x1 cartesian vectors
 
+    # 평균 벡터 계산
     mean_a = np.array([a[0, :].sum(), a[1, :].sum(), a[2, :].sum()])
     mean_a = mean_a / (np.linalg.norm(mean_a))
-    # 평균 벡터와 모든 점 사이의 거리
+    # 평균 벡터와 모든 점 사이의 거리 계산
     dist_a_mean_a = np.linalg.norm(a.T - mean_a, axis=1)
     # 평균벡터와 가장 가까운 벡터 --> 대표 벡터 ?
     std_a = a[:, np.argmin(dist_a_mean_a)]
@@ -47,7 +48,8 @@ def calib_basis1(S):
     th_x = np.arccos(np.dot(x, c))
     th_y = np.arccos(np.dot(y, c))
     th_z = np.arccos(np.dot(z, c))
-    # print("x=", th_x * 180 / pi, "y=", th_y * 180 / pi, "z=", th_z * 180 / pi)
+
+    print("x=", th_x * 180 / pi, "y=", th_y * 180 / pi, "z=", th_z * 180 / pi)
 
     Rx = np.array([[cos(th_x), -sin(th_x), 0], [sin(th_x), cos(th_x), 0], [0, 0, 1]])
     Ry = np.array([[1, 0, 0], [0, cos(th_y), -sin(th_y)], [0, sin(th_y), cos(th_y)]])
@@ -102,7 +104,6 @@ def calib_basis2(S):  # first Point to -45 (S2)
     Sp = np.vstack((zT, TT))
     S.from_matrix(Sp)
     return S
-
 
 def calib_basis3(S):
     a = S.parameters.matrix()[1:]  # convert 4x1 Stokes vectors to 3x1 cartesian vectors

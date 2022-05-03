@@ -22,6 +22,8 @@ import os
 # from My_Library import SPUNFIBRE_lib
 from My_Library.SPUNFIBRE_lib import SPUNFIBER
 from My_Library.draw_figures_FOCS import *
+from My_Library.draw_poincare_plotly import *
+
 
 
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
@@ -40,7 +42,7 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 
 
 if __name__ == '__main__':
-    mode = 0
+    mode = 1
     # Crystal Techno lobi spun fiber
     LB = 0.3
     SP = 0.005
@@ -51,15 +53,13 @@ if __name__ == '__main__':
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
     if mode == 0:
-
         # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
         # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
-
-        num_iter = 2
+        num_iter = 1
         strfile1 = 'AAAA1.csv'
         strfile2 = 'AAAA2.csv'
         num_processor = 8
-        V_I = arange(0e6, 20e6 + 0.1e6, 0.1e6)
+        V_I = arange(0e6, 10e6 + 0.1e6, 0.1e6)
         # V_I = 1e6
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
@@ -109,4 +109,9 @@ if __name__ == '__main__':
         strfile2 = 'AAAA1.csv_S'
         fig4, ax4, lines = plot_error_byStokes(strfile2)
 
+        #opacity = 1
+        #fig3 = PS5(opacity)
+        fig3, lines = plot_Stokes_on_Poincare(strfile1+"_S")
+
+    fig3.show()
     plt.show()
