@@ -108,11 +108,13 @@ def plot_error_byfile(filename, fig=None, ax=None, lines=None):
 # plotting error from Stokes parameters
 def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None, V_custom=None):
     data = pd.read_csv(filename)
+    data_0 = data.loc[0]
     if data['Ip'][0] == 0:
         data.drop(0, inplace=True)
         data.index -= 1
     V_I = data['Ip']
     E = Jones_vector('Output')
+    E0 = Jones_vector('Output0')
     S = create_Stokes('Output_S')
     V_ang = zeros(len(V_I))
     Ip = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
@@ -133,11 +135,14 @@ def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None
     for nn in range(int((data.shape[1] - 1) / 2)):
         str_Ex = str(nn) + ' Ex'
         str_Ey = str(nn) + ' Ey'
+        Vinit = np.array([[complex(data_0[str_Ex])],
+                          [complex(data_0[str_Ey])]])
         Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
                          [complex(y) for y in data[str_Ey].to_numpy()]])
+        E0.from_matrix(Vinit)
         E.from_matrix(Vout)
         S.from_Jones(E)
-
+        print(Vinit)
         m = 0
         for kk in range(len(V_I)):
             if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
@@ -146,11 +151,11 @@ def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None
                 m = m - 1
             V_ang[kk] = E[kk].parameters.azimuth() + m * pi
 
-            c = V_ang[0] if v_calc_init is None else v_calc_init
+            c = E0.parameters.azimuth() if v_calc_init is None else v_calc_init
             Ip[nn][kk] = (V_ang[kk] - c) / V
 
         lines += ax.plot(V_I, abs((Ip[nn, :] - V_I) / V_I), label=str(nn))
-
+    #print(V_I)
     lines += ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
     ax.legend(loc="upper right")
 
@@ -171,6 +176,7 @@ def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None
     return fig, ax, lines
 
 
+# plotting error from Stokes parameters
 def plot_error_byStokes(V_I, S, fig=None, ax=None, lines=None, v_calc_init=None, V_custom=None):
 
     V_ang = zeros(len(V_I))
@@ -181,7 +187,7 @@ def plot_error_byStokes(V_I, S, fig=None, ax=None, lines=None, v_calc_init=None,
     absErrorlimit = zeros(len(V_I))
     for nn in range(len(V_I)):
         absErrorlimit[nn] = 10e3 if V_I[nn] < 1e6 else V_I[nn] * 0.01
-    relErrorlimit = absErrorlimit / V_I
+    relErrorlimit = absErrorlimit[1:] / V_I[1:]
 
     if fig is None or ax is None:
         fig, ax = plt.subplots(figsize=(6, 3))
@@ -199,11 +205,12 @@ def plot_error_byStokes(V_I, S, fig=None, ax=None, lines=None, v_calc_init=None,
         c = V_ang[0] if v_calc_init is None else v_calc_init
         Ip[kk] = (V_ang[kk] - c) / V
 
-    lines += ax.plot(V_I, abs((Ip - V_I) / V_I), label='added')
+    #print(Ip)
+    lines += ax.plot(V_I[1:], abs((Ip[1:] - V_I[1:]) / V_I[1:]), label='added')
     ax.legend(loc="upper right")
 
     if fig is None:
-        lines += ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
+        lines += ax.plot(V_I[1:], relErrorlimit[1:], 'r--', label='ITER specification')
 
         ax.set_xlabel(r'Plasma current $I_{p}(A)$')
         ax.set_ylabel(r'Relative error on $I_{P}$')
@@ -222,11 +229,8 @@ def plot_error_byStokes(V_I, S, fig=None, ax=None, lines=None, v_calc_init=None,
     return fig, ax, lines
 
 
-def plot_Stokes_on_Poincare_file(filename, fig=None, lines=None, opacity=1):
+def plot_Stokes_byfile(filename, fig=None, lines=None, opacity=1):
     data = pd.read_csv(filename)
-    if data['Ip'][0] == 0:
-        data.drop(0, inplace=True)
-        data.index -= 1
     V_I = data['Ip']
     E = Jones_vector('Output')
     S = create_Stokes('Output_S')
@@ -237,8 +241,7 @@ def plot_Stokes_on_Poincare_file(filename, fig=None, lines=None, opacity=1):
         fig = PS5(opacity)
 
     for nn in range(int((data.shape[1] - 1) / 2)):
-        if nn >1:
-            pass
+
         str_Ex = str(nn) + ' Ex'
         str_Ey = str(nn) + ' Ey'
         Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
@@ -274,7 +277,7 @@ def plot_Stokes_on_Poincare_file(filename, fig=None, lines=None, opacity=1):
     return fig, lines
 
 
-def draw_Stokes(Ip, S, fig=None, lines=None, opacity=1):
+def plot_Stokes(Ip, S, fig=None, lines=None, opacity=1):
 
     if fig is None:
         fig = PS5(opacity)
@@ -314,22 +317,21 @@ def draw_Stokes(Ip, S, fig=None, lines=None, opacity=1):
 if (__name__ == "__main__"):
 
     fig = PS5()
-    # inp = np.arange(0, np.pi, 0.01)
-    # S = create_Stokes('Output_S')
-    # S.linear_light(azimuth=inp)
-    #
-    # S1 = S.parameters.matrix()[1]
-    # S2 = S.parameters.matrix()[2]
-    # S3 = S.parameters.matrix()[3]
-    #
-    # fig.add_scatter3d(x=S1, y=S2, z=S3, mode="markers",
-    #                   marker=dict(size=3,
-    #                               opacity=1,
-    #                               color=S.parameters.azimuth(),
-    #                               colorscale='Viridis'),
-    #                   name='F1')
+    inp = np.arange(0, np.pi/2, np.pi/6)
+    S = create_Stokes('Output_S')
+    S.linear_light(azimuth=inp)
+    print(S.parameters.azimuth()*180/pi)
+    S1 = S.parameters.matrix()[1]
+    S2 = S.parameters.matrix()[2]
+    S3 = S.parameters.matrix()[3]
 
-    plot_Stokes_on_Poincare
+    fig.add_scatter3d(x=S1, y=S2, z=S3, mode="markers",
+                      marker=dict(size=3,
+                                  opacity=1,
+                                  color=S.parameters.azimuth(),
+                                  colorscale='Viridis'),
+                      name='F1')
+
     fig.show()
     #main()
     #plt.show()

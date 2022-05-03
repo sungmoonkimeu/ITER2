@@ -430,13 +430,13 @@ class SPUNFIBER:
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
 
-            M_lf_f = self.lamming(0, 1, V_theta_lf, M_vib)
-            M_f = self.lamming(iter_I, 1, V_theta)
-            M_b = self.lamming(iter_I, -1, V_theta)
-            M_lf_b = self.lamming(0, -1, V_theta_lf, M_vib)
+            # M_lf_f = self.lamming(0, 1, V_theta_lf, M_vib)
+            # M_f = self.lamming(iter_I, 1, V_theta)
+            # M_b = self.lamming(iter_I, -1, V_theta)
+            # M_lf_b = self.lamming(0, -1, V_theta_lf, M_vib)
 
-            # M_lf_f = self.lamming(iter_I, 1, LF, V_theta_lf)
-            # M_lf_b = self.lamming(iter_I, -1, LF, V_theta_lf)
+            M_lf_f = self.lamming(iter_I, 1, V_theta_lf, M_vib)
+            M_lf_b = self.lamming(iter_I, -1, V_theta_lf, M_vib)
             # M_f = self.lamming(iter_I, 1, L, V_theta)
             # M_b = self.lamming(iter_I, -1, L, V_theta)
 
@@ -449,7 +449,8 @@ class SPUNFIBER:
                 # print("M_b = ", M_b[0, 1], M_b[1, 0])
                 #print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
 
-            V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
+            #V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
+            V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
             #V_out[mm] = M_f @ M_lf_f @ Vin
             # V_out[mm] =  M_lf_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
@@ -522,7 +523,7 @@ class SPUNFIBER:
         #print("Vin_calc_mp", Vin)
         for num in range(num_processor):
             # proc = Process(target=self.cal_rotation,
-            proc = Process(target=self.cal_rotation2,
+            proc = Process(target=self.cal_rotation,
                            args=(spl_I[num], ang_FM, num, Vout_dic, M_vib, Vin))
             procs.append(proc)
             proc.start()
@@ -882,9 +883,9 @@ def save_Jones(filename, Vin, Ip_m, Vout):
 
 def load_Jones(filename, ncol=0):
     data = pd.read_csv(filename)
-    if data['Ip'][0] == 0:
-        data.drop(0, inplace=True)
-        data.index -= 1
+    # if data['Ip'][0] == 0:
+    #     data.drop(0, inplace=True)
+    #     data.index -= 1
     V_I = data['Ip']
     E = Jones_vector('Output')
     S = create_Stokes('Output_S')
