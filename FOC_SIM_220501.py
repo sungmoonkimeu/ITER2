@@ -85,16 +85,16 @@ if __name__ == '__main__':
             print(nn, "/", num_iter, checktime)
             start = pd.Timestamp.now()
 
-        # fig2, ax2, lines = spunfiber.plot_error(strfile1)
-        # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
-        #              ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
-        #
-        # # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
-        # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right')
-        # ax2.set(xlim=(0, 4e6), ylim=(0, 0.002))
-        # ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
-        # ax2.yaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
+        fig2, ax2, lines = spunfiber.plot_error(strfile1)
+        labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
+                     ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
 
+        # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+        ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right')
+        ax2.set(xlim=(0, 4e6), ylim=(0, 0.002))
+        ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
+        ax2.yaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
+        ##
         fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S")
 
     elif mode == 1:
