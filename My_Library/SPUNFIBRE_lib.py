@@ -19,6 +19,7 @@ from matplotlib.ticker import (MaxNLocator,
 from multiprocessing import Process, Queue, Manager,Lock
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 from .basis_calibration_lib import calib_basis3
 from .draw_poincare_plotly import *
@@ -854,6 +855,51 @@ class SPUNFIBER:
         S = create_Stokes('Output_S')
         fig, ax= S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         return fig, ax
+
+def save_Jones(filename, Vin, Ip_m, Vout):
+    if os.path.exists(filename):
+        df = pd.read_csv(filename)
+        ncol1 = int((df.shape[1] - 1))
+        df[str(ncol1)] = Ip_m
+
+        df2 = pd.read_csv(filename + "_S")
+        ncol2 = int((df2.shape[1] - 1) / 2)
+        df2[str(ncol2) + ' Ex'] = Vout[:, 0, 0]
+        df2[str(ncol2) + ' Ey'] = Vout[:, 1, 0]
+    else:
+        out_dict = {'Ip': Vin}
+        out_dict['0'] = Ip_m
+        df = pd.DataFrame(out_dict)
+
+        out_dict2 = {'Ip': Vin}
+        out_dict2['0 Ex'] = Vout[:, 0, 0]
+        out_dict2['0 Ey'] = Vout[:, 1, 0]
+        df2 = pd.DataFrame(out_dict2)
+
+    df.to_csv(filename, index=False)
+    df2.to_csv(filename + "_S", index=False)
+
+
+def load_Jones(filename, ncol=0):
+    data = pd.read_csv(filename)
+    if data['Ip'][0] == 0:
+        data.drop(0, inplace=True)
+        data.index -= 1
+    V_I = data['Ip']
+    E = Jones_vector('Output')
+    S = create_Stokes('Output_S')
+    for nn in range(int((data.shape[1] - 1) / 2)):
+        if nn == ncol+1:
+            break
+        str_Ex = str(nn) + ' Ex'
+        str_Ey = str(nn) + ' Ey'
+        Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
+                         [complex(y) for y in data[str_Ey].to_numpy()]])
+        E.from_matrix(Vout)
+        S.from_Jones(E)
+    return V_I, S
+
+
 
 # Progress bar is not easy/
 # Todo comparison between transmission and reflection

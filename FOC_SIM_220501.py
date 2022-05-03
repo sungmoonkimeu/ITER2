@@ -18,13 +18,15 @@ import os
 # print(os.getcwd())
 # print(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
 # sys.path.append(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
-
+import time
+start = time.process_time()
 # from My_Library import SPUNFIBRE_lib
-from My_Library.SPUNFIBRE_lib import SPUNFIBER
+
+from My_Library.SPUNFIBRE_lib import *
 from My_Library.draw_figures_FOCS import *
+
 from My_Library.draw_poincare_plotly import *
-
-
+from My_Library.basis_calibration_lib import *
 
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
@@ -44,7 +46,7 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 if __name__ == '__main__':
     mode = 1
     # Crystal Techno lobi spun fiber
-    LB = 0.3
+    LB = 0.009
     SP = 0.005
     # dz = SP / 1000
     dz = 0.0002
@@ -53,17 +55,16 @@ if __name__ == '__main__':
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
     if mode == 0:
-        # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
-        # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
+
         num_iter = 1
-        strfile1 = 'AAAA1.csv'
-        strfile2 = 'AAAA2.csv'
+        strfile1 = 'AAAA2.csv'
+        #strfile2 = 'AAAA2.csv'
         num_processor = 8
-        V_I = arange(0e6, 10e6 + 0.1e6, 0.1e6)
+        V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
         # V_I = 1e6
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
-        nM_vib = 1
+        nM_vib = 0
         start = pd.Timestamp.now()
         ang_FM = 45
         Vin = np.array([[1/np.sqrt(0.5)], [1/np.sqrt(0.5)]])
@@ -79,18 +80,12 @@ if __name__ == '__main__':
         for nn in range(num_iter):
             M_vib = spunfiber.create_Mvib(nM_vib, 20, 0)
             Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
-            out_dict[str(nn)] = Ip
+            save_Jones(strfile1,V_I,Ip,Vout)
 
-            out_dict2[str(nn) + ' Ex'] = Vout[:, 0, 0]
-            out_dict2[str(nn) + ' Ey'] = Vout[:, 1, 0]
             checktime = pd.Timestamp.now() - start
             print(nn, "/", num_iter, checktime)
             start = pd.Timestamp.now()
 
-        df = pd.DataFrame(out_dict)
-        df.to_csv(strfile1, index=False)
-        df2 = pd.DataFrame(out_dict2)
-        df2.to_csv(strfile1 + "_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
 
         labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
@@ -102,16 +97,23 @@ if __name__ == '__main__':
         ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
         ax2.yaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
 
-        fig3, ax3, lines3 = plot_error_byStokes(strfile1+"_S")
+        fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S")
     elif mode == 1:
-        strfile1 = 'AAAA1.csv'
-        # fig3, ax3 = spunfiber.plot_errorbar_byStokes(strfile1+"_S", label='Hi-bi spun fiber', cal_init=True)
-        strfile2 = 'AAAA1.csv_S'
-        fig4, ax4, lines = plot_error_byStokes(strfile2)
+        strfile1 = 'AAAA2.csv'
+        opacity = 0.8
+        V_I, S = load_Jones(strfile1+"_S",1)
 
-        #opacity = 1
-        #fig3 = PS5(opacity)
-        fig3, lines = plot_Stokes_on_Poincare(strfile1+"_S")
+        fig3, lines = draw_Stokes(V_I, S, opacity=opacity)
+        fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S")
+
+        S2, c = calib_basis1(S)
+        fig, ax, lines3 = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines3)
+
+        fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
+                           mode='lines',
+                           line=dict(width=8))
+        fig3, lines = draw_Stokes(V_I, S2, fig=fig3, opacity=opacity)
+
 
     fig3.show()
     plt.show()

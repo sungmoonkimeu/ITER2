@@ -131,7 +131,7 @@ def PS5(alpha=0.5):
     x = sprad * np.outer(np.cos(u), np.sin(v))
     y = sprad * np.outer(np.sin(u), np.sin(v))
     z = sprad * np.outer(np.ones(np.size(u)), np.cos(v))
-    print(x)
+    #print(x)
     color1 = 'whitesmoke'
     color2 = 'red'
     fig = go.Figure()

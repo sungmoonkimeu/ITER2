@@ -60,7 +60,7 @@ def cm_to_rgba_tuple(colors,alpha=1):
 
 
 # just plotting error (*.csv)
-def plot_error(filename, fig=None, ax=None, lines=None):
+def plot_error_byfile(filename, fig=None, ax=None, lines=None):
     data = pd.read_csv(filename)
     if data['Ip'][0] == 0:
         data.drop(0, inplace=True)
@@ -106,7 +106,7 @@ def plot_error(filename, fig=None, ax=None, lines=None):
 
 
 # plotting error from Stokes parameters
-def plot_error_byStokes(filename, fig=None, ax=None, lines=None, v_calc_init=None, V_custom=None):
+def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None, V_custom=None):
     data = pd.read_csv(filename)
     if data['Ip'][0] == 0:
         data.drop(0, inplace=True)
@@ -171,7 +171,58 @@ def plot_error_byStokes(filename, fig=None, ax=None, lines=None, v_calc_init=Non
     return fig, ax, lines
 
 
-def plot_Stokes_on_Poincare(filename, fig=None, lines=None):
+def plot_error_byStokes(V_I, S, fig=None, ax=None, lines=None, v_calc_init=None, V_custom=None):
+
+    V_ang = zeros(len(V_I))
+    Ip = zeros(len(V_I))
+    V = 0.54 * 4 * pi * 1e-7 if V_custom is None else V_custom
+
+    # Calcuation of ITER specification
+    absErrorlimit = zeros(len(V_I))
+    for nn in range(len(V_I)):
+        absErrorlimit[nn] = 10e3 if V_I[nn] < 1e6 else V_I[nn] * 0.01
+    relErrorlimit = absErrorlimit / V_I
+
+    if fig is None or ax is None:
+        fig, ax = plt.subplots(figsize=(6, 3))
+        lines = []
+        ax.set_prop_cycle(cc)
+
+    m = 0
+    for kk in range(len(V_I)):
+        if kk > 2 and S[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+            m = m + 1
+        elif kk > 2 and S[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+            m = m - 1
+        V_ang[kk] = S[kk].parameters.azimuth() + m * pi
+
+        c = V_ang[0] if v_calc_init is None else v_calc_init
+        Ip[kk] = (V_ang[kk] - c) / V
+
+    lines += ax.plot(V_I, abs((Ip - V_I) / V_I), label='added')
+    ax.legend(loc="upper right")
+
+    if fig is None:
+        lines += ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
+
+        ax.set_xlabel(r'Plasma current $I_{p}(A)$')
+        ax.set_ylabel(r'Relative error on $I_{P}$')
+
+        ax.set(xlim=(0, 18e6), ylim=(0, 0.1))
+        ax.yaxis.set_major_locator(MaxNLocator(4))
+        ax.xaxis.set_major_locator(MaxNLocator(10))
+
+        ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
+        ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+
+        ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
+        ax.grid(ls='--', lw=0.5)
+
+        fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
+    return fig, ax, lines
+
+
+def plot_Stokes_on_Poincare_file(filename, fig=None, lines=None, opacity=1):
     data = pd.read_csv(filename)
     if data['Ip'][0] == 0:
         data.drop(0, inplace=True)
@@ -183,7 +234,6 @@ def plot_Stokes_on_Poincare(filename, fig=None, lines=None):
     Ip = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
 
     if fig is None or lines is None:
-        opacity = 0.6
         fig = PS5(opacity)
 
     for nn in range(int((data.shape[1] - 1) / 2)):
@@ -200,6 +250,15 @@ def plot_Stokes_on_Poincare(filename, fig=None, lines=None):
         S2 = S.parameters.matrix()[2]
         S3 = S.parameters.matrix()[3]
 
+        tick_vals = np.linspace(0, V_I.max(), 5)
+        tick_text = [str(int(nn / 1e6)) + "MA" for nn in tick_vals]
+        colorbar_param = dict(lenmode='fraction', len=0.75, thickness=10, tickfont=dict(size=20),
+                              tickvals=tick_vals,
+                              ticktext=tick_text,
+                              # title='Azimuth angle',
+                              outlinewidth=1,
+                              x=0.8)
+
         fig.add_scatter3d(x=S1, y=S2, z=S3, mode="lines+markers",
                           marker=dict(size=2.5,
                                       opacity=1,
@@ -208,10 +267,48 @@ def plot_Stokes_on_Poincare(filename, fig=None, lines=None):
                           line=dict(width=8,
                                     color=V_I,
                                     colorscale='Viridis',
-                                    showscale=True),
+                                    showscale=True,
+                                    colorbar=colorbar_param),
                           name='F1')
 
     return fig, lines
+
+
+def draw_Stokes(Ip, S, fig=None, lines=None, opacity=1):
+
+    if fig is None:
+        fig = PS5(opacity)
+        colorscale = 'Viridis'
+    else:
+        colorscale = 'Inferno'
+
+    S1 = S.parameters.matrix()[1]
+    S2 = S.parameters.matrix()[2]
+    S3 = S.parameters.matrix()[3]
+
+    tick_vals = np.linspace(0, Ip.max(), 5)
+    tick_text = [str(int(nn / 1e6)) + "MA" for nn in tick_vals]
+    colorbar_param = dict(lenmode='fraction', len=0.75, thickness=10, tickfont=dict(size=20),
+                          tickvals=tick_vals,
+                          ticktext=tick_text,
+                          # title='Azimuth angle',
+                          outlinewidth=1,
+                          x=0.8)
+
+    fig.add_scatter3d(x=S1, y=S2, z=S3, mode="lines+markers",
+                      marker=dict(size=2.5,
+                                  opacity=1,
+                                  color=Ip,
+                                  colorscale=colorscale),
+                      line=dict(width=8,
+                                color=Ip,
+                                colorscale=colorscale,
+                                showscale=True,
+                                colorbar=colorbar_param),
+                      name='F1')
+
+    return fig, lines
+
 
 
 if (__name__ == "__main__"):

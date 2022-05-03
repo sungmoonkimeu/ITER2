@@ -38,18 +38,22 @@ def calib_basis1(S):
     # average after summation whole vectors
     c = cross_an_abs.sum(axis=1) / np.linalg.norm(cross_an_abs.sum(axis=1))
 
-    # print("new c", c)
+    print("Faraday rotation plane vector:", c)
     # fig[0].plot([0, c[0]], [0, c[1]], [0, c[2]], 'r-', lw=1, )
 
     z = [0, 0, 1]
     y = [0, 1, 0]
     x = [1, 0, 0]
 
-    th_x = np.arccos(np.dot(x, c))
-    th_y = np.arccos(np.dot(y, c))
+    # th_x = np.arccos(np.dot(x, c))
+    # th_y = np.arccos(np.dot(y, c))
+    # th_z = np.arccos(np.dot(z, c))
+
+    th_x = np.arccos(np.dot(x, [c[0], c[1], 0] / np.linalg.norm([c[0], c[1], 0])))
+    th_y = np.arccos(np.dot(y, [c[0], c[1], 0] / np.linalg.norm([c[0], c[1], 0])))
     th_z = np.arccos(np.dot(z, c))
 
-    print("x=", th_x * 180 / pi, "y=", th_y * 180 / pi, "z=", th_z * 180 / pi)
+    print("th_x=", th_x * 180 / pi, "th_y=", th_y * 180 / pi, "th_z=", th_z * 180 / pi)
 
     Rx = np.array([[cos(th_x), -sin(th_x), 0], [sin(th_x), cos(th_x), 0], [0, 0, 1]])
     Ry = np.array([[1, 0, 0], [0, cos(th_y), -sin(th_y)], [0, sin(th_y), cos(th_y)]])
@@ -71,7 +75,7 @@ def calib_basis1(S):
 
     Sp = np.vstack((zT, TT))
     S.from_matrix(Sp)
-    return S
+    return S, c
 
 
 def calib_basis2(S):  # first Point to -45 (S2)
@@ -104,6 +108,7 @@ def calib_basis2(S):  # first Point to -45 (S2)
     Sp = np.vstack((zT, TT))
     S.from_matrix(Sp)
     return S
+
 
 def calib_basis3(S):
     a = S.parameters.matrix()[1:]  # convert 4x1 Stokes vectors to 3x1 cartesian vectors
