@@ -46,10 +46,10 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 if __name__ == '__main__':
     mode =1
     # Crystal Techno lobi spun fiber
-    LB = 0.3
-    SP = 0.005
+    LB = 0.009
+    SP = 0.0048
     # dz = SP / 1000
-    dz = 0.0002
+    dz = 0.00001
     len_lf = 1  # lead fiber
     len_ls = 1  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
@@ -57,19 +57,20 @@ if __name__ == '__main__':
     if mode == 0:
 
         num_iter = 1
-        strfile1 = 'AAAA2.csv'
+        strfile1 = 'Hibi_test.csv'
         num_processor = 16
-        V_I = arange(0e6, 10e6 + 0.1e6, 0.1e6)
+        V_I = arange(0e6, 6e6 + 0.1e6, 0.1e6)
         # V_I = 1e6
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
-        nM_vib = 1
+        nM_vib = 0
         start = pd.Timestamp.now()
         ang_FM = 45
-        Vin = np.array([[1/np.sqrt(0.5)], [1/np.sqrt(0.5)]])
+        #Vin = np.array([[1/np.sqrt(0.5)], [1/np.sqrt(0.5)]])
+        #Vin = np.array([[1], [0]])
 
         E = Jones_vector('input')
-        E.general_azimuth_ellipticity(azimuth=pi/4, ellipticity=0)
+        E.general_azimuth_ellipticity(azimuth=pi/6, ellipticity=0)
         # print(E)
         Vin = E.parameters.matrix()
         # Vin = np.array([[0], [1]])
@@ -98,24 +99,26 @@ if __name__ == '__main__':
         fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S")
 
     elif mode == 1:
-        strfile1 = 'AAAA2.csv'
+        strfile1 = 'Hibi_test.csv'
+        #strfile1 = 'Hibi_IdealFM_Errdeg1x5.csv'
         opacity = 0.8
         V_I, S = load_Jones(strfile1+"_S", 1)
 
         #fig3, ax = plot_Stokes_byfile(strfile1+"_S", opacity=opacity)
-        fig3, lines = plot_Stokes(V_I, S, opacity=opacity)
-        fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S")
-        fig, ax, lines3 = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines3)
+        #fig3, lines = plot_Stokes(V_I, S, opacity=opacity)
 
+        V2 = 0.54 * 4 * pi * 1e-7*2/1.0375
+        #fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S", V_custom=V2/1.0365)
+        fig, ax, lines3 = plot_error_byStokes(V_I, S, V_custom=V2)
+        #fig, ax, lines3 = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines3, V_custom=V2)
+        # #
         S2, c = calib_basis1(S)
-        fig, ax, lines3 = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines3)
+        fig, ax, lines3 = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines3, V_custom=V2)
+        #
+        # fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
+        #                     mode='lines',
+        #                     line=dict(width=8))
+        # fig3, lines = plot_Stokes(V_I, S2, fig=fig3, opacity=opacity)
+        # fig3.show()
 
-        fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
-                           mode='lines',
-                           line=dict(width=8))
-        fig3, lines = plot_Stokes(V_I, S2, fig=fig3, opacity=opacity)
-
-
-
-    fig3.show()
     plt.show()

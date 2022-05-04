@@ -430,13 +430,13 @@ class SPUNFIBER:
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
 
-            # M_lf_f = self.lamming(0, 1, V_theta_lf, M_vib)
-            # M_f = self.lamming(iter_I, 1, V_theta)
-            # M_b = self.lamming(iter_I, -1, V_theta)
-            # M_lf_b = self.lamming(0, -1, V_theta_lf, M_vib)
+            M_lf_f = self.lamming(0, 1, V_theta_lf, M_vib)
+            M_f = self.lamming(iter_I, 1, V_theta)
+            M_b = self.lamming(iter_I, -1, V_theta)
+            M_lf_b = self.lamming(0, -1, V_theta_lf, M_vib)
 
-            M_lf_f = self.lamming(iter_I, 1, V_theta_lf, M_vib)
-            M_lf_b = self.lamming(iter_I, -1, V_theta_lf, M_vib)
+            # M_lf_f = self.lamming(iter_I, 1, V_theta_lf, M_vib)
+            # M_lf_b = self.lamming(iter_I, -1, V_theta_lf, M_vib)
             # M_f = self.lamming(iter_I, 1, L, V_theta)
             # M_b = self.lamming(iter_I, -1, L, V_theta)
 
@@ -449,8 +449,8 @@ class SPUNFIBER:
                 # print("M_b = ", M_b[0, 1], M_b[1, 0])
                 #print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
 
-            #V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
-            V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
+            V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
+            #V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
             #V_out[mm] = M_f @ M_lf_f @ Vin
             # V_out[mm] =  M_lf_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in

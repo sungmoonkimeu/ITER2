@@ -140,20 +140,21 @@ def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None
         Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
                          [complex(y) for y in data[str_Ey].to_numpy()]])
         E0.from_matrix(Vinit)
+        c = E0.parameters.azimuth() if v_calc_init is None else v_calc_init
         E.from_matrix(Vout)
         S.from_Jones(E)
-        print(Vinit)
+        # print(Vinit, E[0].parameters.azimuth()*180/pi)
         m = 0
         for kk in range(len(V_I)):
-            if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+            if kk > 1 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
                 m = m + 1
-            elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+            elif kk > 1 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
                 m = m - 1
             V_ang[kk] = E[kk].parameters.azimuth() + m * pi
 
-            c = E0.parameters.azimuth() if v_calc_init is None else v_calc_init
             Ip[nn][kk] = (V_ang[kk] - c) / V
 
+        print(V_I, Ip[0])
         lines += ax.plot(V_I, abs((Ip[nn, :] - V_I) / V_I), label=str(nn))
     #print(V_I)
     lines += ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
@@ -331,7 +332,8 @@ if (__name__ == "__main__"):
                                   color=S.parameters.azimuth(),
                                   colorscale='Viridis'),
                       name='F1')
-
+    S.draw_ellipse()
+    plt.show()
     fig.show()
     #main()
     #plt.show()
