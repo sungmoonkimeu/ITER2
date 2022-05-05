@@ -14,29 +14,30 @@ from py_pol.drawings import draw_stokes_points
 import matplotlib.pyplot as plt
 
 
-def calib_basis1(S):
+def calib_basis1(S, c=None):
     a = S.parameters.matrix()[1:]  # convert 4x1 Stokes vectors to 3x1 cartesian vectors
 
-    # 평균 벡터 계산
-    mean_a = np.array([a[0, :].sum(), a[1, :].sum(), a[2, :].sum()])
-    mean_a = mean_a / (np.linalg.norm(mean_a))
-    # 평균 벡터와 모든 점 사이의 거리 계산
-    dist_a_mean_a = np.linalg.norm(a.T - mean_a, axis=1)
-    # 평균벡터와 가장 가까운 벡터 --> 대표 벡터 ?
-    std_a = a[:, np.argmin(dist_a_mean_a)]
-    # 대표 벡터 와 나머지 벡터 연결
-    diff_a = a.T - std_a
-    # 대표 벡터와 나머지 벡터가 이루는 벡터 끼리 외적
-    cross_a = np.cross(diff_a[0], diff_a)
+    if c[0] == None:
+        # 평균 벡터 계산
+        mean_a = np.array([a[0, :].sum(), a[1, :].sum(), a[2, :].sum()])
+        mean_a = mean_a / (np.linalg.norm(mean_a))
+        # 평균 벡터와 모든 점 사이의 거리 계산
+        dist_a_mean_a = np.linalg.norm(a.T - mean_a, axis=1)
+        # 평균벡터와 가장 가까운 벡터 --> 대표 벡터 ?
+        std_a = a[:, np.argmin(dist_a_mean_a)]
+        # 대표 벡터 와 나머지 벡터 연결
+        diff_a = a.T - std_a
+        # 대표 벡터와 나머지 벡터가 이루는 벡터 끼리 외적
+        cross_a = np.cross(diff_a[0], diff_a)
 
-    # filtering out small vectors
-    cross_a2 = cross_a[np.linalg.norm(cross_a, axis=1) > np.linalg.norm(cross_a, axis=1).mean() / 10]
-    # 반대 방향 vector 같은 방향으로 변환
-    cross_an = cross_a2.T / np.linalg.norm(cross_a2, axis=1)
-    # Normalize
-    cross_an_abs = cross_an * abs(cross_an.sum(axis=0)) / cross_an.sum(axis=0)
-    # average after summation whole vectors
-    c = cross_an_abs.sum(axis=1) / np.linalg.norm(cross_an_abs.sum(axis=1))
+        # filtering out small vectors
+        cross_a2 = cross_a[np.linalg.norm(cross_a, axis=1) > np.linalg.norm(cross_a, axis=1).mean() / 10]
+        # 반대 방향 vector 같은 방향으로 변환
+        cross_an = cross_a2.T / np.linalg.norm(cross_a2, axis=1)
+        # Normalize
+        cross_an_abs = cross_an * abs(cross_an.sum(axis=0)) / cross_an.sum(axis=0)
+        # average after summation whole vectors
+        c = cross_an_abs.sum(axis=1) / np.linalg.norm(cross_an_abs.sum(axis=1))
 
     print("Faraday rotation plane vector:", c)
     # fig[0].plot([0, c[0]], [0, c[1]], [0, c[2]], 'r-', lw=1, )

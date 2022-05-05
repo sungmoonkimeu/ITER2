@@ -881,7 +881,7 @@ def save_Jones(filename, Vin, Ip_m, Vout):
     df2.to_csv(filename + "_S", index=False)
 
 
-def load_Jones(filename, ncol=0):
+def load_stokes_fromfile(filename, ncol=0):
     data = pd.read_csv(filename)
     # if data['Ip'][0] == 0:
     #     data.drop(0, inplace=True)
@@ -898,9 +898,29 @@ def load_Jones(filename, ncol=0):
                          [complex(y) for y in data[str_Ey].to_numpy()]])
         E.from_matrix(Vout)
         S.from_Jones(E)
-    return V_I, S
+    isEOF = True if ncol >= int((data.shape[1] - 1) / 2)-1 else False
+
+    return V_I, S, isEOF
 
 
+def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
+    V_ang = zeros(len(V_I))
+    Ip = zeros(len(V_I))
+    V = 0.54 * 4 * pi * 1e-7 if V_custom is None else V_custom
+
+
+    m = 0
+    for kk in range(len(V_I)):
+        if kk > 0 and S[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+            m = m + 1
+        elif kk > 0 and S[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+            m = m - 1
+        V_ang[kk] = S[kk].parameters.azimuth() + m * pi
+
+        c = V_ang[0] if v_calc_init is None else v_calc_init
+        Ip[kk] = (V_ang[kk] - c) / V
+
+    return (Ip[1:] - V_I[1:]) / V_I[1:]
 
 # Progress bar is not easy/
 # Todo comparison between transmission and reflection
