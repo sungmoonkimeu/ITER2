@@ -46,15 +46,16 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 if __name__ == '__main__':
     mode = 4
     # Crystal Techno lobi spun fiber
-    LB = 0.009
-    SP = 0.0048
+    LB = 1
+    SP = 0.005
     # dz = SP / 1000
-    dz = 0.00005
+    dz = 0.0001
     len_lf = 1  # lead fiber
     len_ls = 1  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
-    strfile1 = 'Hibi_44FM_errdeg1x5_220506.csv'
+    #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
+    #strfile1 = 'Lobi_46FM_errdeg1x5_220506.csv'
 
     if mode == 0:
 
@@ -66,7 +67,7 @@ if __name__ == '__main__':
         out_dict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 44
+        ang_FM = 46
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
@@ -235,29 +236,29 @@ if __name__ == '__main__':
         #
         # strfile1 = 'Test1_hibi2.csv'
         # fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S", fig=fig, ax= ax, V_custom=V2)
-        V2 = 0.54 * 4 * pi * 1e-7 # * 1.9312
+        V2 = 0.54 * 4 * pi * 1e-7
         #strfile1 = 'Test1_hibi1.csv'
-        #strfile1 = 'IdealFM_Errdeg1x5_1.csv'
-        strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
+        strfile1 = 'IdealFM_Errdeg1x5_1.csv'
+        #strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
         dic_err = {}
         while isEOF is False:
             V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", nn)
             if nn == 0:
                 dic_err['V_I'] = V_I
                 fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
-            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2,v_calc_init=pi/2)
+            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*2,v_calc_init=pi/2)
             nn += 1
-            n_item = [0,3,7,11,15,19]
-            V_I2, S2 = V_I[n_item], S[n_item]
-            fig3, lines3 = plot_Stokes_pnt(V_I2, S2,fig=fig3, lines=lines3, opacity=opacity)
+            # n_item = [0,3,7,11,15,19]
+            # V_I2, S2 = V_I[n_item], S[n_item]
+            # fig3, lines3 = plot_Stokes_pnt(V_I2, S2,fig=fig3, lines=lines3, opacity=opacity)
         fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='ideal FM')
-
-
 
         #strfile1 = 'Test1_hibi2.csv'
         #strfile1 = '42FM_Errdeg1x5_0_2.csv'
         #strfile1 = 'Hibi_44FM_errdeg1x5.csv'
-        strfile1 = 'Hibi_44FM_errdeg1x5_220506.csv'
+        #strfile1 = 'Hibi_44FM_errdeg1x5_220506.csv'
+        #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
+        strfile1 = 'Lobi_46FM_errdeg1x5_220506.csv'
         dic_err, nn, isEOF = {}, 0, False
 
         while isEOF is False:
@@ -265,13 +266,13 @@ if __name__ == '__main__':
             if nn == 0:
                 dic_err['V_I'] = V_I
                 fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
-            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2, v_calc_init=(90-2)*pi/180)
-            n_item = [0, 3, 7, 11, 15, 19]
-            V_I2, S2 = V_I[n_item], S[n_item]
-            fig3, lines3 = plot_Stokes_pnt(V_I2, S2, fig=fig3, lines=lines3, opacity=opacity)
+            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*2, v_calc_init=(90+2)*pi/180)
+            # n_item = [0, 3, 7, 11, 15, 19]
+            # V_I2, S2 = V_I[n_item], S[n_item]
+            # fig3, lines3 = plot_Stokes_pnt(V_I2, S2, fig=fig3, lines=lines3, opacity=opacity)
 
             nn += 1
-        fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='FM44')
+        fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label=r'FMerror $1\degree$')
 
 
         # strfile1 = 'Hibi_44FM_errdeg1x5_220506.csv'
@@ -285,6 +286,6 @@ if __name__ == '__main__':
         #     dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2, v_calc_init=(90-2)*pi/180)
         #     nn += 1
         # fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='FM42')
-        fig3.show()
+        #fig3.show()
     plt.show()
 

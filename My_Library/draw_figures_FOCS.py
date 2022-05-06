@@ -283,7 +283,9 @@ def plot_Stokes_byfile(filename, fig=None, lines=None, opacity=1):
     return fig, lines
 
 
-def plot_errorbar_byDic(dic_err, fig=None, ax=None, label=None):
+def plot_errorbar_byDic(dic_err, fig=None, ax=None, lines=[], label=[]):
+    #print(lines[0]) if len(lines)> 0 else print(len(lines))
+
     data = pd.DataFrame.from_dict(dic_err)
 
     df_mean = data.drop(['V_I'], axis=1).mean(axis=1)
@@ -297,18 +299,16 @@ def plot_errorbar_byDic(dic_err, fig=None, ax=None, label=None):
     for nn in range(len(V_I)):
         absErrorlimit[nn] = 10e3 if V_I[nn] < 1e6 else V_I[nn] * 0.01
     relErrorlimit = absErrorlimit[1:] / V_I[1:]
-
-    if fig is None or ax is None:
-        fig, ax = plt.subplots(figsize=(6, 3))
-        lines = []
+    if fig is None:
+        fig, ax = plt.subplots(figsize=(9/2.5, 7/2.5))
         ax.set_prop_cycle(cc)
-        lines += ax.plot(V_I[1:], relErrorlimit[:], 'r--', label='ITER specification')
-        lines += ax.plot(V_I[1:], -relErrorlimit[:], 'r--')
+        #lines += ax.plot(V_I[1:], relErrorlimit[:], 'gray',ls='--', label='ITER specification')
+        #lines += ax.plot(V_I[1:], -relErrorlimit[:], 'gray', ls='--')
 
         ax.set_xlabel(r'Plasma current $I_{p}(A)$')
         ax.set_ylabel(r'Relative error on $I_{P}$')
 
-        ax.set(xlim=(0, 18e6), ylim=(-0.1, 0.1))
+        ax.set(xlim=(0, 18e6), ylim=(-0.003, 0.003))
         ax.yaxis.set_major_locator(MaxNLocator(4))
         ax.xaxis.set_major_locator(MaxNLocator(10))
 
@@ -318,13 +318,16 @@ def plot_errorbar_byDic(dic_err, fig=None, ax=None, label=None):
         ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
         ax.grid(ls='--', lw=0.5)
 
-        fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
+        fig.subplots_adjust(left=0.255, hspace=0.4, right=0.95, top=0.93, bottom=0.2)
 
-    if label is not None:
-        ax.plot(data['V_I'], df_mean, label=label)
+    #print(len(lines))
+    if len(lines) ==0:
+        ax.plot(data['V_I'], df_mean, 'k', label=label)
+        lines += ax.errorbar(data['V_I'][::4], df_mean[::4], yerr=df_std[::4], ls='None', c='black', ecolor='k', capsize=4, elinewidth=2)
     else:
-        ax.plot(data['V_I'], df_mean)
-    ax.errorbar(data['V_I'][::2], df_mean[::2], yerr=df_std[::2], ls='None', c='black', ecolor='g', capsize=4)
+        ax.plot(data['V_I'], df_mean, 'r', label=label)
+        lines += ax.errorbar(data['V_I'][::4], df_mean[::4], yerr=df_std[::4], ls='None', c='blue', ecolor='r', capsize=4)
+
     ax.legend(loc="upper right")
 
     return fig, ax
