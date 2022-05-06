@@ -224,7 +224,11 @@ if __name__ == '__main__':
     elif mode ==4:
 
         fig, ax, lines, V2 = None, None, None, None
+
         isEOF, nn = False, 0
+
+        fig3, lines3, opacity = None, None, 0.8
+
 
         # strfile1 = 'Test1_hibi1.csv'
         # fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S", fig=fig, ax= ax, V_custom=V2)
@@ -233,8 +237,8 @@ if __name__ == '__main__':
         # fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S", fig=fig, ax= ax, V_custom=V2)
         V2 = 0.54 * 4 * pi * 1e-7 # * 1.9312
         #strfile1 = 'Test1_hibi1.csv'
-        strfile1 = 'IdealFM_Errdeg1x5_1.csv'
-        #strfile1 = 'Hibi_IdealFM_errdeg1x5.csv'
+        #strfile1 = 'IdealFM_Errdeg1x5_1.csv'
+        strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
         dic_err = {}
         while isEOF is False:
             V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", nn)
@@ -243,11 +247,17 @@ if __name__ == '__main__':
                 fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
             dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2,v_calc_init=pi/2)
             nn += 1
+            n_item = [0,3,7,11,15,19]
+            V_I2, S2 = V_I[n_item], S[n_item]
+            fig3, lines3 = plot_Stokes_pnt(V_I2, S2,fig=fig3, lines=lines3, opacity=opacity)
         fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='ideal FM')
 
+
+
         #strfile1 = 'Test1_hibi2.csv'
-        strfile1 = '44FM_Errdeg1x5_0.csv'
+        #strfile1 = '42FM_Errdeg1x5_0_2.csv'
         #strfile1 = 'Hibi_44FM_errdeg1x5.csv'
+        strfile1 = 'Hibi_44FM_errdeg1x5_220506.csv'
         dic_err, nn, isEOF = {}, 0, False
 
         while isEOF is False:
@@ -256,8 +266,13 @@ if __name__ == '__main__':
                 dic_err['V_I'] = V_I
                 fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
             dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2, v_calc_init=(90-2)*pi/180)
+            n_item = [0, 3, 7, 11, 15, 19]
+            V_I2, S2 = V_I[n_item], S[n_item]
+            fig3, lines3 = plot_Stokes_pnt(V_I2, S2, fig=fig3, lines=lines3, opacity=opacity)
+
             nn += 1
         fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='FM44')
+
 
         # strfile1 = 'Hibi_44FM_errdeg1x5_220506.csv'
         # dic_err, nn, isEOF = {}, 0, False
@@ -270,6 +285,6 @@ if __name__ == '__main__':
         #     dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2, v_calc_init=(90-2)*pi/180)
         #     nn += 1
         # fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='FM42')
-
+        fig3.show()
     plt.show()
 

@@ -21,8 +21,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-from .basis_correction_lib import calib_basis3
-from .draw_poincare_plotly import *
+#from .basis_correction_lib import calib_basis3
+#from .draw_poincare_plotly import *
 
 # import parmap
 import tqdm
@@ -936,7 +936,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode = 0
+    mode = 2
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1080,5 +1080,75 @@ if __name__ == '__main__':
         str_xtick = ['SP/50', 'SP/100', 'SP/500', 'SP/1000', 'SP/5000']
         ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
 
+    if mode==2:
+        LB = 0.009
+        SP = 0.0048
+        # dz = SP / 1000
+        dz = 0.0002
+        len_lf = 0  # lead fiber
+        len_ls = 1  # sensing fiber
+        spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
+        num_iter = 50
+        num_processor = 8
+        V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
+        # V_I = 1e6
+
+        nM_vib = 5
+        start = pd.Timestamp.now()
+        ang_FM = 20
+
+        ksi = ang_FM * pi / 180
+        Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
+        Jm = np.array([[1, 0], [0, 1]])
+        M_FR = Rot @ Jm @ Rot
+
+        ksi2 = 45 * pi/ 180
+        M_Ip = np.array([[cos(ksi2), -sin(ksi2)], [sin(ksi2), cos(ksi2)]])
+
+
+        E = Jones_vector('input')
+        Eo = Jones_vector('output')
+        So = create_Stokes('1')
+
+        azi = np.array([0, pi / 6, pi / 4])
+        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
+        fig1, ax1 = spunfiber.init_plot_SOP()
+        S = create_Stokes('O')
+        Vin = E[0].parameters.matrix()
+
+
+        fig1, ax1 = spunfiber.init_plot_SOP()
+        tmp, SOPchange_mean, SOPchange_std, SOPchange_max = np.array([]), np.array([]), np.array([]), np.array([])
+        tmp2 = np.array([])
+        V_ang = np.arange(0,45,5)
+        for ang_FM in V_ang:
+            for nn in range(50):
+                ksi = (45-ang_FM) * pi / 180
+                Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
+                Jm = np.array([[1, 0], [0, 1]])
+                M_FR = Rot @ Jm @ Rot
+
+                M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
+                #Vout = M_vib[..., nn].T @ M_Ip @ M_vib2[..., nn].T @ M_vib2[..., nn] @ M_Ip @ M_vib[..., nn] @ Vin
+                #Vout  = M_vib[..., nn].T@M_Ip@M_vib2[..., nn].T @ M_FR @ M_vib2[..., nn] @M_Ip@M_vib[..., nn]@ Vin
+                #Vout = M_vib[..., nn].T @ M_Ip @M_FR @ M_Ip @ M_vib[..., nn] @ Vin
+
+                M_v = M_vib[...,4]@M_vib[...,3]@M_vib[...,2]@M_vib[...,1]@M_vib[...,0]
+
+                Vout = M_v.T@ M_FR @M_v @ Vin
+                Eo.from_matrix(Vout)
+                tmp = np.hstack((tmp, Eo.parameters.ellipticity_angle()*180/pi))
+                #tmp2 = np.hstack((tmp2, Eo.parameters.azimuth()*180/pi + ang_FM*2))
+                So.from_Jones(Eo)
+                draw_stokes_points(fig1[0], So, kind='scatter', color_line='r')
+
+            SOPchange_mean = np.hstack((SOPchange_mean, tmp.mean()))
+            SOPchange_std = np.hstack((SOPchange_std, tmp.std()))
+            SOPchange_max = np.hstack((SOPchange_max, tmp.max()))
+
+        fig, ax = plt.subplots()
+        ax.plot(V_ang, SOPchange_mean)
+        ax.plot(V_ang, SOPchange_std)
+        ax.plot(V_ang, SOPchange_max)
 plt.show()
