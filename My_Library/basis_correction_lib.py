@@ -14,7 +14,7 @@ from py_pol.drawings import draw_stokes_points
 import matplotlib.pyplot as plt
 
 
-def calib_basis1(S, c=None):
+def basis_correction1(S, c=[None, None, None]):
     a = S.parameters.matrix()[1:]  # convert 4x1 Stokes vectors to 3x1 cartesian vectors
 
     if c[0] == None:

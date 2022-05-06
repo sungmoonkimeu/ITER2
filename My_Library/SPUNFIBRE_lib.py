@@ -21,7 +21,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-from .basis_calibration_lib import calib_basis3
+from .basis_correction_lib import calib_basis3
 from .draw_poincare_plotly import *
 
 # import parmap
@@ -424,6 +424,10 @@ class SPUNFIBER:
             V_L = arange(0, self.L+self.dz, self.dz)
             V_theta = V_theta_lf[-1] + V_L * s_t_r
 
+            # Another lead fiber vector with V_theta_lf2
+            V_L_lf2 = arange(0, self.LF+self.dz , self.dz)
+            V_theta_lf2 = V_theta[-1] + V_L_lf2 * s_t_r
+
             # Faraday mirror
             ksi = ang_FM * pi / 180
             Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
@@ -432,8 +436,11 @@ class SPUNFIBER:
 
             M_lf_f = self.lamming(0, 1, V_theta_lf, M_vib)
             M_f = self.lamming(iter_I, 1, V_theta)
+            M_lf_f2 = self.lamming(0, 1, V_theta_lf2, M_vib)
+            M_lf_b2 = self.lamming(0, -1, V_theta_lf2, M_vib)
             M_b = self.lamming(iter_I, -1, V_theta)
             M_lf_b = self.lamming(0, -1, V_theta_lf, M_vib)
+
 
             # M_lf_f = self.lamming(iter_I, 1, V_theta_lf, M_vib)
             # M_lf_b = self.lamming(iter_I, -1, V_theta_lf, M_vib)
@@ -449,7 +456,8 @@ class SPUNFIBER:
                 # print("M_b = ", M_b[0, 1], M_b[1, 0])
                 #print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
 
-            V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
+            V_out[mm] = M_lf_b @ M_b @ M_lf_b2 @ M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Vin
+            #V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
             #V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
             #V_out[mm] = M_f @ M_lf_f @ Vin
             # V_out[mm] =  M_lf_f @ V_in
@@ -908,7 +916,6 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
     Ip = zeros(len(V_I))
     V = 0.54 * 4 * pi * 1e-7 if V_custom is None else V_custom
 
-
     m = 0
     for kk in range(len(V_I)):
         if kk > 0 and S[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
@@ -919,7 +926,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
         c = V_ang[0] if v_calc_init is None else v_calc_init
         Ip[kk] = (V_ang[kk] - c) / V
-
+    #print("init angle? = ",V_ang[0])
     return (Ip[1:] - V_I[1:]) / V_I[1:]
 
 # Progress bar is not easy/
