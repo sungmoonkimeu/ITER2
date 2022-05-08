@@ -407,6 +407,34 @@ class SPUNFIBER:
 
         return M_vib
 
+    def cal_2ndBridge(self, ang_FM, num, M_vib=None, Vin=None):
+
+        s_t_r = 2 * pi / self.SP
+        #Vin = np.array([[1], [0]])
+
+        # Faraday mirror
+        ksi = ang_FM * pi / 180
+        Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
+        Jm = np.array([[1, 0], [0, 1]])
+        M_FR = Rot @ Jm @ Rot
+
+        nM_vib = 5
+        V_out = zeros((num,2,1))*1j
+
+        for mm in range(num):
+
+            M_vib = self.create_Mvib(nM_vib, 1, 1)
+            # Lead fiber vector with V_theta_lf
+            V_L_lf = arange(0, self.LF+self.dz, self.dz)
+            V_theta_lf = V_L_lf * s_t_r
+
+            M_lf_f = self.lamming(0, 1, V_theta_lf, M_vib)
+            M_lf_b = self.lamming(0, -1, V_theta_lf, M_vib)
+
+            V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
+
+        return V_out
+
     def cal_rotation(self, V_Ip, ang_FM, num, Vout_dic, M_vib=None, Vin=None):
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))

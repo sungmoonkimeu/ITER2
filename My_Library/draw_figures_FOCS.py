@@ -5,22 +5,17 @@ Created on Mon May 02 15:14:00 2022
 functions to draw figures from files
 """
 
-import numpy as np
-from numpy import pi, zeros
-import matplotlib.pyplot as plt
-import matplotlib.ticker
-from matplotlib.ticker import (MaxNLocator,
-                               FormatStrFormatter, ScalarFormatter)
-
-from py_pol.jones_vector import Jones_vector, degrees
-from py_pol.stokes import Stokes, create_Stokes
-
-import pandas as pd
-
-# from .basis_calibration_lib import calib_basis3
-
 import os
 import sys
+
+import matplotlib.ticker
+import pandas as pd
+from matplotlib.ticker import (MaxNLocator)
+from numpy import pi, zeros
+from py_pol.jones_vector import Jones_vector
+from py_pol.stokes import create_Stokes
+
+# from .basis_calibration_lib import calib_basis3
 #print(os.getcwd())
 #print(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
 sys.path.append(os.path.dirname(os.path.dirname(__file__)) + '\My_library')

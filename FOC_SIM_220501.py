@@ -1,31 +1,16 @@
-
-import numpy as np
-from numpy import pi, cos, sin, ones, zeros, einsum, arange, arcsin, arctan, tan, arccos, savetxt, log10
-from numpy.linalg import norm, eig
-import matplotlib.pyplot as plt
-from py_pol.jones_vector import Jones_vector, degrees
-from py_pol.stokes import Stokes, create_Stokes
-from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
-
-import matplotlib.ticker
-from matplotlib.ticker import (MaxNLocator,
-                               FormatStrFormatter, ScalarFormatter)
-from multiprocessing import Process, Queue, Manager, Lock
-import pandas as pd
-import matplotlib.pyplot as plt
-import os
-
 # print(os.getcwd())
 # print(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
 # sys.path.append(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
 import time
+
+import matplotlib.ticker
+
 start = time.process_time()
 # from My_Library import SPUNFIBRE_lib
 
 from My_Library.SPUNFIBRE_lib import *
 from My_Library.draw_figures_FOCS import *
 
-from My_Library.draw_poincare_plotly import *
 from My_Library.basis_correction_lib import *
 
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
@@ -44,7 +29,7 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
 
 
 if __name__ == '__main__':
-    mode = 4
+    mode = 5
     # Crystal Techno lobi spun fiber
     LB = 1
     SP = 0.005
@@ -287,5 +272,52 @@ if __name__ == '__main__':
         #     nn += 1
         # fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='FM42')
         #fig3.show()
+
+    elif mode ==5:
+
+        strfile1 = 'FMerror.csv'
+        num_iter = 100
+        num_processor = 16
+
+        nM_vib = 5
+        ang_FM = np.arange(0,46,3)
+
+        E = Jones_vector('input')
+        E1 = Jones_vector('output')
+        azi = np.array([0, pi / 6, pi / 4])
+        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
+        fig1, ax1 = spunfiber.init_plot_SOP()
+        S = create_Stokes('O')
+
+        outdict = {}
+        for nn in ang_FM:
+            Vin = E[0].parameters.matrix()
+            print(nn)
+            Vout = spunfiber.cal_2ndBridge(nn, num_iter, Vin=Vin)
+            outdict[str(int(nn)) + ' Ex'] = Vout[:, 0, 0]
+            outdict[str(int(nn)) + ' Ey'] = Vout[:, 1, 0]
+        df = pd.DataFrame(outdict)
+        df.to_csv(strfile1, index=False)
+
+        data = pd.read_csv(strfile1)
+
+        for nn in range(int(data.shape[1] / 2)):
+
+            str_Ex = str(nn*3) + ' Ex'
+            str_Ey = str(nn*3) + ' Ey'
+            Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
+                             [complex(y) for y in data[str_Ey].to_numpy()]])
+            E.from_matrix(Vout)
+            S.from_Jones(E)
+            draw_stokes_points(fig1[0], S, kind='scatter', color_scatter='r')
+
+        #fig2, ax2, lines = spunfiber.plot_error(strfile1)
+
+        # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
+        #              ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
+        # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+
+        #fig3, ax3, lines3 = plot_error_byfile2(strfile1 + "_S")
+
     plt.show()
 
