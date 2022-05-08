@@ -4,6 +4,7 @@
 import time
 
 import matplotlib.ticker
+from matplotlib.colors import rgb2hex
 
 start = time.process_time()
 # from My_Library import SPUNFIBRE_lib
@@ -27,6 +28,16 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
         if self._useMathText:
             self.format = r'$\mathdefault{%s}$' % self.format
 
+def cm_to_rgba_tuple(colors,alpha=1):
+    for nn in range(len(colors)):
+        r = int(colors[nn].split(",")[0].split("(")[1])/256
+        g = int(colors[nn].split(",")[1])/256
+        b = int(colors[nn].split(",")[2].split(")")[0])/256
+        if nn == 0:
+            tmp = np.array([r, g, b, alpha])
+        else:
+            tmp = np.vstack((tmp, np.array([r, g, b, alpha])))
+    return tmp
 
 if __name__ == '__main__':
     mode = 5
@@ -280,36 +291,66 @@ if __name__ == '__main__':
         num_processor = 16
 
         nM_vib = 5
-        ang_FM = np.arange(0,46,3)
+        ang_FM = np.arange(0,46,1)
 
         E = Jones_vector('input')
         E1 = Jones_vector('output')
         azi = np.array([0, pi / 6, pi / 4])
         E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
-        fig1, ax1 = spunfiber.init_plot_SOP()
+        #fig1, ax1 = spunfiber.init_plot_SOP()
         S = create_Stokes('O')
 
-        outdict = {}
-        for nn in ang_FM:
-            Vin = E[0].parameters.matrix()
-            print(nn)
-            Vout = spunfiber.cal_2ndBridge(nn, num_iter, Vin=Vin)
-            outdict[str(int(nn)) + ' Ex'] = Vout[:, 0, 0]
-            outdict[str(int(nn)) + ' Ey'] = Vout[:, 1, 0]
-        df = pd.DataFrame(outdict)
-        df.to_csv(strfile1, index=False)
-
+        # outdict = {}
+        # for nn in ang_FM:
+        #     Vin = E[0].parameters.matrix()
+        #     print(nn)
+        #     Vout = spunfiber.cal_2ndBridge(nn, num_iter, Vin=Vin)
+        #     outdict[str(int(nn)) + ' Ex'] = Vout[:, 0, 0]
+        #     outdict[str(int(nn)) + ' Ey'] = Vout[:, 1, 0]
+        # df = pd.DataFrame(outdict)
+        # df.to_csv(strfile1, index=False)
+        #
         data = pd.read_csv(strfile1)
+        fig3, lines3, opacity = None, None, 0.0
+
+        # color palette prepared for each input SOPs with plotly library
+        colors_Viridis_tmp = px.colors.sample_colorscale("Viridis", [n / (len(ang_FM) - 1) for n in range(len(ang_FM))])
+        colors_Viridis = cm_to_rgba_tuple(colors_Viridis_tmp)
 
         for nn in range(int(data.shape[1] / 2)):
 
-            str_Ex = str(nn*3) + ' Ex'
-            str_Ey = str(nn*3) + ' Ey'
+            str_Ex = str(nn) + ' Ex'
+            str_Ey = str(nn) + ' Ey'
             Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
                              [complex(y) for y in data[str_Ey].to_numpy()]])
             E.from_matrix(Vout)
             S.from_Jones(E)
-            draw_stokes_points(fig1[0], S, kind='scatter', color_scatter='r')
+            #draw_stokes_points(fig1[0], S, kind='scatter', color_scatter='r')
+            fig3, lines3 = plot_Stokes_pnt2(S, fig=fig3, lines=lines3, opacity=opacity, color_pnt=rgb2hex(colors_Viridis[nn]))
+
+        #fig3.update_traces(marker_size=3)
+        colorbar_param = dict(lenmode='fraction', len=0.75, thickness=10, tickfont=dict(size=20),
+                              tickvals=np.linspace(0, len(ang_FM), 4),
+                              ticktext=['0', '15', '30', '45'],
+                              # title='Azimuth angle',
+                              outlinewidth=1,
+                              x=0.2)
+        colorbar_trace = go.Scatter(x=[None], y=[None],
+                                    mode='markers',
+                                    marker=dict(
+                                        colorscale='Viridis',
+                                        showscale=True,
+                                        cmin=0,
+                                        cmax=len(ang_FM),
+                                        colorbar=colorbar_param
+                                    ),
+                                    hoverinfo='none'
+                                    )
+        fig3.add_trace(colorbar_trace)
+        fig3['layout']['paper_bgcolor'] = 'rgba(0,0,0,0)'
+        fig3['layout']['plot_bgcolor'] = 'rgba(0,0,0,0)'
+        fig3.update_yaxes(showticklabels=False, showgrid=False, visible=False)
+        fig3.update_xaxes(showticklabels=False, showgrid=False, visible=False)
 
         #fig2, ax2, lines = spunfiber.plot_error(strfile1)
 
@@ -318,6 +359,6 @@ if __name__ == '__main__':
         # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
 
         #fig3, ax3, lines3 = plot_error_byfile2(strfile1 + "_S")
-
+        fig3.show()
     plt.show()
 

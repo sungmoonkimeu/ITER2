@@ -385,15 +385,45 @@ def plot_Stokes_pnt(Ip, S, fig=None, lines=None, opacity=1):
                           x=0.8)
 
     fig.add_scatter3d(x=S1, y=S2, z=S3, mode="markers",
-                      line=dict(width=3,
-                                color=Ip,
-                                colorscale=colorscale,
-                                showscale=True,
-                                colorbar=colorbar_param),
+                      marker=dict(size=2.5,
+                                  opacity=1,
+                                  color=Ip,
+                                  showscale=True,
+                                  colorscale=colorscale),
                       name='F1')
 
     return fig, lines
 
+
+def plot_Stokes_pnt2( S, fig=None, lines=None, opacity=1, color_pnt=None):
+    if fig is None:
+        fig = PS5(opacity)
+        colorscale = 'Viridis'
+    else:
+        colorscale = 'Inferno'
+
+    S1 = S.parameters.matrix()[1]
+    S2 = S.parameters.matrix()[2]
+    S3 = S.parameters.matrix()[3]
+
+    # tick_vals = np.linspace(0, Ip.max(), 5)
+    # tick_text = [str(int(nn / 1e6)) + "MA" for nn in tick_vals]
+    # colorbar_param = dict(lenmode='fraction', len=0.75, thickness=10, tickfont=dict(size=20),
+    #                       tickvals=tick_vals,
+    #                       ticktext=tick_text,
+    #                       # title='Azimuth angle',
+    #                       outlinewidth=1,
+    #                       x=0.8)
+
+    fig.add_scatter3d(x=S1, y=S2, z=S3, mode="markers",
+                      marker=dict(size=2.5,
+                                  opacity=1,
+                                  color=color_pnt),
+                                  #showscale=True,
+                                  #colorscale=colorscale),
+                      name='F1')
+
+    return fig, lines
 
 
 
