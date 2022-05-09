@@ -413,7 +413,7 @@ class SPUNFIBER:
         #Vin = np.array([[1], [0]])
 
         # Faraday mirror
-        ksi = -ang_FM * pi / 180
+        ksi = ang_FM * pi / 180
         Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
         Jm = np.array([[1, 0], [0, 1]])
         M_FR = Rot @ Jm @ Rot

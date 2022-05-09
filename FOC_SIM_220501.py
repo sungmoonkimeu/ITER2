@@ -3,6 +3,7 @@
 # sys.path.append(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
 import time
 
+import matplotlib.pyplot as plt
 import matplotlib.ticker
 from matplotlib.colors import rgb2hex
 
@@ -287,11 +288,11 @@ if __name__ == '__main__':
     elif mode ==5:
 
         strfile1 = 'FMerror.csv'
-        num_iter = 100
-        num_processor = 16
+        num_iter = 500
 
         nM_vib = 5
-        ang_FM = np.arange(0,46,1)
+        #ang_FM = np.arange(0,46,1)
+        ang_FM = np.arange(0, 46, 1)
 
         E = Jones_vector('input')
         E1 = Jones_vector('output')
@@ -304,18 +305,45 @@ if __name__ == '__main__':
         # for nn in ang_FM:
         #     Vin = E[0].parameters.matrix()
         #     print(nn)
-        #     Vout = spunfiber.cal_2ndBridge(nn, num_iter, Vin=Vin)
+        #     Vout = spunfiber.cal_2ndBridge(45+nn/10, num_iter, Vin=Vin)
         #     outdict[str(int(nn)) + ' Ex'] = Vout[:, 0, 0]
         #     outdict[str(int(nn)) + ' Ey'] = Vout[:, 1, 0]
         # df = pd.DataFrame(outdict)
         # df.to_csv(strfile1, index=False)
-        #
+
+
+        ######## FM error############
+        fig, ax = plt.subplots(figsize=(6, 5))
+        lines = []
+        # ax.set_prop_cycle(cc)
+
+        ax.set_xlabel(r'FM angle error $\theta_{err}(\degree)$')
+        ax.set_ylabel(r'SOP deviation ($\degree$)')
+
+        # ax.set(xlim=(0, 45), ylim=(0, 12))
+        ax.set(xlim=(0, 45), ylim=(0, 12))
+
+        ax.yaxis.set_major_locator(MaxNLocator(6))
+        ax.xaxis.set_major_locator(MaxNLocator(10))
+
+        ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.0f"))
+        ax.yaxis.set_major_formatter(OOMFormatter(0, "%2.1f"))
+
+        ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
+        ax.grid(ls='--', lw=0.5)
+
+        fig.subplots_adjust(hspace=0.4,left =0.17, right=0.95, top=0.93, bottom=0.2)
+
+        ######################
+
+
         data = pd.read_csv(strfile1)
-        fig3, lines3, opacity = None, None, 0.0
+        fig3, lines3, opacity = None, None, 1
 
         # color palette prepared for each input SOPs with plotly library
         colors_Viridis_tmp = px.colors.sample_colorscale("Viridis", [n / (len(ang_FM) - 1) for n in range(len(ang_FM))])
         colors_Viridis = cm_to_rgba_tuple(colors_Viridis_tmp)
+        out_ellip = zeros(len(ang_FM))
 
         for nn in range(int(data.shape[1] / 2)):
 
@@ -327,7 +355,10 @@ if __name__ == '__main__':
             S.from_Jones(E)
             #draw_stokes_points(fig1[0], S, kind='scatter', color_scatter='r')
             fig3, lines3 = plot_Stokes_pnt2(S, fig=fig3, lines=lines3, opacity=opacity, color_pnt=rgb2hex(colors_Viridis[nn]))
+            ellip = S.parameters.ellipticity_angle()
+            out_ellip[-1-nn] = ellip.max() - ellip.min()
 
+        ax.plot(ang_FM, out_ellip*180/pi, 'k')
         #fig3.update_traces(marker_size=3)
         colorbar_param = dict(lenmode='fraction', len=0.75, thickness=10, tickfont=dict(size=20),
                               tickvals=np.linspace(0, len(ang_FM), 4),
@@ -352,6 +383,7 @@ if __name__ == '__main__':
         fig3.update_yaxes(showticklabels=False, showgrid=False, visible=False)
         fig3.update_xaxes(showticklabels=False, showgrid=False, visible=False)
 
+
         #fig2, ax2, lines = spunfiber.plot_error(strfile1)
 
         # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
@@ -360,5 +392,18 @@ if __name__ == '__main__':
 
         #fig3, ax3, lines3 = plot_error_byfile2(strfile1 + "_S")
         fig3.show()
+
+    plt_fmt, plt_res = '.png', 330  # 330 is max in Word'16
+    plt.rcParams["axes.titlepad"] = 5  # offset for the fig title
+    # plt.rcParams["figure.autolayout"] = True  # tight_layout
+    #  plt.rcParams['figure.constrained_layout.use'] = True  # fit legends in fig window
+    fsize = 9
+    plt.rc('font', size=fsize)  # controls default text sizes
+    plt.rc('axes', labelsize=fsize)  # f-size of the x and y labels
+    plt.rc('xtick', labelsize=fsize)  # f-size of the tick labels
+    plt.rc('ytick', labelsize=fsize)  # f-size of the tick labels
+    plt.rc('legend', fontsize=fsize - 1)  # f-size legend
+    plt.rc('axes', titlesize=11)  # f-size of the axes title (??)
+    plt.rc('figure', titlesize=11)  # f-size of the figure title
     plt.show()
 
