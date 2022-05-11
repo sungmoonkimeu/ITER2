@@ -152,115 +152,100 @@ class SPUNFIBER:
 
         V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
         Ip = zeros(len(V_Ip))
-
-        s_t_r = 2 * pi / self.SP  # spin twist ratio
         delta = 2 * pi / self.LB
 
         mm = 0
-        n = 0
-        m = 0
-        n2 = 0
-        m2 = 0
+        n, m, n2, m2 = 0, 0, 0, 0
 
-        tmp_f_Omega_z = 0
-        tmp_f_Phi_z = 0
-        tmp_b_Omega_z = 0
-        tmp_b_Phi_z = 0
+        H = V_Ip/self.L
+        rho = self.V * H
 
-        for I in V_Ip:
-            # magnetic field in unit length
-            # H = Ip / (2 * pi * r)
-            H = I / self.L
-            rho = self.V * H
+        # define forward
+        s_t_r = 2 * pi / self.SP  # spin twist ratio
+        qu = 2 * (s_t_r + rho) / delta
+        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
 
-            # --------Laming: orientation of the local slow axis ------------
-            # --------Laming matrix on lead fiber --------------------------
-            qu = 2 * (s_t_r + rho) / delta
-            gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
+        R_zf = 2 * arcsin(sin(gma * self.L) / ((1 + qu ** 2) ** 0.5))
+        Omega_zf, Phi_zf = zeros(len(V_Ip)), zeros(len(V_Ip))
+        for nn in range(len(V_Ip)):
+            tmp_Omega = s_t_r * self.L + \
+                        arctan((-qu[nn] / ((1 + qu[nn] ** 2) ** 0.5)) * tan(gma[nn] * self.L)) - n * pi
+            if nn > 1 and tmp_Omega - Omega_zf[nn-1] > pi/2:
+                n += 1
+            elif nn > 1 and tmp_Omega - Omega_zf[nn-1] < -pi/2:
+                n -= 1
+            Omega_zf[nn] = s_t_r * self.L + \
+                           arctan((-qu[nn] / ((1 + qu[nn] ** 2) ** 0.5)) * tan(gma[nn] * self.L)) - n * pi
 
-            R_z = 2 * arcsin(sin(gma * self.L) / ((1 + qu ** 2) ** 0.5))
-            Omega_z = s_t_r * self.L + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.L)) - n2 * pi
-            Phi_z = ((s_t_r * self.L) - Omega_z) / 2 + m2 * (pi / 2)
+            tmp_Phi = ((s_t_r * self.L) - Omega_zf[nn]) / 2 + m * (pi / 2)
+            if nn > 1 and tmp_Phi - Phi_zf[nn - 1] > pi / 2:
+                m += 1
+            elif nn > 1 and tmp_Phi - Phi_zf[nn - 1] < -pi / 2:
+                m -= 1
+            Phi_zf[nn] = ((s_t_r * self.L) - Omega_zf[nn]) / 2 + m * (pi / 2)
 
-            if tmp_f_Omega_z == 0:
-                tmp_f_Omega_z = Omega_z
-            if tmp_f_Phi_z == 0:
-                tmp_f_Phi_z = Phi_z
+        V_theta_1s = self.L * s_t_r
 
-            if Omega_z - tmp_f_Omega_z > pi/2:
-                n = n-1
-                Omega_z = Omega_z - pi
-            elif Omega_z - tmp_f_Omega_z < -pi/2:
-                n = n + 1
-                Omega_z = Omega_z + pi
-            if Phi_z - tmp_f_Phi_z > pi/4:
-                m = m-1
-                Phi_z = Phi_z -pi/2
-            elif Phi_z - tmp_f_Phi_z < -pi/4:
-                m = m+1
-                Phi_z = Phi_z +pi/2
 
-            #print(I, "Forward: = ", Omega_z-tmp_f_Omega_z, Phi_z-tmp_f_Phi_z)
+        # define backward
+        s_t_r = -s_t_r  # spin twist ratio
+        qu = 2 * (s_t_r + rho) / delta
+        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
 
-            tmp_f_Omega_z = Omega_z
-            tmp_f_Phi_z = Phi_z
+        R_zb = 2 * arcsin(sin(gma * self.L) / ((1 + qu ** 2) ** 0.5))
+        Omega_zb, Phi_zb = zeros(len(V_Ip)), zeros(len(V_Ip))
+        for nn in range(len(V_Ip)):
+            tmp_Omega = s_t_r * self.L + \
+                        arctan((-qu[nn] / ((1 + qu[nn] ** 2) ** 0.5)) * tan(gma[nn] * self.L)) - n2 * pi
 
-            # Forward
-            n11 = cos(R_z / 2) + 1j * sin(R_z / 2) * cos(2 * Phi_z)
-            n12 = 1j * sin(R_z / 2) * sin(2 * Phi_z)
-            n21 = 1j * sin(R_z / 2) * sin(2 * Phi_z)
-            n22 = cos(R_z / 2) - 1j * sin(R_z / 2) * cos(2 * Phi_z)
+            if nn > 1 and tmp_Omega - Omega_zb[nn-1] > pi/2:
+                n2 += 1
+            elif nn > 1 and tmp_Omega - Omega_zb[nn-1] < -pi/2:
+                n2 -= 1
+            Omega_zb[nn] = s_t_r * self.L + \
+                           arctan((-qu[nn] / ((1 + qu[nn] ** 2) ** 0.5)) * tan(gma[nn] * self.L)) - n2 * pi
+
+            tmp_Phi = ((s_t_r * self.L) - Omega_zb[nn]) / 2 + m2 * (pi / 2)
+            if nn > 1 and tmp_Phi - Phi_zb[nn - 1] > pi / 2:
+                m2 += 1
+            elif nn > 1 and tmp_Phi - Phi_zb[nn - 1] < -pi / 2:
+                m2 -= 1
+            Phi_zb[nn] = ((s_t_r * self.L) - Omega_zb[nn]) / 2 + m2 * (pi / 2)
+
+        # Faraday mirror
+        ang_FM = 45
+        ksi = ang_FM * pi / 180
+        Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
+        Jm = np.array([[1, 0], [0, 1]])
+        M_FR = Rot @ Jm @ Rot
+
+        for nn in range(len(V_Ip)):
+            # forward
+            Phi_z2 = Phi_zf[nn]
+            R_z2 = R_zf[nn]
+            Omega_z2 = Omega_zf[nn]
+            n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+            n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+            n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+            n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
             M_R_f = np.array([[n11, n12], [n21, n22]])
-            M_Omega_f = np.array([[cos(Omega_z), -sin(Omega_z)], [sin(Omega_z), cos(Omega_z)]])
+            M_Omega_f = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
+            MF = M_Omega_f @ M_R_f
+
             # Backward
-            rho = self.V * H
-            s_t_r = -s_t_r
-            qu = 2 * (s_t_r + rho) / delta
-            gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
-
-            R_z = 2 * arcsin(sin(gma * self.L) / ((1 + qu ** 2) ** 0.5))
-            Omega_z = s_t_r * self.L + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.L)) - n2 * pi
-            Phi_z = ((s_t_r * self.L) - Omega_z) / 2 + m2 * (pi / 2)
-
-            if tmp_b_Omega_z == 0:
-                tmp_b_Omega_z = Omega_z
-            if tmp_b_Phi_z == 0:
-                tmp_b_Phi_z = Phi_z
-
-            if Omega_z - tmp_b_Omega_z > pi/2:
-                n2 = n2-1
-                Omega_z = Omega_z - pi
-            elif Omega_z - tmp_b_Omega_z < -pi/2:
-                n2 = n2 + 1
-                Omega_z = Omega_z + pi
-            if Phi_z - tmp_b_Phi_z > pi/4:
-                m2 = m2-1
-                Phi_z = Phi_z -pi/2
-            elif Phi_z - tmp_b_Phi_z < -pi/4:
-                m2 = m2+1
-                Phi_z = Phi_z +pi/2
-
-            tmp_b_Omega_z = Omega_z
-            tmp_b_Phi_z = Phi_z
-
-            n11 = cos(R_z / 2) + 1j * sin(R_z / 2) * cos(2 * Phi_z)
-            n12 = 1j * sin(R_z / 2) * sin(2 * Phi_z)
-            n21 = 1j * sin(R_z / 2) * sin(2 * Phi_z)
-            n22 = cos(R_z / 2) - 1j * sin(R_z / 2) * cos(2 * Phi_z)
+            Phi_z2 = Phi_zb[nn] + V_theta_1s
+            R_z2 = R_zb[nn]
+            Omega_z2 = Omega_zb[nn]
+            n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+            n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+            n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+            n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
             M_R_b = np.array([[n11, n12], [n21, n22]])
-            M_Omega_b = np.array([[cos(Omega_z), -sin(Omega_z)], [sin(Omega_z), cos(Omega_z)]])
+            M_Omega_b = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
+            MB = M_R_b @ M_Omega_b
 
-            # Faraday mirror
-            ang_FM = 45
-            ksi = ang_FM * pi / 180
-            Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
-            Jm = np.array([[1, 0], [0, 1]])
-            M_FR = Rot @ Jm @ Rot
-
-            # return M_R_b @ M_Omega_b @ M_FR @ M_Omega_f @ M_R_f
-            V_out[mm] = M_R_b @ M_Omega_b @ M_FR @ M_Omega_f @ M_R_f @ Vin
-            mm = mm + 1
-            #print(M_total)
+            V_out[mm] = MB @ M_FR @ MF @ Vin
+            mm += 1
 
         E = Jones_vector('Output')
         E.from_matrix(M=V_out)
@@ -275,6 +260,111 @@ class SPUNFIBER:
         else:
             fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
                                       color_line='b')
+        m = 0
+        for kk in range(len(V_I)):
+            if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+                m = m + 1
+            elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+                m = m - 1
+            V_ang[kk] = (E[kk].parameters.azimuth() + m * pi)
+            Ip[kk] = (V_ang[kk] - V_ang[0]) / (2 * self.V)
+            #print(V_ang[kk], Ip[kk])
+        return Ip, V_out
+
+    def stacking_laming(self, V_Ip, fig=None, Vin=None):
+
+        V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+        Ip = zeros(len(V_Ip))
+
+        delta = 2 * pi / self.LB
+
+        mm = 0
+        n = 0
+        m = 0
+        n2 = 0
+        m2 = 0
+
+        V_z = arange(0, self.L+self.dz, self.dz)
+
+        H = V_Ip/self.L
+        rho = self.V * H
+
+        # --------Laming: orientation of the local slow axis ------------
+        # --------Laming matrix on spun fiber --------------------------
+
+        # define forward
+        s_t_r = 2 * pi / self.SP  # spin twist ratio
+        qu = 2 * (s_t_r + rho) / delta
+        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
+
+        R_z = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
+        Omega_z = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) - n2 * pi
+        Phi_z = ((s_t_r * self.dz) - Omega_z) / 2 + m2 * (pi / 2)
+        V_theta_1s = V_z * s_t_r
+
+        # define backward
+        s_t_r = -s_t_r  # spin twist ratio
+        qu = 2 * (s_t_r + rho) / delta
+        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
+
+        R_zb = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
+        Omega_zb = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) - n2 * pi
+        Phi_zb = ((s_t_r * self.dz) - Omega_zb) / 2 + m2 * (pi / 2)
+
+        # Faraday mirror
+        ang_FM = 45
+        ksi = ang_FM * pi / 180
+        Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
+        Jm = np.array([[1, 0], [0, 1]])
+        M_FR = Rot @ Jm @ Rot
+
+        for nn in range(len(V_Ip)):
+            # forward
+            MF = np.array([[1, 0], [0, 1]])
+            for kk in range(len(V_theta_1s)-1):
+                Phi_z2 = Phi_z[nn] + V_theta_1s[kk]
+                #print(Phi_z2)
+                R_z2 = R_z[nn]
+                Omega_z2 = Omega_z[nn]
+                n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+                n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+                n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+                n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+                M_R_f = np.array([[n11, n12], [n21, n22]])
+                M_Omega_f = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
+                MF = M_Omega_f @ M_R_f @ MF
+
+            # Backward
+            MB = np.array([[1, 0], [0, 1]])
+            for kk in range(len(V_theta_1s)-1):
+                Phi_z2 = Phi_zb[nn] + V_theta_1s[-1-kk]
+                R_z2 = R_zb[nn]
+                Omega_z2 = Omega_zb[nn]
+                n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+                n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+                n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+                n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+                M_R_b = np.array([[n11, n12], [n21, n22]])
+                M_Omega_b = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
+                MB = M_R_b @ M_Omega_b @ MB
+
+            V_out[mm] = MB @ M_FR @ MF @ Vin
+            #V_out[mm] = M_FR @ MF @ Vin
+            mm += 1
+
+        E = Jones_vector('Output')
+        E.from_matrix(M=V_out)
+        V_ang = zeros(len(V_I))
+
+        # SOP evolution in Lead fiber (Forward)
+        S = create_Stokes('Output_S')
+        S.from_Jones(E)
+
+        if fig is not None:
+            draw_stokes_points(fig[0], S, kind='line', color_line='m')
+        else:
+            fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
+                                      color_line='m')
         m = 0
         for kk in range(len(V_I)):
             if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
@@ -964,22 +1054,22 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode = 2
+    mode = 0
     if mode == 0:
         LB = 0.009
         SP = 0.005
         # dz = SP / 1000
-        dz = 0.0002
+        dz = 0.0001
         len_lf = 1  # lead fiber
         len_ls = 1  # sensing fiber
         spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
         # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
         # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
 
-        num_iter = 3
+        num_iter = 4
         strfile1 = 'AAAA1.csv'
         strfile2 = 'AAAA2.csv'
-        num_processor = 8
+        num_processor = 16
         V_I = arange(0e6, 4e6 + 0.1e6, 0.2e6)
         #V_I = 1e6
         outdict = {'Ip': V_I}
@@ -993,14 +1083,17 @@ if __name__ == '__main__':
         for nn in range(num_iter):
             M_vib = spunfiber.create_Mvib(nM_vib, 0, 0)
             #Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
-            if nn == 1:
+            if nn == 0:
                 Ip, Vout = spunfiber.stacking_matrix_rotation(V_I, Vin)
                 outdict[str(nn)] = Ip
-            elif nn ==2:
+            elif nn ==1:
                 Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
                 outdict[str(nn)] = Ip
-            else:
+            elif nn==2:
                 Ip, Vout = spunfiber.total_rotation(V_I, fig1, Vin)
+                outdict[str(nn)] = -Ip
+            else:
+                Ip, Vout = spunfiber.stacking_laming(V_I, fig1, Vin)
                 outdict[str(nn)] = -Ip
 
             outdict2[str(nn) + ' Ex'] = Vout[:, 0, 0]
@@ -1015,8 +1108,11 @@ if __name__ == '__main__':
         df2.to_csv(strfile1 + "_S", index=False)
         fig2, ax2, lines = spunfiber.plot_error(strfile1)
 
-        labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
-                     ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
+        labelTups = [('Stacking matrix (dz = SP/25)', 0),
+                     ('Lamming method with small step (dz = SP/25)', 1),
+                     ('Lamming method for whole fiber (dz = L)', 2),
+                     ('Lamming method with small step2 (dz = SP/25)', 3),
+                     ('Iter specification', 4)]
 
         #ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
         ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right')
@@ -1046,11 +1142,14 @@ if __name__ == '__main__':
         S_dL = create_Stokes('Laming_dL')
         S_L = create_Stokes('Laming_L')
         S_S = create_Stokes('Stacking')
+        S_STL = create_Stokes('Stacking_lamming')
+
 
         for V_I in vV_I:
 
             V_dL = np.array([])
             V_St = np.array([])
+            V_StL = np.array([])
 
             Vout = spunfiber.single_rotation2(V_I, Vin)  # cal rotation angle using lamming method (dL=Fiber length)
             V_L = S_L.from_Jones(E.from_matrix(Vout)).parameters.matrix()
@@ -1070,8 +1169,14 @@ if __name__ == '__main__':
                 V_St = np.append(V_St, S_S.from_Jones(E.from_matrix(Vout)).parameters.matrix())
                 draw_stokes_points(fig1[0], S_S, kind='scatter', color_scatter='k')
 
+                Vout = spunfiber.single_rotation3(V_I, Vin)  # cal rotation angle using stacking method (dL=variable)
+                V_StL = np.append(V_St, S_STL.from_Jones(E.from_matrix(Vout)).parameters.matrix())
+                draw_stokes_points(fig1[0], S_STL, kind='scatter', color_scatter='k')
+
         V_dL = V_dL.reshape(len(var_dL), 4)
         V_St = V_St.reshape(len(var_dL), 4)
+        V_StL = V_StL.reshape(len(var_dL), 4)
+
         print(V_dL)
         print(V_St)
         V_L = np.ones(len(var_dL))*V_L
@@ -1081,6 +1186,8 @@ if __name__ == '__main__':
         ax[0].plot(var_dL, V_dL[...,1], 'r', label='Laming')
         ax[0].plot(var_dL, V_St[...,1], 'b', label='Stacking')
         ax[0].plot(var_dL, V_L[1,...], 'k--', label='Laming(w/o slicing)')
+        ax[0].plot(var_dL, V_StL[...,1], 'm--', label='Laming(w/o slicing)')
+
         ax[0].set_xscale('log')
         ax[0].set_ylabel('S1')
         ax[0].legend(loc='upper left')
@@ -1090,6 +1197,7 @@ if __name__ == '__main__':
         ax[1].plot(var_dL, V_dL[..., 2], 'r',  label='Laming')
         ax[1].plot(var_dL, V_St[..., 2], 'b', label='Stacking')
         ax[1].plot(var_dL, V_L[2,...], 'k--', label='Laming(w/o slicing)')
+        ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
         ax[1].set_ylabel('S2')
         ax[1].set_xscale('log')
         ax[1].legend(loc='upper left')
@@ -1099,6 +1207,7 @@ if __name__ == '__main__':
         ax[2].plot(var_dL, V_dL[..., 3], 'r', label='Laming')
         ax[2].plot(var_dL, V_St[..., 3], 'b', label='Stacking')
         ax[2].plot(var_dL, V_L[3,...], 'k--', label='Laming(w/o slicing)')
+        ax[2].plot(var_dL, V_StL[..., 3], 'm--', label='Laming(w/o slicing)')
         ax[2].set_xscale('log')
         ax[2].set_xlabel('dL [m]')
         ax[2].set_ylabel('S3')
@@ -1179,4 +1288,6 @@ if __name__ == '__main__':
         ax.plot(V_ang, SOPchange_mean)
         ax.plot(V_ang, SOPchange_std)
         ax.plot(V_ang, SOPchange_max)
+    if mode==3:
+        pass
 plt.show()
