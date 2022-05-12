@@ -41,7 +41,7 @@ def cm_to_rgba_tuple(colors,alpha=1):
     return tmp
 
 if __name__ == '__main__':
-    mode = 0
+    mode =2
     # Crystal Techno lobi spun fiber
     LB = 0.3
     SP = 0.005
@@ -53,27 +53,31 @@ if __name__ == '__main__':
 
     #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
     #strfile1 = 'Lobi_46FM_errdeg1x5_220506.csv'
+    strfile1 = 'CrystalTechno.csv'
 
     if mode == 0:
 
-        num_iter = 50
+        num_iter = 1
         num_processor = 16
-        V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
+        V_I = arange(0e6, 10e6 + 0.1e6, 0.2e6)
         # V_I = 1e6
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
-        nM_vib = 5
+        nM_vib = 1
         start = pd.Timestamp.now()
-        ang_FM = 46
+        ang_FM = 45
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
-        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
+        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=pi/6)
         fig1, ax1 = spunfiber.init_plot_SOP()
         S = create_Stokes('O')
+        S2 = create_Stokes('1')
+
         for nn in range(num_iter):
-            Vin = E[0].parameters.matrix()
-            M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
+            Vin = E[1].parameters.matrix()
+            #M_vib = spunfiber.create_Mvib(nM_vib, 10, 10)
+            M_vib = spunfiber.create_Mvib2(nM_vib, 10*pi/180, 0*pi/180, 10*pi/180)
             Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
             save_Jones(strfile1,V_I,Ip,Vout)
 
@@ -140,7 +144,7 @@ if __name__ == '__main__':
         #strfile1 = "IdealFM_Errdeg1x5_1.csv"
         # load whole Jones and convert to measured Ip
         #V2 = 0.54 * 4 * pi * 1e-7 * 2 *(0.9700180483394489)
-        V2 = 0.54 * 4 * pi * 1e-7 * 2
+        V2 = 0.54 * 4 * pi * 1e-7
 
         fig, ax, lines, isEOF, nn = None, None, None, False, 0
         fig3, lines3, opacity = None, None, 0.5
@@ -151,24 +155,26 @@ if __name__ == '__main__':
             V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", nn)
             #before cal.
             fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,
-                                                 label='Hibi spun fiber (LB/SP=1.875)')
-            #fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
+                                                 label='Small LB/SP (60)')
+            fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
             #fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
 
             S2, c = basis_correction1(S, c)
-            # fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
-            #                    mode='lines',line=dict(width=8))
+            fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
+                               mode='lines',line=dict(width=8))
             # fig, ax, lines = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines, V_custom=V2,
             #                                       label=str(nn)+"calibrated")
             # fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
-            fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
+            #fig3, lines3 = plot_Stokes(V_I[:], S2[:], fig=fig3, lines=lines3, opacity=opacity)
             c = np.array([None, None, None])
-            S2, c = basis_correction1(S2, c)
+            S2, c = basis_correction1(S2[0:5], c)
             fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
-                               mode='lines',line=dict(width=8))
-            fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,
+                                mode='lines',line=dict(width=8))
+            fig3, lines3 = plot_Stokes(V_I[0:5], S2[:], fig=fig3, lines=lines3, opacity=opacity)
+
+            fig, ax, lines = plot_error_byStokes(V_I[0:5], S2, fig=fig, ax=ax, lines=lines, V_custom=V2,
                                                  label='After basis correction')
-            fig2, ax2, lines2 = plot_error_byStokes(V_I, S, V_custom=V2*(0.9700180483394489),label='After calibration')
+            #fig2, ax2, lines2 = plot_error_byStokes(V_I, S, V_custom=V2,label='After calibration')
 
             if nn == 0:
                 dic_err['V_I'] = V_I
@@ -179,3 +185,75 @@ if __name__ == '__main__':
                 break
         # fig10, ax10 = plot_errorbar_byDic(dic_err)
         fig3.show()
+
+    elif mode == 3:
+        ### effect of basis correction
+        # strfile1 = "IdealFM_Hibi_Errdeg1x5_0.csv"
+        # strfile1 = "Hibi_44FM_errdeg1x5.csv"
+        # strfile1 = "IdealFM_Errdeg1x5_1.csv"
+        # load whole Jones and convert to measured Ip
+        # V2 = 0.54 * 4 * pi * 1e-7 * 2 *(0.9700180483394489)
+        V2 = 0.54 * 4 * pi * 1e-7
+
+        fig, ax, lines, isEOF, nn = None, None, None, False, 0
+        fig3, lines3, opacity = None, None, 0.5
+        c = np.array([None, None, None])
+
+        dic_err = {}
+        while isEOF is False:
+            V_I, S, isEOF = load_stokes_fromfile(strfile1 + "_S", nn)
+            # before cal.
+            fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,
+                                                 label='Small LB/SP (60)')
+            fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
+            # fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
+
+            # cal. total
+            S2, c = basis_correction1(S, c)
+            fig3.add_scatter3d(x=(0, c[0] * 1.2), y=(0, c[1] * 1.2), z=(0, c[2] * 1.2),
+                               mode='lines', line=dict(width=8))
+            c = np.array([None, None, None])
+            # cal. few
+            nn = 0
+            np_S = None
+            while nn < len(S):
+                if nn+5 > len(S):
+                    Stmp, c = basis_correction1(S[nn:], c)
+                else:
+                    Stmp, c = basis_correction1(S[nn:nn+5], c)
+                if np_S is None:
+                    np_S = Stmp.parameters.matrix()
+                else:
+                    np_S = np.hstack((np_S, Stmp.parameters.matrix()))
+                fig3.add_scatter3d(x=(0, c[0] * 1.2), y=(0, c[1] * 1.2), z=(0, c[2] * 1.2),
+                                   mode='lines', line=dict(width=8))
+                c = np.array([None, None, None])
+
+                nn += 5
+            S2.from_matrix(np_S)
+            #S2, c = basis_correction1(S, c)
+
+            # fig, ax, lines = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines, V_custom=V2,
+            #                                       label=str(nn)+"calibrated")
+            # fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
+            # fig3, lines3 = plot_Stokes(V_I[:], S2[:], fig=fig3, lines=lines3, opacity=opacity)
+            # c = np.array([None, None, None])
+            # S2, c = basis_correction1(S2, c)
+            # fig3.add_scatter3d(x=(0, c[0] * 1.2), y=(0, c[1] * 1.2), z=(0, c[2] * 1.2),
+            #                    mode='lines', line=dict(width=8))
+            fig3, lines3 = plot_Stokes(V_I, S2[:], fig=fig3, lines=lines3, opacity=opacity)
+
+            fig, ax, lines = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines, V_custom=V2,
+                                                 label='After basis correction')
+            # fig2, ax2, lines2 = plot_error_byStokes(V_I, S, V_custom=V2,label='After calibration')
+
+            if nn == 0:
+                dic_err['V_I'] = V_I
+            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2)
+            c = np.array([None, None, None])
+            nn += 1
+            if nn > 0:
+                break
+        # fig10, ax10 = plot_errorbar_byDic(dic_err)
+        fig3.show()
+    plt.show()

@@ -497,6 +497,27 @@ class SPUNFIBER:
 
         return M_vib
 
+    def create_Mvib2(self, nM_vib, phi, theta_e, theta):
+
+        print("angle of Retarder's optic axis:", theta *180/pi, "deg")
+        print("retardation of Retarder:", phi * 180 / pi, "deg")
+        print("rotation angle of Rotator :", theta_e * 180 / pi, "deg")
+
+        M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
+        M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
+        M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
+        # print(theta)
+        # Create (2,2,n_M_vib) Birefringence matrix
+        IB = np.zeros((2, 2, nM_vib))
+        np.einsum('iij->ij', IB)[:] = 1
+        Bexp = np.exp(1j * np.vstack((phi, -phi)))
+        M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)
+
+        # Random birefringence(circular + linear), random optic axis matrix calculation
+        M_vib = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
+
+        return M_vib
+
     def cal_2ndBridge(self, ang_FM, num, M_vib=None, Vin=None):
 
         s_t_r = 2 * pi / self.SP
@@ -649,7 +670,7 @@ class SPUNFIBER:
         #print("Vin_calc_mp", Vin)
         for num in range(num_processor):
             # proc = Process(target=self.cal_rotation,
-            proc = Process(target=self.cal_rotation,
+            proc = Process(target=self.cal_rotation2,
                            args=(spl_I[num], ang_FM, num, Vout_dic, M_vib, Vin))
             procs.append(proc)
             proc.start()
@@ -912,7 +933,7 @@ class SPUNFIBER:
         V_out = MB @ M_FR @ MF @ Vin
         # V_out[mm] = M_FR @ MF @ Vin
 
-        return Ip, V_out
+        return V_out
 
 
     def plot_error(self, filename):
@@ -1133,7 +1154,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode = 0
+    mode = 1
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1199,8 +1220,8 @@ if __name__ == '__main__':
         ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
         ax2.yaxis.set_major_formatter(OOMFormatter(-1, "%1.1f"))
     if mode == 1:
-        LB = 0.009
-        SP = 0.0048
+        LB = 1
+        SP = 0.005
         # dz = SP / 1000
         dz = 0.0002
         len_lf = 0  # lead fiber
@@ -1228,7 +1249,6 @@ if __name__ == '__main__':
 
             V_dL = np.array([])
             V_St = np.array([])
-            V_StL = np.array([])
 
             Vout = spunfiber.single_rotation2(V_I, Vin)  # cal rotation angle using lamming method (dL=Fiber length)
             V_L = S_L.from_Jones(E.from_matrix(Vout)).parameters.matrix()
@@ -1241,7 +1261,7 @@ if __name__ == '__main__':
                 spunfiber.dz = var
 
                 #Vout = spunfiber.single_rotation1(V_I, Vin)         # cal rotation angle using lamming method (variable dL)
-                Vout = spunfiber.single_rotation1(V_I, Vin)         # cal rotation angle using lamming method (variable dL)
+                Vout = spunfiber.single_rotation4(V_I, Vin)         # cal rotation angle using lamming method (variable dL)
                 V_dL = np.append(V_dL, S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix())
                 draw_stokes_points(fig1[0], S_dL, kind='scatter', color_scatter='b')
 
@@ -1249,13 +1269,10 @@ if __name__ == '__main__':
                 V_St = np.append(V_St, S_S.from_Jones(E.from_matrix(Vout)).parameters.matrix())
                 draw_stokes_points(fig1[0], S_S, kind='scatter', color_scatter='k')
 
-                Vout = spunfiber.single_rotation3(V_I, Vin)  # cal rotation angle using stacking method (dL=variable)
-                V_StL = np.append(V_St, S_STL.from_Jones(E.from_matrix(Vout)).parameters.matrix())
-                draw_stokes_points(fig1[0], S_STL, kind='scatter', color_scatter='k')
 
         V_dL = V_dL.reshape(len(var_dL), 4)
         V_St = V_St.reshape(len(var_dL), 4)
-        V_StL = V_StL.reshape(len(var_dL), 4)
+        #V_StL = V_StL.reshape(len(var_dL), 4)
 
         print(V_dL)
         print(V_St)
@@ -1266,7 +1283,7 @@ if __name__ == '__main__':
         ax[0].plot(var_dL, V_dL[...,1], 'r', label='Laming')
         ax[0].plot(var_dL, V_St[...,1], 'b', label='Stacking')
         ax[0].plot(var_dL, V_L[1,...], 'k--', label='Laming(w/o slicing)')
-        ax[0].plot(var_dL, V_StL[...,1], 'm--', label='Laming(w/o slicing)')
+        #ax[0].plot(var_dL, V_StL[...,1], 'm--', label='Laming(w/o slicing)')
 
         ax[0].set_xscale('log')
         ax[0].set_ylabel('S1')
@@ -1274,10 +1291,10 @@ if __name__ == '__main__':
         #ax[0].set_title('S1')
         ax[0].set_xticklabels('')
 
-        ax[1].plot(var_dL, V_dL[..., 2], 'r',  label='Laming')
+        ax[1].plot(var_dL, -V_dL[..., 2], 'r',  label='Laming')
         ax[1].plot(var_dL, V_St[..., 2], 'b', label='Stacking')
         ax[1].plot(var_dL, V_L[2,...], 'k--', label='Laming(w/o slicing)')
-        ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
+        #ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
         ax[1].set_ylabel('S2')
         ax[1].set_xscale('log')
         ax[1].legend(loc='upper left')
@@ -1287,7 +1304,7 @@ if __name__ == '__main__':
         ax[2].plot(var_dL, V_dL[..., 3], 'r', label='Laming')
         ax[2].plot(var_dL, V_St[..., 3], 'b', label='Stacking')
         ax[2].plot(var_dL, V_L[3,...], 'k--', label='Laming(w/o slicing)')
-        ax[2].plot(var_dL, V_StL[..., 3], 'm--', label='Laming(w/o slicing)')
+        #ax[2].plot(var_dL, V_StL[..., 3], 'm--', label='Laming(w/o slicing)')
         ax[2].set_xscale('log')
         ax[2].set_xlabel('dL [m]')
         ax[2].set_ylabel('S3')
