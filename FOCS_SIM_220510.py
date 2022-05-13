@@ -9,6 +9,7 @@ from matplotlib.colors import rgb2hex
 
 start = time.process_time()
 # from My_Library import SPUNFIBRE_lib
+import plotly.offline
 
 from My_Library.SPUNFIBRE_lib import *
 from My_Library.draw_figures_FOCS import *
@@ -59,7 +60,7 @@ if __name__ == '__main__':
 
         num_iter = 1
         num_processor = 16
-        V_I = arange(0e6, 10e6 + 0.1e6, 0.2e6)
+        V_I = arange(0e6, 20e6 + 0.1e6, 0.2e6)
         # V_I = 1e6
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
@@ -69,7 +70,7 @@ if __name__ == '__main__':
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
-        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=pi/6)
+        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=pi/18)
         fig1, ax1 = spunfiber.init_plot_SOP()
         S = create_Stokes('O')
         S2 = create_Stokes('1')
@@ -159,29 +160,29 @@ if __name__ == '__main__':
             fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
             #fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
 
-            S2, c = basis_correction1(S, c)
-            fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
-                               mode='lines',line=dict(width=8))
+            # S2, c = basis_correction1(S[:14], c)
+            # # fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
+            # #                    mode='lines',line=dict(width=8))
+            #
+            # S2, c = basis_correction1(S, c)
+            # # fig3.add_scatter3d(x=(0, c[0] * 1.2), y=(0, c[1] * 1.2), z=(0, c[2] * 1.2),
+            # #                    mode='lines', line=dict(width=8))
+            # # fig, ax, lines = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines, V_custom=V2,
+            # #                                       label=str(nn)+"calibrated")
+            # # fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
+            # fig3, lines3 = plot_Stokes(V_I, S2, fig=fig3, lines=lines3, opacity=opacity)
+            # # c = np.array([None, None, None])
+            #
             # fig, ax, lines = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines, V_custom=V2,
-            #                                       label=str(nn)+"calibrated")
-            # fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
-            #fig3, lines3 = plot_Stokes(V_I[:], S2[:], fig=fig3, lines=lines3, opacity=opacity)
-            c = np.array([None, None, None])
-            S2, c = basis_correction1(S2[0:5], c)
-            fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
-                                mode='lines',line=dict(width=8))
-            fig3, lines3 = plot_Stokes(V_I[0:5], S2[:], fig=fig3, lines=lines3, opacity=opacity)
-
-            fig, ax, lines = plot_error_byStokes(V_I[0:5], S2, fig=fig, ax=ax, lines=lines, V_custom=V2,
-                                                 label='After basis correction')
-            #fig2, ax2, lines2 = plot_error_byStokes(V_I, S, V_custom=V2,label='After calibration')
+            #                                       label='After basis correction')
+            # fig2, ax2, lines2 = plot_error_byStokes(V_I, S, V_custom=V2,label='After calibration')
 
             if nn == 0:
                 dic_err['V_I'] = V_I
             dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2)
             c = np.array([None, None, None])
             nn += 1
-            if nn > 0:
+            if nn > 2:
                 break
         # fig10, ax10 = plot_errorbar_byDic(dic_err)
         fig3.show()
@@ -255,5 +256,9 @@ if __name__ == '__main__':
             if nn > 0:
                 break
         # fig10, ax10 = plot_errorbar_byDic(dic_err)
+        fig3.update_scenes(camera_projection_type='orthographic')
         fig3.show()
+        #plotly.offline.plot(fig3, filename='xx.html')
+
+
     plt.show()
