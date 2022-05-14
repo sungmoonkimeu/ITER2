@@ -731,35 +731,29 @@ class SPUNFIBER:
     def single_rotation2(self, V_Ip, Vin=None):
         # cal rotation angle using lamming method (dL=Fiber length)
 
-        s_t_r = 2 * pi / self.SP  # spin twist ratio
         delta = 2 * pi / self.LB
 
         mm = 0
         n = 0
         m = 0
         n2 = 0
-        m2 = 1
-
-        tmp_f_Omega_z = 0
-        tmp_f_Phi_z = 0
-        tmp_b_Omega_z = 0
-        tmp_b_Phi_z = 0
-
-        I = V_Ip
+        m2 = 0
 
         # magnetic field in unit length
         # H = Ip / (2 * pi * r)
-        H = I / self.L
+        H = V_Ip / self.L
         rho = self.V * H
+
+        s_t_r = 2 * pi / self.SP  # spin twist ratio
 
         # --------Laming: orientation of the local slow axis ------------
         # --------Laming matrix on spun fiber --------------------------
         qu = 2 * (s_t_r - rho) / delta
-        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
+        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
 
         R_z = 2 * arcsin(sin(gma * self.L) / ((1 + qu ** 2) ** 0.5))
-        Omega_z = s_t_r * self.L + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.L)) + n2 * pi
-        Phi_z = ((s_t_r * self.L) - Omega_z) / 2 + m2 * (pi / 2)
+        Omega_z = s_t_r * self.L + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.L)) + n * pi
+        Phi_z = ((s_t_r * self.L) - Omega_z) / 2 + m * (pi / 2)
 
         # Forward
         n11 = cos(R_z / 2) + 1j * sin(R_z / 2) * cos(2 * Phi_z)
@@ -794,7 +788,7 @@ class SPUNFIBER:
         Jm = np.array([[1, 0], [0, 1]])
         M_FR = Rot @ Jm @ Rot
         #V_out = M_Omega_b @ M_R_b @ M_FR @ M_Omega_f @ M_R_f @ Vin
-        V_out = M_Omega_f @ M_R_f @ Vin
+        V_out = M_Omega_b @ M_R_b @ Vin
         #print("M_OMega_f =", M_Omega_f, "V_I = ", V_Ip, "A")
         return V_out
 
@@ -877,7 +871,7 @@ class SPUNFIBER:
 
         # define forward
         s_t_r = 2 * pi / self.SP  # spin twist ratio
-        qu = 2 * (s_t_r + rho) / delta
+        qu = 2 * (s_t_r - rho) / delta
         gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
 
         R_zf = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
@@ -887,8 +881,8 @@ class SPUNFIBER:
 
         # define backward
         s_t_r = -s_t_r  # spin twist ratio
-        qu = 2 * (s_t_r + rho) / delta
-        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
+        qu = 2 * (s_t_r - rho) / delta
+        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
 
         R_zb = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
         Omega_zb = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) - n2 * pi
@@ -928,10 +922,10 @@ class SPUNFIBER:
             n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
             M_R_b = np.array([[n11, n12], [n21, n22]])
             M_Omega_b = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
-            MB = M_R_b @ M_Omega_b @ MB
+            MB = M_Omega_b @M_R_b@ MB
 
         #V_out = MB @ M_FR @ MF @ Vin
-        V_out= MF @ Vin
+        V_out= MB @ Vin
 
         return V_out
 
@@ -1154,7 +1148,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode = 1
+    mode = 4
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1524,7 +1518,7 @@ if __name__ == '__main__':
         LB = 1
         SP = 0.005
         # dz = SP / 1000
-        dz = 0.0002
+        dz = 0.25
         len_lf = 0  # lead fiber
         len_ls = 1  # sensing fiber
         spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
@@ -1546,70 +1540,48 @@ if __name__ == '__main__':
         for V_I in vV_I:
 
             V_dL = np.array([])
-            V_St = np.array([])
 
             Vout = spunfiber.single_rotation2(V_I, Vin)  # cal rotation angle using lamming method (dL=Fiber length)
             V_L = S_L.from_Jones(E.from_matrix(Vout)).parameters.matrix()
-            draw_stokes_points(fig1[0], S_L, kind='scatter', color_scatter='r')
 
-            print(V_L.T)
-            var_dL = SP * 10 ** (-np.arange(1.5, 4, 0.5, dtype=float))
+            Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
+            V_dL = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
 
-            for nn, var in enumerate(var_dL):
-                spunfiber.dz = var
-
-                # Vout = spunfiber.single_rotation1(V_I, Vin)         # cal rotation angle using lamming method (variable dL)
-                Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
-                V_dL = np.append(V_dL, S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix())
-                draw_stokes_points(fig1[0], S_dL, kind='scatter', color_scatter='b')
-
-                Vout = spunfiber.single_rotation3(V_I,
-                                                  Vin)  # cal rotation angle using stacking method (dL=variable)
-                V_St = np.append(V_St, S_S.from_Jones(E.from_matrix(Vout)).parameters.matrix())
-                draw_stokes_points(fig1[0], S_S, kind='scatter', color_scatter='k')
-
-        V_dL = V_dL.reshape(len(var_dL), 4)
-        V_St = V_St.reshape(len(var_dL), 4)
-        # V_StL = V_StL.reshape(len(var_dL), 4)
 
         print(V_dL)
-        print(V_St)
-        V_L = np.ones(len(var_dL)) * V_L
+        print(V_L)
         figure, ax = plt.subplots(3, figsize=(5, 8))
         figure.subplots_adjust(left=0.179, bottom=0.15, right=0.94, hspace=0.226, top=0.938)
 
-        ax[0].plot(var_dL, V_dL[..., 1], 'r', label='Laming')
-        ax[0].plot(var_dL, V_St[..., 1], 'b', label='Stacking')
-        ax[0].plot(var_dL, V_L[1, ...], 'k--', label='Laming(w/o slicing)')
-        # ax[0].plot(var_dL, V_StL[...,1], 'm--', label='Laming(w/o slicing)')
-
-        ax[0].set_xscale('log')
-        ax[0].set_ylabel('S1')
-        ax[0].legend(loc='upper left')
-        # ax[0].set_title('S1')
-        ax[0].set_xticklabels('')
-
-        ax[1].plot(var_dL, -V_dL[..., 2], 'r', label='Laming')
-        ax[1].plot(var_dL, V_St[..., 2], 'b', label='Stacking')
-        ax[1].plot(var_dL, V_L[2, ...], 'k--', label='Laming(w/o slicing)')
-        # ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
-        ax[1].set_ylabel('S2')
-        ax[1].set_xscale('log')
-        ax[1].legend(loc='upper left')
-        # ax[1].set_title('S2')
-        ax[1].set_xticklabels('')
-
-        ax[2].plot(var_dL, V_dL[..., 3], 'r', label='Laming')
-        ax[2].plot(var_dL, V_St[..., 3], 'b', label='Stacking')
-        ax[2].plot(var_dL, V_L[3, ...], 'k--', label='Laming(w/o slicing)')
-        # ax[2].plot(var_dL, V_StL[..., 3], 'm--', label='Laming(w/o slicing)')
-        ax[2].set_xscale('log')
-        ax[2].set_xlabel('dL [m]')
-        ax[2].set_ylabel('S3')
-        ax[2].legend(loc='lower left')
-        # ax[2].set_title('S3')
-        ax[2].set_xticks(var_dL)
-        str_xtick = ['SP/50', 'SP/100', 'SP/500', 'SP/1000', 'SP/5000']
-        ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
+        # # ax[0].plot(var_dL, V_dL[..., 1], 'r', label='Laming')
+        # # ax[0].plot(var_dL, V_L[1, ...], 'k--', label='Laming(w/o slicing)')
+        # # ax[0].plot(var_dL, V_StL[...,1], 'm--', label='Laming(w/o slicing)')
+        #
+        # # ax[0].set_xscale('log')
+        # # ax[0].set_ylabel('S1')
+        # # ax[0].legend(loc='upper left')
+        # # # ax[0].set_title('S1')
+        # # ax[0].set_xticklabels('')
+        # #
+        # # ax[1].plot(var_dL, -V_dL[..., 2], 'r', label='Laming')
+        # # ax[1].plot(var_dL, V_St[..., 2], 'b', label='Stacking')
+        # # ax[1].plot(var_dL, V_L[2, ...], 'k--', label='Laming(w/o slicing)')
+        # # # ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
+        # # ax[1].set_ylabel('S2')
+        # # ax[1].set_xscale('log')
+        # # ax[1].legend(loc='upper left')
+        # # # ax[1].set_title('S2')
+        # # ax[1].set_xticklabels('')
+        #
+        # ax[2].plot(var_dL, V_dL[..., 3], 'r', label='Laming')
+        # ax[2].plot(var_dL, V_L[3, ...], 'k--', label='Laming(w/o slicing)')
+        # ax[2].set_xscale('log')
+        # ax[2].set_xlabel('dL [m]')
+        # ax[2].set_ylabel('S3')
+        # ax[2].legend(loc='lower left')
+        # # ax[2].set_title('S3')
+        # ax[2].set_xticks(var_dL)
+        # str_xtick = ['SP/50', 'SP/100', 'SP/500', 'SP/1000', 'SP/5000']
+        # ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
 
 plt.show()
