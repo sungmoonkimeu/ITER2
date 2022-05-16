@@ -1188,7 +1188,7 @@ if __name__ == '__main__':
             V_St = np.array([])
 
 
-            var_dL = SP*10**(-np.arange(1.5, 3, 0.5, dtype=float))
+            var_dL = SP*10**(-np.arange(0, 5, 1, dtype=float))
 
             for nn, var in enumerate(var_dL):
                 spunfiber.dz = var
@@ -1228,21 +1228,21 @@ if __name__ == '__main__':
         #ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
         ax[1].set_ylabel('S2')
         ax[1].set_xscale('log')
-        ax[1].legend(loc='upper left')
+        # ax[1].legend(loc='upper left')
         ax[1].set_title('S2')
         ax[1].set_xticklabels('')
         #
-        # ax[2].plot(var_dL, V_dL[..., 3], 'r', label='Laming')
+        ax[2].plot(var_dL, V_dL[..., 3], 'r', label='Laming')
         # ax[2].plot(var_dL, V_St[..., 3], 'b', label='Stacking')
         # ax[2].plot(var_dL, V_L[3,...], 'k--', label='Laming(w/o slicing)')
         # #ax[2].plot(var_dL, V_StL[..., 3], 'm--', label='Laming(w/o slicing)')
-        # ax[2].set_xscale('log')
-        # ax[2].set_xlabel('dL [m]')
-        # ax[2].set_ylabel('S3')
+        ax[2].set_xscale('log')
+        ax[2].set_xlabel('dL [m]')
+        ax[2].set_ylabel('S3')
         # ax[2].legend(loc='lower left')
         # #ax[2].set_title('S3')
-        # ax[2].set_xticks(var_dL)
-        str_xtick = ['SP/50', 'SP/100', 'SP/500', 'SP/1000', 'SP/5000']
+        ax[2].set_xticks(var_dL)
+        str_xtick = ['SP/1', 'SP/10', 'SP/100', 'SP/1000', 'SP/10000']
         ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
 
     if mode==2:
