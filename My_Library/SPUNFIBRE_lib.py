@@ -670,7 +670,7 @@ class SPUNFIBER:
         #print("Vin_calc_mp", Vin)
         for num in range(num_processor):
             # proc = Process(target=self.cal_rotation,
-            proc = Process(target=self.cal_rotation2,
+            proc = Process(target=self.cal_rotation,
                            args=(spl_I[num], ang_FM, num, Vout_dic, M_vib, Vin))
             procs.append(proc)
             proc.start()
