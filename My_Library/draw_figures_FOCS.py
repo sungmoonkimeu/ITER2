@@ -297,8 +297,8 @@ def plot_errorbar_byDic(dic_err, fig=None, ax=None, lines=[], label=[]):
     if fig is None:
         fig, ax = plt.subplots(figsize=(9/2.5, 7/2.5))
         ax.set_prop_cycle(cc)
-        #lines += ax.plot(V_I[1:], relErrorlimit[:], 'gray',ls='--', label='ITER specification')
-        #lines += ax.plot(V_I[1:], -relErrorlimit[:], 'gray', ls='--')
+        lines += ax.plot(V_I[1:], relErrorlimit[:], 'gray',ls='--', label='ITER specification')
+        lines += ax.plot(V_I[1:], -relErrorlimit[:], 'gray', ls='--')
 
         ax.set_xlabel(r'Plasma current $I_{p}(A)$')
         ax.set_ylabel(r'Relative error on $I_{P}$')

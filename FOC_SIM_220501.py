@@ -236,20 +236,23 @@ if __name__ == '__main__':
         # fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S", fig=fig, ax= ax, V_custom=V2)
         V2 = 0.54 * 4 * pi * 1e-7
         #strfile1 = 'Test1_hibi1.csv'
-        strfile1 = 'IdealFM_Errdeg1x5_1.csv'
-        #strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
-        dic_err = {}
-        while isEOF is False:
-            V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", nn)
-            if nn == 0:
-                dic_err['V_I'] = V_I
-                fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
-            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*2,v_calc_init=pi/2)
-            nn += 1
-            # n_item = [0,3,7,11,15,19]
-            # V_I2, S2 = V_I[n_item], S[n_item]
-            # fig3, lines3 = plot_Stokes_pnt(V_I2, S2,fig=fig3, lines=lines3, opacity=opacity)
-        fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='ideal FM')
+
+
+        # strfile1 = 'IdealFM_Errdeg1x5_1.csv'
+        # #strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
+        # dic_err = {}
+        # while isEOF is False:
+        #     V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", nn)
+        #     if nn == 0:
+        #         dic_err['V_I'] = V_I
+        #         fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
+        #     dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*2,v_calc_init=pi/2)
+        #     nn += 1
+        #     # n_item = [0,3,7,11,15,19]
+        #     # V_I2, S2 = V_I[n_item], S[n_item]
+        #     # fig3, lines3 = plot_Stokes_pnt(V_I2, S2,fig=fig3, lines=lines3, opacity=opacity)
+        # fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='ideal FM')
+
 
         #strfile1 = 'Test1_hibi2.csv'
         #strfile1 = '42FM_Errdeg1x5_0_2.csv'
@@ -273,7 +276,7 @@ if __name__ == '__main__':
             # fig3, lines3 = plot_Stokes_pnt(V_I2, S2, fig=fig3, lines=lines3, opacity=opacity)
 
             nn += 1
-        fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label=r'FMerror $1\degree$')
+        fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label=r'R$\in(-10\degree,+10\degree$), $\phi$ $\in(-10\degree,+10\degree$)')
 
 
         # strfile1 = 'Hibi_44FM_errdeg1x5_220506.csv'
