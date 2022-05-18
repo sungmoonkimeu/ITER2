@@ -52,19 +52,20 @@ if __name__ == '__main__':
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
     #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
-    strfile1 = 'Lobi_90FM_errdeg1x5_220518.csv'
+    #strfile1 = 'Lobi_90FM_errdeg1x5_220518.csv'
+    strfile1 = 'Lobi_45FM_errdeg10x5_220518.csv'
 
     if mode == 0:
 
         num_iter = 50
-        num_processor = 16
+        num_processor = 8
         V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         # V_I = 1e6
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 90
+        ang_FM = 45
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
@@ -73,7 +74,7 @@ if __name__ == '__main__':
         S = create_Stokes('O')
         for nn in range(num_iter):
             Vin = E[0].parameters.matrix()
-            M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
+            M_vib = spunfiber.create_Mvib(nM_vib, 10, 10)
             Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
             save_Jones(strfile1,V_I,Ip,Vout)
 
@@ -258,7 +259,7 @@ if __name__ == '__main__':
         #strfile1 = 'Lobi_46FM_errdeg1x5_220506.csv'
         #strfile1 = 'Lobi_50FM_errdeg1x5_220518.csv'
         #strfile1 = 'Lobi_65FM_errdeg1x5_220518.csv'
-        strfile1 = 'Lobi_90FM_errdeg1x5_220518.csv'
+        strfile1 = 'Lobi_45FM_errdeg10x5_220518.csv'
         dic_err, nn, isEOF = {}, 0, False
 
         while isEOF is False:
@@ -266,7 +267,7 @@ if __name__ == '__main__':
             if nn == 0:
                 dic_err['V_I'] = V_I
                 fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
-            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*2, v_calc_init=(90+90)*pi/180)
+            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*2, v_calc_init=(90)*pi/180)
             # n_item = [0, 3, 7, 11, 15, 19]
             # V_I2, S2 = V_I[n_item], S[n_item]
             # fig3, lines3 = plot_Stokes_pnt(V_I2, S2, fig=fig3, lines=lines3, opacity=opacity)
