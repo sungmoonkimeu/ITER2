@@ -752,11 +752,11 @@ class SPUNFIBER:
         s_t_r = 2 * pi / self.SP  # spin twist ratio
         V_theta_1s = V_z * s_t_r
         qu = 2 * (s_t_r - rho) / delta
-        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r + rho) ** 2)) ** 0.5
+        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
 
         R_zf = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
-        Le = 2 * pi / gma
-        V_n = -((V_z / (Le / 4)).astype(int) / 2).astype(int)
+        Lef = 2 * pi / gma
+        V_nf = -((V_z / (Lef / 4)).astype(int) / 2).astype(int)
         Omega_zf = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz))
         Phi_zf = ((s_t_r * self.dz) - Omega_zf) / 2 + m * (pi / 2)
 
@@ -765,8 +765,8 @@ class SPUNFIBER:
         qu = 2 * (s_t_r - rho) / delta
         gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
 
-        Le = 2 * pi / gma
-        V_n = -((V_z / (Le / 4)).astype(int) / 2).astype(int)
+        Leb = 2 * pi / gma
+        V_nb = -((V_z / (Leb / 4)).astype(int) / 2).astype(int)
 
         R_zb = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
         Omega_zb = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz))
@@ -782,7 +782,7 @@ class SPUNFIBER:
         # forward
         MF = np.array([[1, 0], [0, 1]])
         for kk in range(len(V_theta_1s) - 1):
-            Omega_z2 = Omega_zf - V_n[kk]*pi
+            Omega_z2 = Omega_zf - V_nf[kk]*pi
             Phi_z2 = Phi_zf + V_theta_1s[kk]
             # print(Phi_z2)
             R_z2 = R_zf
@@ -798,7 +798,7 @@ class SPUNFIBER:
         MB = np.array([[1, 0], [0, 1]])
         for kk in range(len(V_theta_1s) - 1):
             Phi_z2 = Phi_zb + V_theta_1s[-1 - kk]
-            Omega_z2 = Omega_zb - V_n[-1 -kk] * pi
+            Omega_z2 = Omega_zb - V_nb[-1 -kk] * pi
             R_z2 = R_zb
 
             n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
@@ -1179,7 +1179,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode = 4
+    mode = 1
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1410,7 +1410,7 @@ if __name__ == '__main__':
         LB = 1
         SP = 0.005
         # dz = SP / 1000
-        dz = 0.25
+        dz = 0.5
         len_lf = 0  # lead fiber
         len_ls = 1  # sensing fiber
         spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
@@ -1434,7 +1434,7 @@ if __name__ == '__main__':
             V_dL = np.array([])
             spunfiber.dz = 1
             print(spunfiber.dz)
-            Vout = spunfiber.single_rotation2(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
+            Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
             V_L = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
             spunfiber.dz= 0.2
             print(spunfiber.dz)
