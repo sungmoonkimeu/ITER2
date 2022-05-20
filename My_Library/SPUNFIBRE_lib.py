@@ -902,9 +902,13 @@ class SPUNFIBER:
 
         R_zf = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
         Le = 2 * pi / gma
-        V_nf = -((V_z / (Le / 4)).astype(int) / 2).astype(int)
-        Omega_zf = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz))
+        # V_nf = -((V_z / (Le / 4)).astype(int) / 2).astype(int)
+        V_nf = -int(int(self.dz / (Le / 4)) / 2)
+        # Omega_zf = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz))
+        # Phi_zf = ((s_t_r * self.dz) - Omega_zf) / 2 + m * (pi / 2)
+        Omega_zf = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) + V_nf*pi
         Phi_zf = ((s_t_r * self.dz) - Omega_zf) / 2 + m * (pi / 2)
+
 
         # define backward
         s_t_r = -s_t_r  # spin twist ratio
@@ -928,7 +932,7 @@ class SPUNFIBER:
         # forward
         MF = np.array([[1, 0], [0, 1]])
         for kk in range(len(V_theta_1s) - 1):
-            Omega_z2 = Omega_zf - V_nf[kk]*pi
+            Omega_z2 = Omega_zf
             Phi_z2 = Phi_zf + V_theta_1s[kk]
             # print(Phi_z2)
             R_z2 = R_zf
@@ -1179,7 +1183,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode = 1
+    mode = 4
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1276,7 +1280,8 @@ if __name__ == '__main__':
             V_St = np.array([])
 
 
-            var_dL = SP*10**(-np.arange(0, 5, 1, dtype=float))
+            #var_dL = SP*10**(-np.arange(0, 5, 1, dtype=float))
+            var_dL = len_ls * 10 ** (-np.arange(0, 6, 1, dtype=float))
 
             for nn, var in enumerate(var_dL):
                 spunfiber.dz = var
@@ -1330,7 +1335,8 @@ if __name__ == '__main__':
         # ax[2].legend(loc='lower left')
         # #ax[2].set_title('S3')
         ax[2].set_xticks(var_dL)
-        str_xtick = ['SP/1', 'SP/10', 'SP/100', 'SP/1000', 'SP/10000']
+        #str_xtick = ['SP/1', 'SP/10', 'SP/100', 'SP/1000', 'SP/10000']
+        str_xtick = ['L/1', 'L/10', 'L/100', 'L/1000', 'L/10000', 'L/100000']
         ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
 
     if mode==2:
@@ -1432,11 +1438,11 @@ if __name__ == '__main__':
         for V_I in vV_I:
 
             V_dL = np.array([])
-            spunfiber.dz = 1
+            spunfiber.dz = 0.2
             print(spunfiber.dz)
             Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
             V_L = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
-            spunfiber.dz= 0.2
+            spunfiber.dz= 1
             print(spunfiber.dz)
             Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
             V_dL = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
