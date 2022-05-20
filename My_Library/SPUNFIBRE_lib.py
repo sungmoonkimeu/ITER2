@@ -907,8 +907,9 @@ class SPUNFIBER:
         # Omega_zf = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz))
         # Phi_zf = ((s_t_r * self.dz) - Omega_zf) / 2 + m * (pi / 2)
         Omega_zf = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) + V_nf*pi
+        print("Omega", Omega_zf)
         Phi_zf = ((s_t_r * self.dz) - Omega_zf) / 2 + m * (pi / 2)
-
+        print("Phi", Phi_zf)
 
         # define backward
         s_t_r = -s_t_r  # spin twist ratio
@@ -959,8 +960,8 @@ class SPUNFIBER:
             M_Omega_b = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
             MB = M_Omega_b @ M_R_b @ MB
 
-        #V_out = MB @ M_FR @ MF @ Vin
-        V_out = MF @ Vin
+        V_out = MB @ M_FR @ MF @ Vin
+        #V_out = MF @ Vin
 
         return V_out
 
@@ -1413,7 +1414,7 @@ if __name__ == '__main__':
     if mode==3:
         print("1")
     if mode==4:
-        LB = 1
+        LB = 0.009
         SP = 0.005
         # dz = SP / 1000
         dz = 0.5
@@ -1426,6 +1427,7 @@ if __name__ == '__main__':
         fig1, ax1 = spunfiber.init_plot_SOP()
 
         vV_I = [3e6, 4e6, 5e6]
+        #vV_I = np.arange(0,1e6,0.1e6)
 
         nM_vib = 0
         ang_FM = 45
@@ -1436,51 +1438,15 @@ if __name__ == '__main__':
         S_L = create_Stokes('Laming_L')
 
         for V_I in vV_I:
-
-            V_dL = np.array([])
-            spunfiber.dz = 0.2
-            print(spunfiber.dz)
-            Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
-            V_L = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
             spunfiber.dz= 1
             print(spunfiber.dz)
             Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
             V_dL = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
             print(V_dL.T)
-            print(V_L.T)
+            draw_stokes_points(fig1[0], S_dL, kind='scatter', color_line='b')
 
         figure, ax = plt.subplots(3, figsize=(5, 8))
         figure.subplots_adjust(left=0.179, bottom=0.15, right=0.94, hspace=0.226, top=0.938)
 
-        # # ax[0].plot(var_dL, V_dL[..., 1], 'r', label='Laming')
-        # # ax[0].plot(var_dL, V_L[1, ...], 'k--', label='Laming(w/o slicing)')
-        # # ax[0].plot(var_dL, V_StL[...,1], 'm--', label='Laming(w/o slicing)')
-        #
-        # # ax[0].set_xscale('log')
-        # # ax[0].set_ylabel('S1')
-        # # ax[0].legend(loc='upper left')
-        # # # ax[0].set_title('S1')
-        # # ax[0].set_xticklabels('')
-        # #
-        # # ax[1].plot(var_dL, -V_dL[..., 2], 'r', label='Laming')
-        # # ax[1].plot(var_dL, V_St[..., 2], 'b', label='Stacking')
-        # # ax[1].plot(var_dL, V_L[2, ...], 'k--', label='Laming(w/o slicing)')
-        # # # ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
-        # # ax[1].set_ylabel('S2')
-        # # ax[1].set_xscale('log')
-        # # ax[1].legend(loc='upper left')
-        # # # ax[1].set_title('S2')
-        # # ax[1].set_xticklabels('')
-        #
-        # ax[2].plot(var_dL, V_dL[..., 3], 'r', label='Laming')
-        # ax[2].plot(var_dL, V_L[3, ...], 'k--', label='Laming(w/o slicing)')
-        # ax[2].set_xscale('log')
-        # ax[2].set_xlabel('dL [m]')
-        # ax[2].set_ylabel('S3')
-        # ax[2].legend(loc='lower left')
-        # # ax[2].set_title('S3')
-        # ax[2].set_xticks(var_dL)
-        # str_xtick = ['SP/50', 'SP/100', 'SP/500', 'SP/1000', 'SP/5000']
-        # ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
 
 plt.show()
