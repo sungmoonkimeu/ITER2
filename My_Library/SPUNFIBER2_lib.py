@@ -1177,7 +1177,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode = 1
+    mode = 5
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1470,4 +1470,64 @@ if __name__ == '__main__':
         # str_xtick = ['SP/50', 'SP/100', 'SP/500', 'SP/1000', 'SP/5000']
         # ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
 
+    if mode == 5:
+        L = 0.5
+        dz =0.5
+
+        LB = 10000000
+        SP = 0.005
+
+        V = 0.54 * 4 * pi * 1e-7
+
+        V_z = arange(0, L + dz, dz)
+        delta = 2 * pi / LB
+
+        mm = 0
+        n = 0
+        m = 0
+        n2 = 0
+        m2 = 0
+
+        vV_I = [3e6, 4e6, 5e6]
+
+        H = vV_I[1] / L/2
+        rho = V * H
+
+        # --------Laming: orientation of the local slow axis ------------
+        # --------Laming matrix on spun fiber --------------------------
+
+        # define forward
+        # The sign of farday rotation is opposite to that of the Laming paper, in order
+        # to be consistant with anti-clockwise (as in Jones paper) orientation for both
+        # spin and farday rotation.
+        s_t_r = 2 * pi / SP  # spin twist ratio
+        V_theta_1s = V_z * s_t_r
+        qu = 2 * (s_t_r - rho) / delta
+        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
+
+        R_zf = 2 * arcsin(sin(gma * dz) / ((1 + qu ** 2) ** 0.5))
+
+        Le = 2 * pi / gma
+        V_nf = -((V_z / (Le / 4)).astype(int) / 2).astype(int)
+
+        Omega_zf = s_t_r * dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) + V_nf[1] * pi
+        Phi_zf = ((s_t_r * dz) - Omega_zf) / 2 + m * (pi / 2)
+
+        # forward
+        MF = np.array([[1, 0], [0, 1]])
+        for kk in range(len(V_theta_1s) - 1):
+            Omega_z2 = Omega_zf
+            Phi_z2 = Phi_zf + V_theta_1s[kk]
+            print("Omega[", kk,"]:",Omega_z2)
+            print("Phi[", kk, "]:", Phi_z2)
+            R_z2 = R_zf
+            n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+            n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+            n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+            n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+            M_R_f = np.array([[n11, n12], [n21, n22]])
+            M_Omega_f = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
+            MF = M_Omega_f @ M_R_f @ MF
+
+        print(MF)
 plt.show()
