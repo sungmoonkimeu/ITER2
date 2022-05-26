@@ -21,11 +21,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-# from .basis_correction_lib import calib_basis3
-# from .draw_poincare_plotly import *
+#from .basis_correction_lib import calib_basis3
+#from .draw_poincare_plotly import *
 
 # import parmap
-# import tqdm
+import tqdm
 
 
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
@@ -406,6 +406,7 @@ class SPUNFIBER:
 
         gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
         omega = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) + n * pi
+
         R_z = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
 
         M = np.array([[1, 0], [0, 1]])
@@ -901,9 +902,14 @@ class SPUNFIBER:
 
         R_zf = 2 * arcsin(sin(gma * self.dz) / ((1 + qu ** 2) ** 0.5))
         Le = 2 * pi / gma
-        V_nf = -((V_z / (Le / 4)).astype(int) / 2).astype(int)
-        Omega_zf = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz))
+        # V_nf = -((V_z / (Le / 4)).astype(int) / 2).astype(int)
+        V_nf = -int(int(self.dz / (Le / 4)) / 2)
+        # Omega_zf = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz))
+        # Phi_zf = ((s_t_r * self.dz) - Omega_zf) / 2 + m * (pi / 2)
+        Omega_zf = s_t_r * self.dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) + V_nf*pi
+        print("Omega", Omega_zf)
         Phi_zf = ((s_t_r * self.dz) - Omega_zf) / 2 + m * (pi / 2)
+        print("Phi", Phi_zf)
 
         # define backward
         s_t_r = -s_t_r  # spin twist ratio
@@ -927,7 +933,7 @@ class SPUNFIBER:
         # forward
         MF = np.array([[1, 0], [0, 1]])
         for kk in range(len(V_theta_1s) - 1):
-            Omega_z2 = Omega_zf - V_nf[kk]*pi
+            Omega_z2 = Omega_zf
             Phi_z2 = Phi_zf + V_theta_1s[kk]
             # print(Phi_z2)
             R_z2 = R_zf
@@ -954,9 +960,11 @@ class SPUNFIBER:
             M_Omega_b = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
             MB = M_Omega_b @ M_R_b @ MB
 
-        # V_out = MB @ M_FR @ MF @ Vin
-        V_out = MF @ Vin
+        V_out = MB @ M_FR @ MF @ Vin
+        #V_out = MF @ Vin
+
         return V_out
+
 
     def plot_error(self, filename):
 
@@ -964,7 +972,7 @@ class SPUNFIBER:
 
         V_I = data['Ip']
 
-        # Requirement specificaion for ITER
+        ## Requirement specificaion for ITER
         absErrorlimit = zeros(len(V_I))
         relErrorlimit = zeros(len(V_I))
 
@@ -985,7 +993,7 @@ class SPUNFIBER:
             if col_name != 'Ip':
                 if V_I[0] == 0:
                     lines += ax.plot(V_I[1:], abs((data[col_name][1:] - V_I[1:]) / V_I[1:]))
-                # lines += ax.plot(V_I, abs((data[col_name]-V_I)/V_I), label=col_name)
+                #lines += ax.plot(V_I, abs((data[col_name]-V_I)/V_I), label=col_name)
                 else:
                     lines += ax.plot(V_I, abs((data[col_name] - V_I) / V_I))
 
@@ -1015,7 +1023,7 @@ class SPUNFIBER:
         plt.rc('text', usetex=False)
 
         return fig, ax, lines
-        # plt.show()
+        #plt.show()
 
     def plot_errorbar(self, filename):
 
@@ -1105,7 +1113,6 @@ class SPUNFIBER:
         fig, ax= S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         return fig, ax
 
-
 def save_Jones(filename, Vin, Ip_m, Vout):
     if os.path.exists(filename):
         df = pd.read_csv(filename)
@@ -1177,7 +1184,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode = 1
+    mode = 4
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1267,12 +1274,15 @@ if __name__ == '__main__':
         S_S = create_Stokes('Stacking')
         S_STL = create_Stokes('Stacking_lamming')
 
+
         for V_I in vV_I:
 
             V_dL = np.array([])
             V_St = np.array([])
 
-            var_dL = SP*10**(-np.arange(0, 5, 1, dtype=float))
+
+            #var_dL = SP*10**(-np.arange(0, 5, 1, dtype=float))
+            var_dL = len_ls * 10 ** (-np.arange(0, 6, 1, dtype=float))
 
             for nn, var in enumerate(var_dL):
                 spunfiber.dz = var
@@ -1283,6 +1293,7 @@ if __name__ == '__main__':
                 # Vout = spunfiber.single_rotation3(V_I, Vin)         # cal rotation angle using stacking method (dL=variable)
                 # V_St = np.append(V_St, S_S.from_Jones(E.from_matrix(Vout)).parameters.matrix())
                 # draw_stokes_points(fig1[0], S_S, kind='scatter', color_scatter='k')
+
 
         V_dL = V_dL.reshape(len(var_dL), 4)
         # V_St = V_St.reshape(len(var_dL), 4)
@@ -1297,18 +1308,18 @@ if __name__ == '__main__':
         ax[0].plot(var_dL, V_dL[...,1], 'r', label='Laming')
         # ax[0].plot(var_dL, V_St[...,1], 'b', label='Stacking')
         # ax[0].plot(var_dL, V_L[1,...], 'k--', label='Laming(w/o slicing)')
-        # ax[0].plot(var_dL, V_StL[...,1], 'm--', label='Laming(w/o slicing)')
+        #ax[0].plot(var_dL, V_StL[...,1], 'm--', label='Laming(w/o slicing)')
 
         ax[0].set_xscale('log')
         ax[0].set_ylabel('S1')
         ax[0].legend(loc='upper left')
-        # ax[0].set_title('S1')
+        #ax[0].set_title('S1')
         ax[0].set_xticklabels('')
 
         ax[1].plot(var_dL, -V_dL[..., 2], 'r',  label='Laming')
         # ax[1].plot(var_dL, V_St[..., 2], 'b', label='Stacking')
         # ax[1].plot(var_dL, V_L[2,...], 'k--', label='Laming(w/o slicing)')
-        # ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
+        #ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
         ax[1].set_ylabel('S2')
         ax[1].set_xscale('log')
         # ax[1].legend(loc='upper left')
@@ -1325,10 +1336,11 @@ if __name__ == '__main__':
         # ax[2].legend(loc='lower left')
         # #ax[2].set_title('S3')
         ax[2].set_xticks(var_dL)
-        str_xtick = ['SP/1', 'SP/10', 'SP/100', 'SP/1000', 'SP/10000']
+        #str_xtick = ['SP/1', 'SP/10', 'SP/100', 'SP/1000', 'SP/10000']
+        str_xtick = ['L/1', 'L/10', 'L/100', 'L/1000', 'L/10000', 'L/100000']
         ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
 
-    if mode == 2:
+    if mode==2:
         LB = 0.009
         SP = 0.0048
         # dz = SP / 1000
@@ -1354,6 +1366,7 @@ if __name__ == '__main__':
         ksi2 = 45 * pi/ 180
         M_Ip = np.array([[cos(ksi2), -sin(ksi2)], [sin(ksi2), cos(ksi2)]])
 
+
         E = Jones_vector('input')
         Eo = Jones_vector('output')
         So = create_Stokes('1')
@@ -1363,6 +1376,7 @@ if __name__ == '__main__':
         fig1, ax1 = spunfiber.init_plot_SOP()
         S = create_Stokes('O')
         Vin = E[0].parameters.matrix()
+
 
         fig1, ax1 = spunfiber.init_plot_SOP()
         tmp, SOPchange_mean, SOPchange_std, SOPchange_max = np.array([]), np.array([]), np.array([]), np.array([])
@@ -1376,16 +1390,16 @@ if __name__ == '__main__':
                 M_FR = Rot @ Jm @ Rot
 
                 M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
-                # Vout = M_vib[..., nn].T @ M_Ip @ M_vib2[..., nn].T @ M_vib2[..., nn] @ M_Ip @ M_vib[..., nn] @ Vin
-                # Vout  = M_vib[..., nn].T@M_Ip@M_vib2[..., nn].T @ M_FR @ M_vib2[..., nn] @M_Ip@M_vib[..., nn]@ Vin
-                # Vout = M_vib[..., nn].T @ M_Ip @M_FR @ M_Ip @ M_vib[..., nn] @ Vin
+                #Vout = M_vib[..., nn].T @ M_Ip @ M_vib2[..., nn].T @ M_vib2[..., nn] @ M_Ip @ M_vib[..., nn] @ Vin
+                #Vout  = M_vib[..., nn].T@M_Ip@M_vib2[..., nn].T @ M_FR @ M_vib2[..., nn] @M_Ip@M_vib[..., nn]@ Vin
+                #Vout = M_vib[..., nn].T @ M_Ip @M_FR @ M_Ip @ M_vib[..., nn] @ Vin
 
                 M_v = M_vib[...,4]@M_vib[...,3]@M_vib[...,2]@M_vib[...,1]@M_vib[...,0]
 
                 Vout = M_v.T@ M_FR @M_v @ Vin
                 Eo.from_matrix(Vout)
                 tmp = np.hstack((tmp, Eo.parameters.ellipticity_angle()*180/pi))
-                # tmp2 = np.hstack((tmp2, Eo.parameters.azimuth()*180/pi + ang_FM*2))
+                #tmp2 = np.hstack((tmp2, Eo.parameters.azimuth()*180/pi + ang_FM*2))
                 So.from_Jones(Eo)
                 draw_stokes_points(fig1[0], So, kind='scatter', color_line='r')
 
@@ -1397,10 +1411,10 @@ if __name__ == '__main__':
         ax.plot(V_ang, SOPchange_mean)
         ax.plot(V_ang, SOPchange_std)
         ax.plot(V_ang, SOPchange_max)
-    if mode == 3:
+    if mode==3:
         print("1")
-    if mode == 4:
-        LB = 1
+    if mode==4:
+        LB = 0.009
         SP = 0.005
         # dz = SP / 1000
         dz = 0.5
@@ -1413,6 +1427,7 @@ if __name__ == '__main__':
         fig1, ax1 = spunfiber.init_plot_SOP()
 
         vV_I = [3e6, 4e6, 5e6]
+        #vV_I = np.arange(0,1e6,0.1e6)
 
         nM_vib = 0
         ang_FM = 45
@@ -1423,51 +1438,15 @@ if __name__ == '__main__':
         S_L = create_Stokes('Laming_L')
 
         for V_I in vV_I:
-
-            V_dL = np.array([])
-            spunfiber.dz = 1
-            print(spunfiber.dz)
-            Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
-            V_L = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
-            spunfiber.dz= 0.2
+            spunfiber.dz= 1
             print(spunfiber.dz)
             Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
             V_dL = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
             print(V_dL.T)
-            print(V_L.T)
+            draw_stokes_points(fig1[0], S_dL, kind='scatter', color_line='b')
 
         figure, ax = plt.subplots(3, figsize=(5, 8))
         figure.subplots_adjust(left=0.179, bottom=0.15, right=0.94, hspace=0.226, top=0.938)
 
-        # # ax[0].plot(var_dL, V_dL[..., 1], 'r', label='Laming')
-        # # ax[0].plot(var_dL, V_L[1, ...], 'k--', label='Laming(w/o slicing)')
-        # # ax[0].plot(var_dL, V_StL[...,1], 'm--', label='Laming(w/o slicing)')
-        #
-        # # ax[0].set_xscale('log')
-        # # ax[0].set_ylabel('S1')
-        # # ax[0].legend(loc='upper left')
-        # # # ax[0].set_title('S1')
-        # # ax[0].set_xticklabels('')
-        # #
-        # # ax[1].plot(var_dL, -V_dL[..., 2], 'r', label='Laming')
-        # # ax[1].plot(var_dL, V_St[..., 2], 'b', label='Stacking')
-        # # ax[1].plot(var_dL, V_L[2, ...], 'k--', label='Laming(w/o slicing)')
-        # # # ax[1].plot(var_dL, V_StL[..., 2], 'm--', label='Laming(w/o slicing)')
-        # # ax[1].set_ylabel('S2')
-        # # ax[1].set_xscale('log')
-        # # ax[1].legend(loc='upper left')
-        # # # ax[1].set_title('S2')
-        # # ax[1].set_xticklabels('')
-        #
-        # ax[2].plot(var_dL, V_dL[..., 3], 'r', label='Laming')
-        # ax[2].plot(var_dL, V_L[3, ...], 'k--', label='Laming(w/o slicing)')
-        # ax[2].set_xscale('log')
-        # ax[2].set_xlabel('dL [m]')
-        # ax[2].set_ylabel('S3')
-        # ax[2].legend(loc='lower left')
-        # # ax[2].set_title('S3')
-        # ax[2].set_xticks(var_dL)
-        # str_xtick = ['SP/50', 'SP/100', 'SP/500', 'SP/1000', 'SP/5000']
-        # ax[2].set_xticklabels(str_xtick, minor=False, rotation=-45)
 
 plt.show()
