@@ -1473,10 +1473,10 @@ if __name__ == '__main__':
     if mode == 5:
         L = 1
         dz = 1
-        LB = 0.009
+        LB = 10000000000
         SP = 0.005
 
-        v_dz = [1, 0.5, 0.2, 0.1]
+        v_dz = [1, 0.5, 0.2, 0.0001]
         V = 0.54 * 4 * pi * 1e-7
         E = Jones_vector('Output')
         S = create_Stokes('Output')
@@ -1530,37 +1530,37 @@ if __name__ == '__main__':
                 M_R_f = np.array([[n11, n12], [n21, n22]])
                 M_Omega_f = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
                 MF = M_Omega_f @ M_R_f @ MF
-            print("Omega_z2= ", Omega_z2)
+            # print("Omega_z2= ", Omega_z2)
 
-            # # define backward
-            # # spin and farday rotation.
-            # s_t_r = -2 * pi / SP  # spin twist ratio
-            # V_theta_1s = V_z * s_t_r
-            # qu = 2 * (s_t_r - rho) / delta
-            # gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
-            #
-            # R_zb = 2 * arcsin(sin(gma * dz) / ((1 + qu ** 2) ** 0.5))
-            # nb = int(gma * dz / pi) if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) > 0 else int(
-            #     gma * dz / pi)+1
-            #
-            # Omega_zb = s_t_r * dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) + nb * pi
-            # Phi_zb = ((s_t_r * dz) - Omega_zf) / 2 + m * (pi / 2)
-            #
-            # # backward
-            # MB = np.array([[1, 0], [0, 1]])
-            # for kk in range(len(V_theta_1s) - 1):
-            #     Omega_z2 = Omega_zb
-            #     Phi_z2 = Phi_zb + V_theta_1s[-1-kk]
-            #     R_z2 = R_zb
-            #     n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
-            #     n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
-            #     n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
-            #     n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
-            #     M_R_b = np.array([[n11, n12], [n21, n22]])
-            #     M_Omega_b = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
-            #     MB = M_Omega_b @ M_R_b @ MB
-            #     print("Omega_z2= ", Omega_z2)
+            # define backward
+            # spin and farday rotation.
+            s_t_r = -2 * pi / SP  # spin twist ratio
+            V_theta_1s = V_z * s_t_r
+            qu = 2 * (s_t_r - rho) / delta
+            gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
 
+            R_zb = 2 * arcsin(sin(gma * dz) / ((1 + qu ** 2) ** 0.5))
+            nb = int(gma * dz / pi) if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) > 0 else int(
+                gma * dz / pi)+1
+
+            Omega_zb = s_t_r * dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) + nb * pi
+            Phi_zb = ((s_t_r * dz) - Omega_zf) / 2 + m * (pi / 2)
+
+            # backward
+            MB = np.array([[1, 0], [0, 1]])
+            for kk in range(len(V_theta_1s) - 1):
+                Omega_z2 = Omega_zb
+                Phi_z2 = Phi_zb + V_theta_1s[-1-kk]
+                R_z2 = R_zb
+                n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+                n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+                n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+                n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+                M_R_b = np.array([[n11, n12], [n21, n22]])
+                M_Omega_b = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
+                MB = M_Omega_b @ M_R_b @ MB
+                # print("Omega_z2= ", Omega_z2)
+            print("omega_z2 = ", Omega_z2)
             ksi =45
             Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
             Jm = np.array([[1, 0], [0, 1]])
@@ -1568,16 +1568,16 @@ if __name__ == '__main__':
 
             V_in = np.array([[1],[0]])
 
-            V_out = MF@V_in
-            print("dz = ",dz, ", gma*dz=, ", gma*dz, ", xx = ", arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) + nf * pi)
+            V_out = MB@V_in
+            print("dz = ",dz, ", gma*dz=, ", gma*dz, ", xx = ", arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)), ", nb = ", nb*pi)
 
             print("V_out= ", V_out.T)
-            E.from_matrix(V_out)
-            print(S.from_Jones(E).parameters.matrix()[1])
-            print(S.from_Jones(E).parameters.matrix()[2])
-            print(S.from_Jones(E).parameters.matrix()[3])
-
-            print(tmp -S.from_Jones(E).parameters.matrix()[3] )
-            tmp = S.from_Jones(E).parameters.matrix()[3]
+            # E.from_matrix(V_out)
+            # print(S.from_Jones(E).parameters.matrix()[1])
+            # print(S.from_Jones(E).parameters.matrix()[2])
+            # print(S.from_Jones(E).parameters.matrix()[3])
+            #
+            # print(tmp -S.from_Jones(E).parameters.matrix()[3] )
+            # tmp = S.from_Jones(E).parameters.matrix()[3]
 
 plt.show()
