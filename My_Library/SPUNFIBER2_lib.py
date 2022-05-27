@@ -1476,97 +1476,108 @@ if __name__ == '__main__':
         LB = 0.009
         SP = 0.005
 
+        v_dz = [1, 0.5, 0.2, 0.1]
         V = 0.54 * 4 * pi * 1e-7
+        E = Jones_vector('Output')
+        S = create_Stokes('Output')
+        tmp = 0
+        for dz in v_dz:
+            V_z = arange(0, L + dz, dz)
+            delta = 2 * pi / LB
 
-        V_z = arange(0, L + dz, dz)
-        delta = 2 * pi / LB
+            mm = 0
+            n = 0
+            m = 0
+            n2 = 0
+            m2 = 0
 
-        mm = 0
-        n = 0
-        m = 0
-        n2 = 0
-        m2 = 0
+            vV_I = [2e6, 4e6, 5e6]
 
-        vV_I = [1e6, 4e6, 5e6]
+            H = vV_I[1] / L
+            rho = V * H
 
-        H = vV_I[1] / L
-        rho = V * H
+            # --------Laming: orientation of the local slow axis ------------
+            # --------Laming matrix on spun fiber --------------------------
 
-        # --------Laming: orientation of the local slow axis ------------
-        # --------Laming matrix on spun fiber --------------------------
+            # define forward
+            # The sign of farday rotation is opposite to that of the Laming paper, in order
+            # to be consistant with anti-clockwise (as in Jones paper) orientation for both
+            # spin and farday rotation.
+            s_t_r = 2 * pi / SP  # spin twist ratio
+            V_theta_1s = V_z * s_t_r
+            qu = 2 * (s_t_r - rho) / delta
+            gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
 
-        # define forward
-        # The sign of farday rotation is opposite to that of the Laming paper, in order
-        # to be consistant with anti-clockwise (as in Jones paper) orientation for both
-        # spin and farday rotation.
-        s_t_r = 2 * pi / SP  # spin twist ratio
-        V_theta_1s = V_z * s_t_r
-        qu = 2 * (s_t_r - rho) / delta
-        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
+            R_zf = 2 * arcsin(sin(gma * dz) / ((1 + qu ** 2) ** 0.5))
 
-        R_zf = 2 * arcsin(sin(gma * dz) / ((1 + qu ** 2) ** 0.5))
+            Le = 2 * pi / gma
+            #V_nf = -((V_z / (Le / 4)).astype(int) / 2).astype(int)
+            nf = -int(gma*dz/pi)-1 if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) > 0 else -int(gma*dz/pi)
 
-        Le = 2 * pi / gma
-        #V_nf = -((V_z / (Le / 4)).astype(int) / 2).astype(int)
-        nf = -int(gma*dz/pi)-1 if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) > 0 else -int(gma*dz/pi)
+            Omega_zf = s_t_r * dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) + nf * pi
+            Phi_zf = ((s_t_r * dz) - Omega_zf) / 2 + m * (pi / 2)
 
-        Omega_zf = s_t_r * dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) + nf * pi
-        Phi_zf = ((s_t_r * dz) - Omega_zf) / 2 + m * (pi / 2)
+            # forward
+            MF = np.array([[1, 0], [0, 1]])
+            for kk in range(len(V_theta_1s) - 1):
+                Omega_z2 = Omega_zf
+                Phi_z2 = Phi_zf + V_theta_1s[kk]
+                R_z2 = R_zf
+                n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+                n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+                n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+                n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+                M_R_f = np.array([[n11, n12], [n21, n22]])
+                M_Omega_f = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
+                MF = M_Omega_f @ M_R_f @ MF
+            print("Omega_z2= ", Omega_z2)
 
-        # forward
-        MF = np.array([[1, 0], [0, 1]])
-        for kk in range(len(V_theta_1s) - 1):
-            Omega_z2 = Omega_zf
-            Phi_z2 = Phi_zf + V_theta_1s[kk]
-            print("Omega[", kk,"]:",Omega_z2)
-            print("Phi[", kk, "]:", Phi_z2)
-            R_z2 = R_zf
-            n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
-            n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
-            n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
-            n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
-            M_R_f = np.array([[n11, n12], [n21, n22]])
-            M_Omega_f = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
-            MF = M_Omega_f @ M_R_f @ MF
+            # # define backward
+            # # spin and farday rotation.
+            # s_t_r = -2 * pi / SP  # spin twist ratio
+            # V_theta_1s = V_z * s_t_r
+            # qu = 2 * (s_t_r - rho) / delta
+            # gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
+            #
+            # R_zb = 2 * arcsin(sin(gma * dz) / ((1 + qu ** 2) ** 0.5))
+            # nb = int(gma * dz / pi) if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) > 0 else int(
+            #     gma * dz / pi)+1
+            #
+            # Omega_zb = s_t_r * dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) + nb * pi
+            # Phi_zb = ((s_t_r * dz) - Omega_zf) / 2 + m * (pi / 2)
+            #
+            # # backward
+            # MB = np.array([[1, 0], [0, 1]])
+            # for kk in range(len(V_theta_1s) - 1):
+            #     Omega_z2 = Omega_zb
+            #     Phi_z2 = Phi_zb + V_theta_1s[-1-kk]
+            #     R_z2 = R_zb
+            #     n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+            #     n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+            #     n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
+            #     n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
+            #     M_R_b = np.array([[n11, n12], [n21, n22]])
+            #     M_Omega_b = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
+            #     MB = M_Omega_b @ M_R_b @ MB
+            #     print("Omega_z2= ", Omega_z2)
 
-        # define backward
-        # spin and farday rotation.
-        s_t_r = -2 * pi / SP  # spin twist ratio
-        V_theta_1s = V_z * s_t_r
-        qu = 2 * (s_t_r - rho) / delta
-        gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - rho) ** 2)) ** 0.5
+            ksi =45
+            Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
+            Jm = np.array([[1, 0], [0, 1]])
+            M_FR = Rot @ Jm @ Rot
 
-        R_zb = 2 * arcsin(sin(gma * dz) / ((1 + qu ** 2) ** 0.5))
-        nb = int(gma * dz / pi) if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) > 0 else int(
-            gma * dz / pi)+1
+            V_in = np.array([[1],[0]])
 
-        Omega_zb = s_t_r * dz + arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) + nb * pi
-        Phi_zb = ((s_t_r * dz) - Omega_zf) / 2 + m * (pi / 2)
+            V_out = MF@V_in
+            print("dz = ",dz, ", gma*dz=, ", gma*dz, ", xx = ", arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * dz)) + nf * pi)
 
-        # backward
-        MB = np.array([[1, 0], [0, 1]])
-        for kk in range(len(V_theta_1s) - 1):
-            Omega_z2 = Omega_zb
-            Phi_z2 = Phi_zb + V_theta_1s[-1-kk]
-            print("Omega[", kk, "]:", Omega_z2)
-            print("Phi[", kk, "]:", Phi_z2)
-            R_z2 = R_zb
-            n11 = cos(R_z2 / 2) + 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
-            n12 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
-            n21 = 1j * sin(R_z2 / 2) * sin(2 * Phi_z2)
-            n22 = cos(R_z2 / 2) - 1j * sin(R_z2 / 2) * cos(2 * Phi_z2)
-            M_R_b = np.array([[n11, n12], [n21, n22]])
-            M_Omega_b = np.array([[cos(Omega_z2), -sin(Omega_z2)], [sin(Omega_z2), cos(Omega_z2)]])
-            MB = M_Omega_b @ M_R_b @ MB
+            print("V_out= ", V_out.T)
+            E.from_matrix(V_out)
+            print(S.from_Jones(E).parameters.matrix()[1])
+            print(S.from_Jones(E).parameters.matrix()[2])
+            print(S.from_Jones(E).parameters.matrix()[3])
 
-        ksi =45
-        Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
-        Jm = np.array([[1, 0], [0, 1]])
-        M_FR = Rot @ Jm @ Rot
-
-        V_in = np.array([[1],[0]])
-
-        V_out = MB@M_FR@MF@V_in
-        print(V_out)
+            print(tmp -S.from_Jones(E).parameters.matrix()[3] )
+            tmp = S.from_Jones(E).parameters.matrix()[3]
 
 plt.show()
