@@ -41,7 +41,7 @@ def cm_to_rgba_tuple(colors,alpha=1):
     return tmp
 
 if __name__ == '__main__':
-    mode =0
+    mode =3
     # Crystal Techno lobi spun fiber
     LB = 1
     SP = 0.005
@@ -53,23 +53,24 @@ if __name__ == '__main__':
 
     #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
     #strfile1 = 'Lobi_90FM_errdeg1x5_220518.csv'
-    strfile1 = 'Lobi_45FM_errdeg1x5_220529_2.csv'
+    #strfile1 = 'Lobi_45FM_NoIPinBridge_errdeg1x5_220529.csv'
+    strfile1 = 'Lobi_46FM_errdeg1x5_220529.csv'
 
     if mode == 0:
 
-        num_iter = 1
+        num_iter = 50
         num_processor = 16
-        V_I = arange(0e6, 100 + 1, 1)
+        #V_I = arange(0e6, 100 + 1, 1)
         #V_I = arange(0e6, 0.0005e6 + 0.00001e6, 0.00001e6)
-        # V_I = np.logspace(0,0.005e6, 20)
+        V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = 1e6
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
-        nM_vib = 0
+        nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 45
+        ang_FM = 46
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
@@ -93,7 +94,7 @@ if __name__ == '__main__':
         # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
 
 
-        fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S")
+        fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)
 
     elif mode == 1:
         #strfile1 = 'Hibi_test.csv'
@@ -186,7 +187,7 @@ if __name__ == '__main__':
         fig3.show()
 
     elif mode ==3:
-        strfile1 = 'Lobi_45FM_errdeg1x5_220529_2.csv'
+        # strfile1 = 'Lobi_45FM_errdeg1x5_220529_2.csv'
         # strfile1 = "IdealFM_Hibi_Errdeg1x5_0.csv"
         # strfile1 = "Hibi_44FM_errdeg1x5.csv"
         # strfile1 = "IdealFM_Errdeg1x5_1.csv"

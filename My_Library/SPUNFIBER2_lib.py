@@ -487,11 +487,11 @@ class SPUNFIBER:
 
         # magnetic field in unit length
         # H = Ip / (2 * pi * r)
-        r = self.LF *2*pi
+        r = self.L /(2*pi)
         if DIR == 1:
-            V_H = Ip * r/ (2*pi*(r**2+ (self.LF - V_LF)**2))
+            V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
         else:
-            V_H = Ip * r/ (2*pi*(r**2+ V_LF**2))
+            V_H = Ip * r / (2*pi*(r**2+ V_LF**2))
         V_rho = self.V * V_H    # <<- Vector
 
         # --------Laming: orientation of the local slow axis ------------
@@ -532,9 +532,10 @@ class SPUNFIBER:
         n22 = cos(V_R / 2) - 1j * sin(V_R / 2) * cos(2 * V_phi)
 
         M_R = np.array([[n11, n21], [n12, n22]]).T
+        M_omega = np.array([[cos(V_omega), sin(V_omega)], [-sin(V_omega), cos(V_omega)]]).T
+
         # Note that [[n11,n21],[n21,n22]].T calculation is [[n11[0], n12[0]],[n21[0],n22[0]], ...
-        # Therefore, R array should be defined as transposed matrix to have correct matrix.
-        M_omega = np.array([[cos(V_omega), -sin(V_omega)], [sin(V_omega), cos(V_omega)]]).T
+        # Therefore, M_R, M_omega array should be defined as transposed matrix to have correct matrix.
 
         kk = 0  # for counting M_vib
         if M_vib is not None:
@@ -797,6 +798,18 @@ class SPUNFIBER:
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
 
+            # self.dz = self.LF / 100
+            # M_lf_f = self.lamming_bridge(0, 1, V_theta_lf, V_L_lf, M_vib)
+            # self.dz = self.SP / 100
+            # M_f = self.lamming(iter_I, 1, V_theta)
+            # self.dz = self.LF / 100
+            # M_lf_f2 = self.lamming_bridge(0, 1, V_theta_lf2, V_L_lf2, M_vib)
+            # M_lf_b2 = self.lamming_bridge(0, -1, V_theta_lf2, V_L_lf2, M_vib)
+            # self.dz = self.SP / 100
+            # M_b = self.lamming(iter_I, -1, V_theta)
+            # self.dz = self.LF / 100
+            # M_lf_b = self.lamming_bridge(0, -1, V_theta_lf, V_L_lf, M_vib)
+
             self.dz = self.LF/100
             M_lf_f = self.lamming_bridge(-iter_I, 1, V_theta_lf, V_L_lf, M_vib)
             self.dz = self.SP/100
@@ -823,6 +836,7 @@ class SPUNFIBER:
                 # print("M_b = ", M_b[0, 1], M_b[1, 0])
                 # print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
 
+            #V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
             V_out[mm] = M_lf_b @ M_b @ M_lf_b2 @ M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Vin
             # V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
@@ -922,13 +936,13 @@ class SPUNFIBER:
 
         m = 0
         for kk in range(len(V_I)):
-            if kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+            if kk > 0 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
                 m = m + 1
-            elif kk > 2 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+            elif kk > 0 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
                 m = m - 1
             V_ang[kk] = E[kk].parameters.azimuth() + m * pi
-            Ip[kk] = (V_ang[kk] - V_ang[0]) / (2 * self.V)
-
+            Ip[kk] = (V_ang[kk] - pi/2) / (2 * self.V)
+        print(V_ang[0])
         return Ip, Vout
 
     def single_rotation1(self, V_Ip, Vin=None):
@@ -1229,7 +1243,7 @@ class SPUNFIBER:
         plt.rc('text', usetex=True)
         ax.set_xlabel(r'Plasma current $I_{p}(A)$')
         ax.set_ylabel(r'Relative error on $I_{P}$')
-
+        ax.set_title("Spun fiber.plot_error")
         # plt.title('Output power vs Plasma current')
         ax.set(xlim=(0, 18e6), ylim=(0, 0.1))
         ax.yaxis.set_major_locator(MaxNLocator(4))
@@ -1869,7 +1883,8 @@ if __name__ == '__main__':
             print(S.from_Jones(E).parameters.matrix()[2])
             print(S.from_Jones(E).parameters.matrix()[3])
 
-            print(tmp -S.from_Jones(E).parameters.matrix()[3] )
-            tmp = S.from_Jones(E).parameters.matrix()[3]
+            print(S.parameters.azimuth()*180/pi)
+
+
 
 plt.show()
