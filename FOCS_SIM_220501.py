@@ -10,7 +10,7 @@ from matplotlib.colors import rgb2hex
 start = time.process_time()
 # from My_Library import SPUNFIBRE_lib
 
-from My_Library.SPUNFIBRE_lib import *
+from My_Library.SPUNFIBER2_lib import *
 from My_Library.draw_figures_FOCS import *
 
 from My_Library.basis_correction_lib import *
@@ -41,30 +41,33 @@ def cm_to_rgba_tuple(colors,alpha=1):
     return tmp
 
 if __name__ == '__main__':
-    mode = 4
+    mode =0
     # Crystal Techno lobi spun fiber
     LB = 1
     SP = 0.005
     # dz = SP / 1000
     dz = 0.0001
-    len_lf = 1  # lead fiber
+    len_lf = 6  # lead fiber
     len_ls = 1  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
     #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
     #strfile1 = 'Lobi_90FM_errdeg1x5_220518.csv'
-    strfile1 = 'Lobi_45FM_errdeg10x5_220518_0_0.1MA.csv'
+    strfile1 = 'Lobi_45FM_errdeg1x5_220529_2.csv'
 
     if mode == 0:
 
-        num_iter = 50
-        num_processor = 8
-        #V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
-        V_I = arange(0e6, 0.1e6, 0.01e6)
+        num_iter = 1
+        num_processor = 16
+        V_I = arange(0e6, 100 + 1, 1)
+        #V_I = arange(0e6, 0.0005e6 + 0.00001e6, 0.00001e6)
+        # V_I = np.logspace(0,0.005e6, 20)
+        # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
+        # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = 1e6
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
-        nM_vib = 5
+        nM_vib = 0
         start = pd.Timestamp.now()
         ang_FM = 45
 
@@ -75,8 +78,8 @@ if __name__ == '__main__':
         S = create_Stokes('O')
         for nn in range(num_iter):
             Vin = E[0].parameters.matrix()
-            M_vib = spunfiber.create_Mvib(nM_vib, 10, 10)
-            Ip, Vout = spunfiber.calc_mp(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
+            M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
+            Ip, Vout = spunfiber.calc_mp3(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
             save_Jones(strfile1,V_I,Ip,Vout)
 
             checktime = pd.Timestamp.now() - start
@@ -183,13 +186,13 @@ if __name__ == '__main__':
         fig3.show()
 
     elif mode ==3:
-        strfile1 = "Hibi_42FM_errdeg1x5.csv"
+        strfile1 = 'Lobi_45FM_errdeg1x5_220529_2.csv'
         # strfile1 = "IdealFM_Hibi_Errdeg1x5_0.csv"
         # strfile1 = "Hibi_44FM_errdeg1x5.csv"
         # strfile1 = "IdealFM_Errdeg1x5_1.csv"
         # load whole Jones and convert to measured Ip
-        V2 = 0.54 * 4 * pi * 1e-7 * 2 *(0.9700180483394489)
-        #V2 = 0.54 * 4 * pi * 1e-7 * 2
+        # V2 = 0.54 * 4 * pi * 1e-7 * 2 *(0.9700180483394489)
+        V2 = 0.54 * 4 * pi * 1e-7 * 2
 
         fig, ax, lines, isEOF, nn = None, None, None, False, 0
         fig3, lines3, opacity = None, None, 0.5

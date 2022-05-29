@@ -1184,7 +1184,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode = 4
+    mode = 1
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1250,7 +1250,7 @@ if __name__ == '__main__':
         ax2.xaxis.set_major_formatter(OOMFormatter(6, "%1.1f"))
         ax2.yaxis.set_major_formatter(OOMFormatter(-1, "%1.1f"))
     if mode == 1:
-        LB = 1
+        LB = 0.009
         SP = 0.005
         # dz = SP / 1000
         dz = 0.0002
