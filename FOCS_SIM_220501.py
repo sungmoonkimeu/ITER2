@@ -180,9 +180,11 @@ if __name__ == '__main__':
 
             fig10, ax10, lines10 = plot_errorbar_byDic(dic_err, fig=fig10, ax=ax10, lines=lines10, init_index=18)
             isEOF = False
-        ax10.legend(lines10[[0, 4, 6]], ['ITER specification', '',
-                                         r'Ideal FM $\theta_{err}$=0$\degree$',
-                                         r'$\theta_{err}$=1$\degree$'])
+        # ax10.legend(lines10, ['ITER specification', '',
+        #                                  r'Ideal FM $\theta_{err}$=0$\degree$',
+        #                                  r'$\theta_{err}$=1$\degree$', '', '','', ''])
+        ax10.legend( [lines10[0], lines10[3], lines10[5]], ['ITER specification', '', ''])
+        print(legend)
         # r'$\theta_{err}$=20$\degree$'])
         # r'$\theta_{err}$=45$\degree$'])
 
