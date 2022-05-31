@@ -41,7 +41,7 @@ def cm_to_rgba_tuple(colors,alpha=1):
     return tmp
 
 if __name__ == '__main__':
-    mode =3
+    mode =2
     # Crystal Techno lobi spun fiber
     LB = 1
     SP = 0.005
@@ -51,15 +51,16 @@ if __name__ == '__main__':
     len_ls = 1  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
-    #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
-    #strfile1 = 'Lobi_90FM_errdeg1x5_220518.csv'
-    #strfile1 = 'Lobi_45FM_NoIPinBridge_errdeg1x5_220529.csv'
-    strfile1 = 'Lobi_46FM_errdeg1x5_220529.csv'
+    # strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
+    # strfile1 = 'Lobi_90FM_errdeg1x5_220518.csv'
+    # strfile1 = 'Lobi_45FM_NoIPinBridge_errdeg1x5_220529.csv'
+    # strfile1 = 'Lobi_46FM_errdeg1x5_220529.csv'
+    strfile1 = 'Lobi_45FM_errdeg1x5_220531.csv'
 
     if mode == 0:
 
-        num_iter = 50
-        num_processor = 16
+        num_iter = 100
+        num_processor = 8
         #V_I = arange(0e6, 100 + 1, 1)
         #V_I = arange(0e6, 0.0005e6 + 0.00001e6, 0.00001e6)
         V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
@@ -70,7 +71,7 @@ if __name__ == '__main__':
         out_dict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 46
+        ang_FM = 45
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
@@ -140,277 +141,159 @@ if __name__ == '__main__':
         fig3.show()
 
     elif mode == 2:
-        ### effect of basis correction
-        #strfile1 = "IdealFM_Hibi_Errdeg1x5_0.csv"
-        #strfile1 = "Hibi_44FM_errdeg1x5.csv"
-        #strfile1 = "IdealFM_Errdeg1x5_1.csv"
-        # load whole Jones and convert to measured Ip
-        #V2 = 0.54 * 4 * pi * 1e-7 * 2 *(0.9700180483394489)
-        V2 = 0.54 * 4 * pi * 1e-7 * 2
-
-        fig, ax, lines, isEOF, nn = None, None, None, False, 0
-        fig3, lines3, opacity = None, None, 0.5
-        c = np.array([None, None, None])
-
-        dic_err = {}
-        while isEOF is False:
-            V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", nn)
-            #before cal.
-            fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,
-                                                 label='Hibi spun fiber (LB/SP=1.875)')
-            #fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
-            #fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
-
-            S2, c = basis_correction1(S, c)
-            # fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
-            #                    mode='lines',line=dict(width=8))
-            # fig, ax, lines = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines, V_custom=V2,
-            #                                       label=str(nn)+"calibrated")
-            # fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
-            fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
-            c = np.array([None, None, None])
-            S2, c = basis_correction1(S2, c)
-            fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
-                               mode='lines',line=dict(width=8))
-            fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,
-                                                 label='After basis correction')
-            fig2, ax2, lines2 = plot_error_byStokes(V_I, S, V_custom=V2*(0.9700180483394489),label='After calibration')
-
-            if nn == 0:
-                dic_err['V_I'] = V_I
-            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2)
-            c = np.array([None, None, None])
-            nn += 1
-            if nn > 0:
-                break
-        # fig10, ax10 = plot_errorbar_byDic(dic_err)
-        fig3.show()
-
-    elif mode ==3:
         # strfile1 = 'Lobi_45FM_errdeg1x5_220529_2.csv'
         # strfile1 = "IdealFM_Hibi_Errdeg1x5_0.csv"
         # strfile1 = "Hibi_44FM_errdeg1x5.csv"
         # strfile1 = "IdealFM_Errdeg1x5_1.csv"
         # load whole Jones and convert to measured Ip
         # V2 = 0.54 * 4 * pi * 1e-7 * 2 *(0.9700180483394489)
+        V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv', 'Lobi_0FM_errdeg1x5_220531.csv']
+        #V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv']
+        V_label = ['Ideal FM', 'Nonideal ']
         V2 = 0.54 * 4 * pi * 1e-7 * 2
 
         fig, ax, lines, isEOF, nn = None, None, None, False, 0
         fig3, lines3, opacity = None, None, 0.5
+        fig10, ax10, lines10 = None, None, []
         c = np.array([None, None, None])
 
-        dic_err = {}
-        while isEOF is False:
-            V_I, S, isEOF = load_stokes_fromfile(strfile1 + "_S", nn)
-            # before cal.
-            fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,
-                                                 label='Hibi spun fiber (LB/SP=1.875)')
-            # fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
-            # fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
 
-            # S2, c = basis_correction1(S, c)
-            # fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
-            #                    mode='lines',line=dict(width=8))
-            # fig, ax, lines = plot_error_byStokes(V_I, S2, fig=fig, ax=ax, lines=lines, V_custom=V2,
-            #                                       label=str(nn)+"calibrated")
-            # fig3, lines3 = plot_Stokes(V_I, S, fig=fig3, lines=lines3, opacity=opacity)
-            fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
+        for strfile1 in V_strfile:
+            dic_err = {}
+            nn = 0
+            while isEOF is False:
+                V_I, S, isEOF = load_stokes_fromfile(strfile1 + "_S", nn)
 
-            if nn == 0:
-                dic_err['V_I'] = V_I
-            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2)
-            c = np.array([None, None, None])
-            nn += 1
-            # if nn > 0:
-            #     break
-        fig10, ax10 = plot_errorbar_byDic(dic_err)
+                fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,
+                                                     label=str(nn))
 
-    elif mode ==4:
+                fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
 
-        fig, ax, lines, V2 = None, None, None, None
-
-        isEOF, nn = False, 0
-
-        fig3, lines3, opacity = None, None, 0.8
+                if nn == 0:
+                    dic_err['V_I'] = V_I
+                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2)
+                c = np.array([None, None, None])
+                nn += 1
+                # if nn > 0:
+                #     break
 
 
-        # strfile1 = 'Test1_hibi1.csv'
-        # fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S", fig=fig, ax= ax, V_custom=V2)
-        #
-        # strfile1 = 'Test1_hibi2.csv'
-        # fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S", fig=fig, ax= ax, V_custom=V2)
-        V2 = 0.54 * 4 * pi * 1e-7
-        #strfile1 = 'Test1_hibi1.csv'
+            fig10, ax10, lines10 = plot_errorbar_byDic(dic_err, fig=fig10, ax=ax10, lines=lines10, init_index=18)
+            isEOF = False
+        ax10.legend(lines10[[0, 4, 6]], ['ITER specification', '',
+                                         r'Ideal FM $\theta_{err}$=0$\degree$',
+                                         r'$\theta_{err}$=1$\degree$'])
+        # r'$\theta_{err}$=20$\degree$'])
+        # r'$\theta_{err}$=45$\degree$'])
 
-
-        # strfile1 = 'IdealFM_Errdeg1x5_1.csv'
-        # #strfile1 = 'IdealFM_Hibi_Errdeg1x5_0.csv'
-        # dic_err = {}
-        # while isEOF is False:
-        #     V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", nn)
-        #     if nn == 0:
-        #         dic_err['V_I'] = V_I
-        #         fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
-        #     dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*2,v_calc_init=pi/2)
-        #     nn += 1
-        #     # n_item = [0,3,7,11,15,19]
-        #     # V_I2, S2 = V_I[n_item], S[n_item]
-        #     # fig3, lines3 = plot_Stokes_pnt(V_I2, S2,fig=fig3, lines=lines3, opacity=opacity)
-        # fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='ideal FM')
-
-
-        #strfile1 = 'Test1_hibi2.csv'
-        #strfile1 = '42FM_Errdeg1x5_0_2.csv'
-        #strfile1 = 'Hibi_44FM_errdeg1x5.csv'
-        #strfile1 = 'Hibi_44FM_errdeg1x5_220506.csv'
-        #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
-        #strfile1 = 'Lobi_46FM_errdeg1x5_220506.csv'
-        #strfile1 = 'Lobi_50FM_errdeg1x5_220518.csv'
-        #strfile1 = 'Lobi_65FM_errdeg1x5_220518.csv'
-
-        strfile1 = 'Lobi_90FM_errdeg1x5_220518.csv'
-        #strfile1 = 'Lobi_45FM_errdeg10x5_220518.csv'
-        #strfile1 = 'Lobi_45FM_errdeg10x5_220518_0_0.1MA.csv'
-
-        dic_err, nn, isEOF = {}, 0, False
-
-        while isEOF is False:
-            V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", nn)
-            if nn == 0:
-                dic_err['V_I'] = V_I
-                fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
-            dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*2, v_calc_init=(90)*pi/180)
-            #n_item = [0, 3, 7, 11, 15, 19, 23]
-            n_item = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
-            V_I2, S2 = V_I[n_item], S[n_item]
-            fig3, lines3 = plot_Stokes_pnt(V_I2, S2, fig=fig3, lines=lines3, opacity=opacity)
-
-            nn += 1
-        #fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label=r'R$\in(-10\degree,+10\degree$), $\phi$ $\in(-10\degree,+10\degree$)')
-        fig, ax = plot_errorbar_byDic(dic_err, fig, ax,
-                                      label=r'(FM error $45\degree$)')
-
-
-        # strfile1 = 'Hibi_44FM_errdeg1x5_220506.csv'
-        # dic_err, nn, isEOF = {}, 0, False
-        #
-        # while isEOF is False:
-        #     V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", nn)
-        #     if nn == 0:
-        #         dic_err['V_I'] = V_I
-        #         fig2, ax2, lines2 = plot_error_byStokes(V_I, S)
-        #     dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2, v_calc_init=(90-2)*pi/180)
-        #     nn += 1
-        # fig, ax = plot_errorbar_byDic(dic_err, fig, ax, label='FM42')
-        fig3.show()
-
-    elif mode ==5:
-
-        strfile1 = 'FMerror.csv'
-        num_iter = 500
-
-        nM_vib = 5
-        #ang_FM = np.arange(0,46,1)
-        ang_FM = np.arange(0, 46, 1)
-
-        E = Jones_vector('input')
-        E1 = Jones_vector('output')
-        azi = np.array([0, pi / 6, pi / 4])
-        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
-        #fig1, ax1 = spunfiber.init_plot_SOP()
-        S = create_Stokes('O')
-
-        # outdict = {}
-        # for nn in ang_FM:
-        #     Vin = E[0].parameters.matrix()
-        #     print(nn)
-        #     Vout = spunfiber.cal_2ndBridge(45+nn/10, num_iter, Vin=Vin)
-        #     outdict[str(int(nn)) + ' Ex'] = Vout[:, 0, 0]
-        #     outdict[str(int(nn)) + ' Ey'] = Vout[:, 1, 0]
-        # df = pd.DataFrame(outdict)
-        # df.to_csv(strfile1, index=False)
-
-
-        ######## FM error############
-        fig, ax = plt.subplots(figsize=(6, 5))
-        lines = []
-        # ax.set_prop_cycle(cc)
-
-        ax.set_xlabel(r'FM angle error $\theta_{err}(\degree)$')
-        ax.set_ylabel(r'SOP deviation ($\degree$)')
-
-        # ax.set(xlim=(0, 45), ylim=(0, 12))
-        ax.set(xlim=(0, 45), ylim=(0, 12))
-
-        ax.yaxis.set_major_locator(MaxNLocator(6))
-        ax.xaxis.set_major_locator(MaxNLocator(10))
-
-        ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.0f"))
-        ax.yaxis.set_major_formatter(OOMFormatter(0, "%2.1f"))
-
-        ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
-        ax.grid(ls='--', lw=0.5)
-
-        fig.subplots_adjust(hspace=0.4,left =0.17, right=0.95, top=0.93, bottom=0.2)
-
-        ######################
-
-
-        data = pd.read_csv(strfile1)
-        fig3, lines3, opacity = None, None, 1
-
-        # color palette prepared for each input SOPs with plotly library
-        colors_Viridis_tmp = px.colors.sample_colorscale("Viridis", [n / (len(ang_FM) - 1) for n in range(len(ang_FM))])
-        colors_Viridis = cm_to_rgba_tuple(colors_Viridis_tmp)
-        out_ellip = zeros(len(ang_FM))
-
-        for nn in range(int(data.shape[1] / 2)):
-
-            str_Ex = str(nn) + ' Ex'
-            str_Ey = str(nn) + ' Ey'
-            Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
-                             [complex(y) for y in data[str_Ey].to_numpy()]])
-            E.from_matrix(Vout)
-            S.from_Jones(E)
-            #draw_stokes_points(fig1[0], S, kind='scatter', color_scatter='r')
-            fig3, lines3 = plot_Stokes_pnt2(S, fig=fig3, lines=lines3, opacity=opacity, color_pnt=rgb2hex(colors_Viridis[nn]))
-            ellip = S.parameters.ellipticity_angle()
-            out_ellip[-1-nn] = ellip.max() - ellip.min()
-
-        ax.plot(ang_FM, out_ellip*180/pi, 'k')
-        #fig3.update_traces(marker_size=3)
-        colorbar_param = dict(lenmode='fraction', len=0.75, thickness=10, tickfont=dict(size=20),
-                              tickvals=np.linspace(0, len(ang_FM), 4),
-                              ticktext=['0', '15', '30', '45'],
-                              # title='Azimuth angle',
-                              outlinewidth=1,
-                              x=0.2)
-        colorbar_trace = go.Scatter(x=[None], y=[None],
-                                    mode='markers',
-                                    marker=dict(
-                                        colorscale='Viridis',
-                                        showscale=True,
-                                        cmin=0,
-                                        cmax=len(ang_FM),
-                                        colorbar=colorbar_param
-                                    ),
-                                    hoverinfo='none'
-                                    )
-        fig3.add_trace(colorbar_trace)
-        fig3['layout']['paper_bgcolor'] = 'rgba(0,0,0,0)'
-        fig3['layout']['plot_bgcolor'] = 'rgba(0,0,0,0)'
-        fig3.update_yaxes(showticklabels=False, showgrid=False, visible=False)
-        fig3.update_xaxes(showticklabels=False, showgrid=False, visible=False)
-
-
-        #fig2, ax2, lines = spunfiber.plot_error(strfile1)
-
-        # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
-        #              ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
-        # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
-
-        #fig3, ax3, lines3 = plot_error_byfile2(strfile1 + "_S")
-        fig3.show()
+        #ax.legend()
+    # elif mode ==5:
+    #
+    #     strfile1 = 'FMerror.csv'
+    #     num_iter = 500
+    #
+    #     nM_vib = 5
+    #     #ang_FM = np.arange(0,46,1)
+    #     ang_FM = np.arange(0, 46, 1)
+    #
+    #     E = Jones_vector('input')
+    #     E1 = Jones_vector('output')
+    #     azi = np.array([0, pi / 6, pi / 4])
+    #     E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
+    #     #fig1, ax1 = spunfiber.init_plot_SOP()
+    #     S = create_Stokes('O')
+    #
+    #     # outdict = {}
+    #     # for nn in ang_FM:
+    #     #     Vin = E[0].parameters.matrix()
+    #     #     print(nn)
+    #     #     Vout = spunfiber.cal_2ndBridge(45+nn/10, num_iter, Vin=Vin)
+    #     #     outdict[str(int(nn)) + ' Ex'] = Vout[:, 0, 0]
+    #     #     outdict[str(int(nn)) + ' Ey'] = Vout[:, 1, 0]
+    #     # df = pd.DataFrame(outdict)
+    #     # df.to_csv(strfile1, index=False)
+    #
+    #
+    #     ######## FM error############
+    #     fig, ax = plt.subplots(figsize=(6, 5))
+    #     lines = []
+    #     # ax.set_prop_cycle(cc)
+    #
+    #     ax.set_xlabel(r'FM angle error $\theta_{err}(\degree)$')
+    #     ax.set_ylabel(r'SOP deviation ($\degree$)')
+    #
+    #     # ax.set(xlim=(0, 45), ylim=(0, 12))
+    #     ax.set(xlim=(0, 45), ylim=(0, 12))
+    #
+    #     ax.yaxis.set_major_locator(MaxNLocator(6))
+    #     ax.xaxis.set_major_locator(MaxNLocator(10))
+    #
+    #     ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.0f"))
+    #     ax.yaxis.set_major_formatter(OOMFormatter(0, "%2.1f"))
+    #
+    #     ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
+    #     ax.grid(ls='--', lw=0.5)
+    #
+    #     fig.subplots_adjust(hspace=0.4,left =0.17, right=0.95, top=0.93, bottom=0.2)
+    #
+    #     ######################
+    #
+    #
+    #     data = pd.read_csv(strfile1)
+    #     fig3, lines3, opacity = None, None, 1
+    #
+    #     # color palette prepared for each input SOPs with plotly library
+    #     colors_Viridis_tmp = px.colors.sample_colorscale("Viridis", [n / (len(ang_FM) - 1) for n in range(len(ang_FM))])
+    #     colors_Viridis = cm_to_rgba_tuple(colors_Viridis_tmp)
+    #     out_ellip = zeros(len(ang_FM))
+    #
+    #     for nn in range(int(data.shape[1] / 2)):
+    #
+    #         str_Ex = str(nn) + ' Ex'
+    #         str_Ey = str(nn) + ' Ey'
+    #         Vout = np.array([[complex(x) for x in data[str_Ex].to_numpy()],
+    #                          [complex(y) for y in data[str_Ey].to_numpy()]])
+    #         E.from_matrix(Vout)
+    #         S.from_Jones(E)
+    #         #draw_stokes_points(fig1[0], S, kind='scatter', color_scatter='r')
+    #         fig3, lines3 = plot_Stokes_pnt2(S, fig=fig3, lines=lines3, opacity=opacity, color_pnt=rgb2hex(colors_Viridis[nn]))
+    #         ellip = S.parameters.ellipticity_angle()
+    #         out_ellip[-1-nn] = ellip.max() - ellip.min()
+    #
+    #     ax.plot(ang_FM, out_ellip*180/pi, 'k')
+    #     #fig3.update_traces(marker_size=3)
+    #     colorbar_param = dict(lenmode='fraction', len=0.75, thickness=10, tickfont=dict(size=20),
+    #                           tickvals=np.linspace(0, len(ang_FM), 4),
+    #                           ticktext=['0', '15', '30', '45'],
+    #                           # title='Azimuth angle',
+    #                           outlinewidth=1,
+    #                           x=0.2)
+    #     colorbar_trace = go.Scatter(x=[None], y=[None],
+    #                                 mode='markers',
+    #                                 marker=dict(
+    #                                     colorscale='Viridis',
+    #                                     showscale=True,
+    #                                     cmin=0,
+    #                                     cmax=len(ang_FM),
+    #                                     colorbar=colorbar_param
+    #                                 ),
+    #                                 hoverinfo='none'
+    #                                 )
+    #     fig3.add_trace(colorbar_trace)
+    #     fig3['layout']['paper_bgcolor'] = 'rgba(0,0,0,0)'
+    #     fig3['layout']['plot_bgcolor'] = 'rgba(0,0,0,0)'
+    #     fig3.update_yaxes(showticklabels=False, showgrid=False, visible=False)
+    #     fig3.update_xaxes(showticklabels=False, showgrid=False, visible=False)
+    #
+    #
+    #     #fig2, ax2, lines = spunfiber.plot_error(strfile1)
+    #
+    #     # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
+    #     #              ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
+    #     # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+    #
+    #     #fig3, ax3, lines3 = plot_error_byfile2(strfile1 + "_S")
+    #     fig3.show()
 
     plt_fmt, plt_res = '.png', 330  # 330 is max in Word'16
     plt.rcParams["axes.titlepad"] = 5  # offset for the fig title
