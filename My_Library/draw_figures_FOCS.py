@@ -151,7 +151,7 @@ def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None
 
             Ip[nn][kk] = (V_ang[kk] - c) / V
 
-        print(V_I, Ip[0])
+        # print(V_I, Ip[0])
         lines += ax.plot(V_I, abs((Ip[nn, :] - V_I) / V_I), label=str(nn))
     #print(V_I)
     lines += ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')

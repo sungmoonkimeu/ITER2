@@ -20,7 +20,7 @@ from multiprocessing import Process, Queue, Manager,Lock
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-
+import csv
 # from .basis_correction_lib import calib_basis3
 # from .draw_poincare_plotly import *
 
@@ -383,6 +383,7 @@ class SPUNFIBER:
         :param L: fiber length
         :param V_theta: vector of theta (angle of optic axes)
         :return: M matrix calculated from N matrix
+        Only valid dz < SP/100
         """
 
         s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
@@ -472,7 +473,7 @@ class SPUNFIBER:
         # print(tmp) # To show where is the position of Merr
         return M
 
-    def lamming_bridge(self, Ip, DIR, V_theta, V_LF, M_vib=None, ):
+    def lamming_VV(self, Ip, DIR, V_theta, V_L):
         """
         :param DIR: direction (+1: forward, -1: backward)
         :param Ip: plasma current
@@ -488,9 +489,83 @@ class SPUNFIBER:
         # magnetic field in unit length
         # H = Ip / (2 * pi * r)
         r = self.L /(2*pi)
-        if DIR == 1:
-            V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
+        V_H = Ip / (2*pi*r) * ones(len(V_L))
+        V_rho = self.V * V_H    # <<- Vector
+
+        # --------Laming: orientation of the local slow axis ------------
+
+        V_qu = 2 * (s_t_r - V_rho) / delta  # <<- Vector
+        # See Note/Note 1 (sign of Farday effect in Laming's method).jpg
+        # The sign of farday rotation (rho) is opposite to that of the Laming paper, inorder
+        # to be consistant with anti-clockwise (as in Jones paper) orientation for both
+        # spin and faraday rotation.
+
+        V_gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - V_rho) ** 2)) ** 0.5  # <<- Vector
+        '''
+        if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) > 0:
+            nf = -int(gma * self.dz / pi) - 1
         else:
+            nf = -int(gma * self.dz / pi)
+
+        if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) > 0:
+            nb = int(gma * self.dz / pi)
+        else:
+            nb = int(gma * self.dz / pi) + 1
+        '''
+        V_n = zeros(len(V_rho))
+        for nn in range(len(V_rho)):
+            if arctan((-V_qu[nn] / ((1 + V_qu[nn] ** 2) ** 0.5)) * tan(V_gma[nn] * self.dz)) > 0:
+                V_n[nn] = -DIR*int(V_gma[nn] * self.dz / pi) - 0.5*(1+DIR)
+            else:
+                V_n[nn] = -DIR*int(V_gma[nn] * self.dz / pi) + 0.5*(1-DIR)
+
+        V_omega = s_t_r * self.dz + arctan((-V_qu / ((1 + V_qu ** 2) ** 0.5)) * tan(V_gma * self.dz)) + V_n * pi  # <<- Vector
+        V_R = 2 * arcsin(sin(V_gma * self.dz) / ((1 + V_qu ** 2) ** 0.5))  # <<- Vector
+        V_phi = ((s_t_r * self.dz) - V_omega) / 2 + m * (pi / 2)
+        V_phi += V_theta if DIR == 1 else np.flip(V_theta)
+
+        n11 = cos(V_R / 2) + 1j * sin(V_R / 2) * cos(2 * V_phi)
+        n12 = 1j * sin(V_R / 2) * sin(2 * V_phi)
+        n21 = 1j * sin(V_R / 2) * sin(2 * V_phi)
+        n22 = cos(V_R / 2) - 1j * sin(V_R / 2) * cos(2 * V_phi)
+
+        M_R = np.array([[n11, n21], [n12, n22]]).T
+        M_omega = np.array([[cos(V_omega), sin(V_omega)], [-sin(V_omega), cos(V_omega)]]).T
+
+        # Note that [[n11,n21],[n21,n22]].T calculation is [[n11[0], n12[0]],[n21[0],n22[0]], ...
+        # Therefore, M_R, M_omega array should be defined as transposed matrix to have correct matrix.
+
+        M = np.array([[1, 0], [0, 1]])
+        for nn in range(len(V_theta)-1):
+            M = M_omega[nn] @ M_R[nn] @ M
+
+        # print("rem=", rem, "nVerr=", nVerr, "nSet = ", nSet) # To show current spun fiber's info.
+        # print(tmp) # To show where is the position of Merr
+        return M
+
+    def lamming_bridge(self, Ip, DIR, n_Bridge, V_theta, V_LF, M_vib=None ):
+        """
+        :param DIR: direction (+1: forward, -1: backward)
+        :param Ip: plasma current
+        :param L: fiber length
+        :param V_theta: vector of theta (angle of optic axes)
+        :return: M matrix calculated from N matrix
+        """
+        m = 0
+        # Fiber parameter
+        s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
+        delta = 2 * pi / self.LB
+
+        # magnetic field in unit length
+        # H = Ip / (2 * pi * r)
+        r = self.L /(2*pi)
+        if DIR == 1 and n_Bridge == 1:
+            V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
+        elif DIR ==1 and n_Bridge == 2:
+            V_H = Ip * r / (2*pi*(r**2+ V_LF**2))
+        elif DIR == -1 and n_Bridge == 2:
+            V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
+        elif DIR == -1 and n_Bridge == 1:
             V_H = Ip * r / (2*pi*(r**2+ V_LF**2))
         V_rho = self.V * V_H    # <<- Vector
 
@@ -582,6 +657,34 @@ class SPUNFIBER:
         # print("rem=", rem, "nVerr=", nVerr, "nSet = ", nSet) # To show current spun fiber's info.
         # print(tmp) # To show where is the position of Merr
         return M
+
+    def f_in_bridge(self, Ip, DIR, n_Bridge, V_theta, V_LF, M_vib=None ):
+        """
+        :param DIR: direction (+1: forward, -1: backward)
+        :param Ip: plasma current
+        :param L: fiber length
+        :param V_theta: vector of theta (angle of optic axes)
+        :return: M matrix calculated from N matrix
+        """
+        m = 0
+        # Fiber parameter
+        s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
+        delta = 2 * pi / self.LB
+
+        # magnetic field in unit length
+        # H = Ip / (2 * pi * r)
+        r = self.L /(2*pi)
+        if DIR == 1 and n_Bridge == 1:
+            V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
+        elif DIR ==1 and n_Bridge == 2:
+            V_H = Ip * r / (2*pi*(r**2+ V_LF**2))
+        elif DIR == -1 and n_Bridge == 2:
+            V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
+        elif DIR == -1 and n_Bridge == 1:
+            V_H = Ip * r / (2*pi*(r**2+ V_LF**2))
+        V_rho = self.V * V_H    # <<- Vector
+
+        return V_rho
 
     def create_Mvib(self, nM_vib, max_phi, max_theta_e):
         theta = (np.random.rand(nM_vib) - 0.5) * 2 * pi / 2  # random axis of LB
@@ -713,7 +816,7 @@ class SPUNFIBER:
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             # V_out[mm] = M_lf_f @ V_in
             mm = mm + 1
-        #print("done")
+            print("mm")
 
         Vout_dic[num] = V_out
 
@@ -783,7 +886,8 @@ class SPUNFIBER:
             V_L_lf = arange(0, self.LF + self.dz, self.dz)
             V_theta_lf = V_L_lf * s_t_r
             # Sensing fiber vector with V_theta
-            self.dz = self.SP / 100
+            #self.dz = self.SP / 100
+            self.dz = self.L / 100
             V_L = arange(0, self.L + self.dz, self.dz)
             V_theta = V_theta_lf[-1] + V_L * s_t_r
 
@@ -798,29 +902,29 @@ class SPUNFIBER:
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
 
-            # self.dz = self.LF / 100
-            # M_lf_f = self.lamming_bridge(0, 1, V_theta_lf, V_L_lf, M_vib)
-            # self.dz = self.SP / 100
+            self.dz = self.LF/100
+            M_lf_f = self.lamming_bridge(-iter_I, 1, 1, V_theta_lf, V_L_lf, M_vib)
+            self.dz = self.L/100
+            M_f = self.lamming_VV(iter_I, 1, V_theta, V_L)
+            self.dz = self.LF / 100
+            M_lf_f2 = self.lamming_bridge(iter_I, 1, 2, V_theta_lf2, V_L_lf2, M_vib)
+            M_lf_b2 = self.lamming_bridge(iter_I, -1, 2, V_theta_lf2, V_L_lf2, M_vib)
+            self.dz = self.L / 100
+            M_b = self.lamming_VV(iter_I, -1, V_theta, V_L)
+            self.dz = self.LF / 100
+            M_lf_b = self.lamming_bridge(-iter_I, -1, 1, V_theta_lf, V_L_lf, M_vib)
+
+            # self.dz = self.LF/100
+            # M_lf_f = self.lamming_bridge(-iter_I, 1, 1, V_theta_lf, V_L_lf, M_vib)
+            # self.dz = self.SP/100
             # M_f = self.lamming(iter_I, 1, V_theta)
             # self.dz = self.LF / 100
-            # M_lf_f2 = self.lamming_bridge(0, 1, V_theta_lf2, V_L_lf2, M_vib)
-            # M_lf_b2 = self.lamming_bridge(0, -1, V_theta_lf2, V_L_lf2, M_vib)
+            # M_lf_f2 = self.lamming_bridge(iter_I, 1, 2, V_theta_lf2, V_L_lf2, M_vib)
+            # M_lf_b2 = self.lamming_bridge(iter_I, -1, 2, V_theta_lf2, V_L_lf2, M_vib)
             # self.dz = self.SP / 100
             # M_b = self.lamming(iter_I, -1, V_theta)
             # self.dz = self.LF / 100
-            # M_lf_b = self.lamming_bridge(0, -1, V_theta_lf, V_L_lf, M_vib)
-
-            self.dz = self.LF/100
-            M_lf_f = self.lamming_bridge(-iter_I, 1, V_theta_lf, V_L_lf, M_vib)
-            self.dz = self.SP/100
-            M_f = self.lamming(iter_I, 1, V_theta)
-            self.dz = self.LF / 100
-            M_lf_f2 = self.lamming_bridge(iter_I, 1, V_theta_lf2, V_L_lf2, M_vib)
-            M_lf_b2 = self.lamming_bridge(iter_I, -1, V_theta_lf2, V_L_lf2, M_vib)
-            self.dz = self.SP / 100
-            M_b = self.lamming(iter_I, -1, V_theta)
-            self.dz = self.LF / 100
-            M_lf_b = self.lamming_bridge(-iter_I, -1, V_theta_lf, V_L_lf, M_vib)
+            # M_lf_b = self.lamming_bridge(-iter_I, -1, 1, V_theta_lf, V_L_lf, M_vib)
 
             # M_lf_f = self.lamming(iter_I, 1, V_theta_lf, M_vib)
             # M_lf_b = self.lamming(iter_I, -1, V_theta_lf, M_vib)
@@ -942,7 +1046,7 @@ class SPUNFIBER:
                 m = m - 1
             V_ang[kk] = E[kk].parameters.azimuth() + m * pi
             Ip[kk] = (V_ang[kk] - pi/2) / (2 * self.V)
-        print(V_ang[0])
+        # print(V_ang[0])
         return Ip, Vout
 
     def single_rotation1(self, V_Ip, Vin=None):
@@ -1423,7 +1527,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
 
 if __name__ == '__main__':
-    mode =5
+    mode =6
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1713,7 +1817,8 @@ if __name__ == '__main__':
 
         fig1, ax1 = spunfiber.init_plot_SOP()
 
-        vV_I = [1e6, 5e6, 15e6]
+        #vV_I = [1e6, 5e6, 15e6]
+        vV_I = arange(0, 6e6, 1e6)
 
         nM_vib = 0
         ang_FM = 45
@@ -1729,14 +1834,17 @@ if __name__ == '__main__':
             print(spunfiber.dz)
             Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
             V_L = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
-            spunfiber.dz= 0.0005
+            draw_stokes_points(fig1[0], S_dL, kind='line', color_line='r')
+
+            spunfiber.dz= 0.0001
             print(spunfiber.dz)
             Vout = spunfiber.single_rotation4(V_I, Vin)  # cal rotation angle using lamming method (variable dL)
             V_dL = S_dL.from_Jones(E.from_matrix(Vout)).parameters.matrix()
+            draw_stokes_points(fig1[0], S_dL, kind='line', color_line='b')
+
             print(V_I)
             print(V_L.T)
             print(V_dL.T)
-
 
         figure, ax = plt.subplots(3, figsize=(5, 8))
         figure.subplots_adjust(left=0.179, bottom=0.15, right=0.94, hspace=0.226, top=0.938)
@@ -1778,7 +1886,7 @@ if __name__ == '__main__':
         LB = 1
         SP = 0.005
 
-        v_dz = [1, 0.2]
+        v_dz = [1, 0.0001]
         V = 0.54 * 4 * pi * 1e-7
         E = Jones_vector('Output')
         S = create_Stokes('Output')
@@ -1885,6 +1993,51 @@ if __name__ == '__main__':
 
             print(S.parameters.azimuth()*180/pi)
 
+    if mode == 6:
+    # to Check Magnetic field in Bridge
+        LB = 0.009
+        SP = 0.005
+        s_t_r = 2 * pi / SP
+        dz = 0.5
+        len_lf = 6  # lead fiber
+        len_ls = 28  # sensing fiber
+        spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
+
+        fig1, ax1 = spunfiber.init_plot_SOP()
+
+        vV_I = [1e6]
+        # vV_I = arange(0, 6e6, 1e6)
+
+        mm = 0
+        V_rho=np.array([])
+        for iter_I in vV_I:
+            # Lead fiber vector with V_theta_lf
+            spunfiber.dz = spunfiber.LF / 100
+            V_L_lf = arange(0, spunfiber.LF + spunfiber.dz, spunfiber.dz)
+            V_theta_lf = V_L_lf * s_t_r
+
+            # Sensing fiber vector with V_theta
+            spunfiber.dz = spunfiber.SP / 100
+            V_L = arange(0,spunfiber.L + spunfiber.dz, spunfiber.dz)
+            V_theta = V_theta_lf[-1] + V_L * s_t_r
+
+            # Another lead fiber vector with V_theta_lf2
+            spunfiber.dz = spunfiber.LF / 100
+            V_L_lf2 = arange(0, spunfiber.LF + spunfiber.dz, spunfiber.dz)
+            V_theta_lf2 = V_theta[-1] + V_L_lf2 * s_t_r
 
 
+            spunfiber.dz = spunfiber.LF / 100
+            V_rho1 = spunfiber.f_in_bridge(-iter_I, 1, 1, V_theta_lf, V_L_lf)
+            V_rho2 = spunfiber.f_in_bridge(iter_I, 1, 2, V_theta_lf2, V_L_lf2)
+            V_rho3 = spunfiber.f_in_bridge(iter_I, -1, 2, V_theta_lf2, V_L_lf2)
+            V_rho4 = spunfiber.f_in_bridge(-iter_I, -1, 1, V_theta_lf, V_L_lf)
+            V_rho = np.hstack((V_rho1, V_rho2, V_rho3, V_rho4))
+        print(V_rho)
+        f = open('V_rho', 'w')
+        writer = csv.writer(f)
+        writer.writerow(V_rho)
+        f.close()
+        figure, ax = plt.subplots(figsize=(5, 8))
+        ax.plot(V_rho)
 plt.show()

@@ -42,63 +42,70 @@ def cm_to_rgba_tuple(colors,alpha=1):
 
 if __name__ == '__main__':
     mode = 2
-    # Crystal Techno lobi spun fiber
     LB = 0.009
     SP = 0.0048
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 6  # lead fiber
-    len_ls = 1  # sensing fiber
+    len_ls = 28  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
+    # strfile1 = 'Lobi_45FM_errdeg1x5_220601.csv'
+    # strfile1 = 'Lobi_46FM_errdeg1x5_220601.csv'
+    # strfile1 = 'Lobi_65FM_errdeg1x5_220601.csv'
+    # strfile1 = 'Lobi_0FM_errdeg1x5_220601.csv'
 
-    # strfile1 = 'Lobi_46FM_errdeg1x5_220529.csv'
-    # strfile1 = 'Lobi_65FM_errdeg1x5_220531.csv'
+    strfile1 = 'Hibi_45FM_errdeg1x5_220601.csv'
+    strfile2 = 'Hibi_46FM_errdeg1x5_220601.csv'
+    strfile3 = 'Hibi_65FM_errdeg1x5_220601.csv'
+    strfile4 = 'Hibi_0FM_errdeg1x5_220601.csv'
 
-    # strfile1 = 'Hibi_45FM_errdeg1x5_220531.csv'
-    # strfile1 = 'Hibi_46FM_errdeg1x5_220531.csv'
-    # strfile1 = 'Hibi_65FM_errdeg1x5_220531.csv'
-    strfile1 = 'Hibi_0FM_errdeg1x5_220531.csv'
+    V_strfile = [strfile1, strfile2, strfile3, strfile4]
+    V_angFM= [45, 46, 65, 0]
+    # strfile1 = 'Hibi_test.csv'
 
     if mode == 0:
 
-        num_iter = 100
+        num_iter = 98
         num_processor = 8
-        #V_I = arange(0e6, 100 + 1, 1)
-        #V_I = arange(0e6, 0.0005e6 + 0.00001e6, 0.00001e6)
         V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
-        # V_I = 1e6
+        # V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 46
 
-        E = Jones_vector('input')
-        azi = np.array([0, pi/6, pi/4])
-        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
-        fig1, ax1 = spunfiber.init_plot_SOP()
-        S = create_Stokes('O')
-        for nn in range(num_iter):
-            Vin = E[0].parameters.matrix()
-            M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
-            Ip, Vout = spunfiber.calc_mp3(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
-            save_Jones(strfile1,V_I,Ip,Vout)
+        xx = 0
+        for xx, strfile1 in enumerate(V_strfile):
 
-            checktime = pd.Timestamp.now() - start
-            print(nn, "/", num_iter, checktime)
-            start = pd.Timestamp.now()
+            # ang_FM = 45
+            ang_FM = V_angFM[xx]
 
-        fig2, ax2, lines = spunfiber.plot_error(strfile1)
+            E = Jones_vector('input')
+            azi = np.array([0, pi/6, pi/4])
+            E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
+            fig1, ax1 = spunfiber.init_plot_SOP()
+            S = create_Stokes('O')
+            for nn in range(num_iter):
+                Vin = E[0].parameters.matrix()
+                M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
+                Ip, Vout = spunfiber.calc_mp3(num_processor, V_I, ang_FM, M_vib, fig1, Vin)
+                save_Jones(strfile1,V_I,Ip,Vout)
 
-        # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
-        #              ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
-        # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+                checktime = pd.Timestamp.now() - start
+                print(nn, "/", num_iter, checktime)
+                start = pd.Timestamp.now()
+
+            # fig2, ax2, lines = spunfiber.plot_error(strfile1)
+
+            # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
+            #              ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
+            # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
 
 
-        fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)
+            fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)
 
     elif mode == 1:
         #strfile1 = 'Hibi_test.csv'
@@ -154,12 +161,13 @@ if __name__ == '__main__':
         #              'Lobi_46FM_errdeg1x5_220531.csv',
         #              'Lobi_65FM_errdeg1x5_220531.csv',
         #              'Lobi_0FM_errdeg1x5_220531.csv']
-
-        V_strfile = ['Hibi_45FM_errdeg1x5_220531.csv',
-                     'Hibi_46FM_errdeg1x5_220531.csv',
-                     'Hibi_65FM_errdeg1x5_220531.csv',
-                     'Hibi_0FM_errdeg1x5_220531.csv']
+        #
+        # V_strfile = ['Hibi_45FM_errdeg1x5_220531.csv',
+        #              'Hibi_46FM_errdeg1x5_220531.csv',
+        #              'Hibi_65FM_errdeg1x5_220531.csv',
+        #              'Hibi_0FM_errdeg1x5_220531.csv']
         #V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv']
+        # V_strfile = ['Hibi_0FM_errdeg1x5_220531.csv']
         V_label = ['Ideal FM', 'Nonideal ']
         V2 = 0.54 * 4 * pi * 1e-7 * 2
 
@@ -175,8 +183,8 @@ if __name__ == '__main__':
             while isEOF is False:
                 V_I, S, isEOF = load_stokes_fromfile(strfile1 + "_S", nn)
 
-                #fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,label=str(nn))
-                #fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
+                fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,label=str(nn))
+                fig3, lines3 = plot_Stokes(V_I[18:35:2], S[18:35:2], fig=fig3, lines=lines3, opacity=opacity)
 
                 if nn == 0:
                     dic_err['V_I'] = V_I
@@ -192,11 +200,12 @@ if __name__ == '__main__':
         # ax10.legend(lines10, ['ITER specification', '',
         #                                  r'Ideal FM $\theta_{err}$=0$\degree$',
         #                                  r'$\theta_{err}$=1$\degree$', '', '','', ''])
-        ax10.legend( [lines10[0], lines10[4], lines10[7], lines10[10], lines10[13]],
-                     ['ITER specification', 'Ideal FM',
-                      r'$\theta_{err}$=1$\degree$',
-                      r'$\theta_{err}$=20$\degree$',
-                      r'$\theta_{err}$=45$\degree$'], loc="lower right")
+
+        # ax10.legend( [lines10[0], lines10[4], lines10[7], lines10[10], lines10[13]],
+        #              ['ITER specification', 'Ideal FM',
+        #               r'$\theta_{err}$=1$\degree$',
+        #               r'$\theta_{err}$=20$\degree$',
+        #               r'$\theta_{err}$=45$\degree$'], loc="lower right")
 
         # print(legend)
         # r'$\theta_{err}$=20$\degree$'])
@@ -309,7 +318,7 @@ if __name__ == '__main__':
     #     # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
     #
     #     #fig3, ax3, lines3 = plot_error_byfile2(strfile1 + "_S")
-    #     fig3.show()
+        fig3.show()
 
     plt_fmt, plt_res = '.png', 330  # 330 is max in Word'16
     plt.rcParams["axes.titlepad"] = 5  # offset for the fig title
