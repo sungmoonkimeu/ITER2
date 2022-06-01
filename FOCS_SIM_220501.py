@@ -41,26 +41,27 @@ def cm_to_rgba_tuple(colors,alpha=1):
     return tmp
 
 if __name__ == '__main__':
-    mode =2
+    mode = 0
     # Crystal Techno lobi spun fiber
-    LB = 1
-    SP = 0.005
+    LB = 0.009
+    SP = 0.0048
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 6  # lead fiber
     len_ls = 1  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
-    # strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
-    # strfile1 = 'Lobi_90FM_errdeg1x5_220518.csv'
-    # strfile1 = 'Lobi_45FM_NoIPinBridge_errdeg1x5_220529.csv'
+
     # strfile1 = 'Lobi_46FM_errdeg1x5_220529.csv'
-    strfile1 = 'Lobi_45FM_errdeg1x5_220531.csv'
+    # strfile1 = 'Lobi_65FM_errdeg1x5_220531.csv'
+
+    # strfile1 = 'Hibi_45FM_errdeg1x5_220531.csv'
+    strfile1 = 'Hibi_65FM_errdeg1x5_220531.csv'
 
     if mode == 0:
 
         num_iter = 100
-        num_processor = 8
+        num_processor = 16
         #V_I = arange(0e6, 100 + 1, 1)
         #V_I = arange(0e6, 0.0005e6 + 0.00001e6, 0.00001e6)
         V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
@@ -71,7 +72,7 @@ if __name__ == '__main__':
         out_dict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 45
+        ang_FM = 65
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
@@ -147,7 +148,10 @@ if __name__ == '__main__':
         # strfile1 = "IdealFM_Errdeg1x5_1.csv"
         # load whole Jones and convert to measured Ip
         # V2 = 0.54 * 4 * pi * 1e-7 * 2 *(0.9700180483394489)
-        V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv', 'Lobi_0FM_errdeg1x5_220531.csv']
+        V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv',
+                     'Lobi_46FM_errdeg1x5_220531.csv',
+                     'Lobi_65FM_errdeg1x5_220531.csv',
+                     'Lobi_0FM_errdeg1x5_220531.csv']
         #V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv']
         V_label = ['Ideal FM', 'Nonideal ']
         V2 = 0.54 * 4 * pi * 1e-7 * 2
@@ -164,10 +168,8 @@ if __name__ == '__main__':
             while isEOF is False:
                 V_I, S, isEOF = load_stokes_fromfile(strfile1 + "_S", nn)
 
-                fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,
-                                                     label=str(nn))
-
-                fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
+                #fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,label=str(nn))
+                #fig3, lines3 = plot_Stokes(V_I[:25], S[:25], fig=fig3, lines=lines3, opacity=opacity)
 
                 if nn == 0:
                     dic_err['V_I'] = V_I
@@ -183,8 +185,13 @@ if __name__ == '__main__':
         # ax10.legend(lines10, ['ITER specification', '',
         #                                  r'Ideal FM $\theta_{err}$=0$\degree$',
         #                                  r'$\theta_{err}$=1$\degree$', '', '','', ''])
-        ax10.legend( [lines10[0], lines10[3], lines10[5]], ['ITER specification', '', ''])
-        print(legend)
+        ax10.legend( [lines10[0], lines10[4], lines10[7], lines10[10], lines10[13]],
+                     ['ITER specification', 'Ideal FM',
+                      r'$\theta_{err}$=1$\degree$',
+                      r'$\theta_{err}$=20$\degree$',
+                      r'$\theta_{err}$=45$\degree$'], loc="lower right")
+
+        # print(legend)
         # r'$\theta_{err}$=20$\degree$'])
         # r'$\theta_{err}$=45$\degree$'])
 

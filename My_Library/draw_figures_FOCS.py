@@ -304,7 +304,7 @@ def plot_errorbar_byDic(dic_err, fig=None, ax=None, lines=[], label=[], init_ind
         ax.set_ylabel(r'Relative error on $I_{P}$')
 
         ax.set(xlim=(0, 18e6), ylim=(-0.011, 0.011))
-        ax.yaxis.set_major_locator(MaxNLocator(4))
+        ax.yaxis.set_major_locator(MaxNLocator(5))
         ax.xaxis.set_major_locator(MaxNLocator(10))
 
         ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
@@ -316,14 +316,22 @@ def plot_errorbar_byDic(dic_err, fig=None, ax=None, lines=[], label=[], init_ind
         fig.subplots_adjust(left=0.255, hspace=0.4, right=0.95, top=0.93, bottom=0.2)
 
     print(len(lines))
-    if len(lines) ==2:
+    if len(lines) == 2:
         ax.plot(data['V_I'], df_mean, 'k', label=label)
         lines += ax.errorbar(data['V_I'][init_index::4], df_mean[init_index::4], yerr=df_std[init_index::4],
-                             ls='None', c='black', ecolor='k', capsize=4, elinewidth=2)
-    else:
+                             ls='None', c='black', ecolor='k', capsize=4, elinewidth=2,  markeredgewidth=3)
+    elif len(lines) == 5:
         ax.plot(data['V_I'], df_mean, 'r', label=label)
         lines += ax.errorbar(data['V_I'][init_index::4], df_mean[init_index::4], yerr=df_std[init_index::4],
-                             ls='None', c='blue', ecolor='r', capsize=4)
+                             ls='None', c='blue', ecolor='r', capsize=4,  markeredgewidth=3)
+    elif len(lines) == 8:
+        ax.plot(data['V_I'], df_mean, 'b', label=label)
+        lines += ax.errorbar(data['V_I'][init_index::4], df_mean[init_index::4], yerr=df_std[init_index::4],
+                             ls='None', c='blue', ecolor='b', capsize=4,  markeredgewidth=3)
+    elif len(lines) == 11:
+        ax.plot(data['V_I'], df_mean, 'g', label=label)
+        lines += ax.errorbar(data['V_I'][init_index::4], df_mean[init_index::4], yerr=df_std[init_index::4],
+                             ls='None', c='blue', ecolor='g', capsize=4,  markeredgewidth=3)
 
     ax.legend(loc="upper right")
 
