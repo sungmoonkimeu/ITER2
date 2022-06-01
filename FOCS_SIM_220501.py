@@ -41,7 +41,7 @@ def cm_to_rgba_tuple(colors,alpha=1):
     return tmp
 
 if __name__ == '__main__':
-    mode = 0
+    mode = 2
     # Crystal Techno lobi spun fiber
     LB = 0.009
     SP = 0.0048
@@ -56,12 +56,14 @@ if __name__ == '__main__':
     # strfile1 = 'Lobi_65FM_errdeg1x5_220531.csv'
 
     # strfile1 = 'Hibi_45FM_errdeg1x5_220531.csv'
-    strfile1 = 'Hibi_65FM_errdeg1x5_220531.csv'
+    # strfile1 = 'Hibi_46FM_errdeg1x5_220531.csv'
+    # strfile1 = 'Hibi_65FM_errdeg1x5_220531.csv'
+    strfile1 = 'Hibi_0FM_errdeg1x5_220531.csv'
 
     if mode == 0:
 
         num_iter = 100
-        num_processor = 16
+        num_processor = 8
         #V_I = arange(0e6, 100 + 1, 1)
         #V_I = arange(0e6, 0.0005e6 + 0.00001e6, 0.00001e6)
         V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
@@ -72,7 +74,7 @@ if __name__ == '__main__':
         out_dict2 = {'Ip': V_I}
         nM_vib = 5
         start = pd.Timestamp.now()
-        ang_FM = 65
+        ang_FM = 46
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
@@ -148,10 +150,15 @@ if __name__ == '__main__':
         # strfile1 = "IdealFM_Errdeg1x5_1.csv"
         # load whole Jones and convert to measured Ip
         # V2 = 0.54 * 4 * pi * 1e-7 * 2 *(0.9700180483394489)
-        V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv',
-                     'Lobi_46FM_errdeg1x5_220531.csv',
-                     'Lobi_65FM_errdeg1x5_220531.csv',
-                     'Lobi_0FM_errdeg1x5_220531.csv']
+        # V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv',
+        #              'Lobi_46FM_errdeg1x5_220531.csv',
+        #              'Lobi_65FM_errdeg1x5_220531.csv',
+        #              'Lobi_0FM_errdeg1x5_220531.csv']
+
+        V_strfile = ['Hibi_45FM_errdeg1x5_220531.csv',
+                     'Hibi_46FM_errdeg1x5_220531.csv',
+                     'Hibi_65FM_errdeg1x5_220531.csv',
+                     'Hibi_0FM_errdeg1x5_220531.csv']
         #V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv']
         V_label = ['Ideal FM', 'Nonideal ']
         V2 = 0.54 * 4 * pi * 1e-7 * 2
@@ -317,4 +324,5 @@ if __name__ == '__main__':
     plt.rc('axes', titlesize=11)  # f-size of the axes title (??)
     plt.rc('figure', titlesize=11)  # f-size of the figure title
     plt.show()
+
 
