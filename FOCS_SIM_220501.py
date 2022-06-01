@@ -42,8 +42,8 @@ def cm_to_rgba_tuple(colors,alpha=1):
 
 if __name__ == '__main__':
     mode = 2
-    LB = 0.009
-    SP = 0.0048
+    LB = 1.000
+    SP = 0.005
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 6  # lead fiber
@@ -51,9 +51,9 @@ if __name__ == '__main__':
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
     # strfile1 = 'Lobi_45FM_errdeg1x5_220601.csv'
-    # strfile1 = 'Lobi_46FM_errdeg1x5_220601.csv'
-    # strfile1 = 'Lobi_65FM_errdeg1x5_220601.csv'
-    # strfile1 = 'Lobi_0FM_errdeg1x5_220601.csv'
+    # strfile2 = 'Lobi_46FM_errdeg1x5_220601.csv'
+    # strfile3 = 'Lobi_65FM_errdeg1x5_220601.csv'
+    # strfile4 = 'Lobi_0FM_errdeg1x5_220601.csv'
 
     strfile1 = 'Hibi_45FM_errdeg1x5_220601.csv'
     strfile2 = 'Hibi_46FM_errdeg1x5_220601.csv'
@@ -66,8 +66,8 @@ if __name__ == '__main__':
 
     if mode == 0:
 
-        num_iter = 98
-        num_processor = 8
+        num_iter = 100
+        num_processor = 16
         V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
@@ -183,29 +183,31 @@ if __name__ == '__main__':
             while isEOF is False:
                 V_I, S, isEOF = load_stokes_fromfile(strfile1 + "_S", nn)
 
-                fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2,label=str(nn))
-                fig3, lines3 = plot_Stokes(V_I[18:35:2], S[18:35:2], fig=fig3, lines=lines3, opacity=opacity)
+                fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2*0.962,label=str(nn))
+                fig3, lines3 = plot_Stokes(V_I[20:35:2], S[20:35:2], fig=fig3, lines=lines3, opacity=opacity)
 
                 if nn == 0:
                     dic_err['V_I'] = V_I
-                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2)
+                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*0.962)
                 c = np.array([None, None, None])
                 nn += 1
                 # if nn > 0:
                 #     break
 
 
-            fig10, ax10, lines10 = plot_errorbar_byDic(dic_err, fig=fig10, ax=ax10, lines=lines10, init_index=18)
+            fig10, ax10, lines10 = plot_errorbar_byDic(dic_err, fig=fig10, ax=ax10, lines=lines10, init_index=21)
             isEOF = False
         # ax10.legend(lines10, ['ITER specification', '',
         #                                  r'Ideal FM $\theta_{err}$=0$\degree$',
         #                                  r'$\theta_{err}$=1$\degree$', '', '','', ''])
 
-        # ax10.legend( [lines10[0], lines10[4], lines10[7], lines10[10], lines10[13]],
-        #              ['ITER specification', 'Ideal FM',
-        #               r'$\theta_{err}$=1$\degree$',
-        #               r'$\theta_{err}$=20$\degree$',
-        #               r'$\theta_{err}$=45$\degree$'], loc="lower right")
+        ax10.legend( [lines10[0], lines10[4], lines10[7], lines10[10], lines10[13]],
+                     ['ITER specification', 'Ideal FM',
+                      r'$\theta_{err}$=1$\degree$',
+                      r'$\theta_{err}$=20$\degree$',
+                      r'$\theta_{err}$=45$\degree$'],
+                     bbox_to_anchor=(1.01, 1.01), loc="upper left")
+        fig10.savefig("fig9.(b).jpg", dpi=330)
 
         # print(legend)
         # r'$\theta_{err}$=20$\degree$'])
