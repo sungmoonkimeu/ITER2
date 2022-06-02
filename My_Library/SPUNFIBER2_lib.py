@@ -658,6 +658,73 @@ class SPUNFIBER:
         # print(tmp) # To show where is the position of Merr
         return M
 
+    def lamming_JET(self, Ip, DIR, V_delta, V_theta, V_L):
+        """
+        :param DIR: direction (+1: forward, -1: backward)
+        :param Ip: plasma current
+        :param L: fiber length
+        :param V_theta: vector of theta (angle of optic axes)
+        :return: M matrix calculated from N matrix
+        """
+        m = 0
+        # Fiber parameter
+        s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
+        delta = 2 * pi / self.LB
+
+
+        r = self.L /(2*pi)
+        V_H = Ip / (2*pi*r) * ones(len(V_L))
+        V_rho = self.V * V_H    # <<- Vector
+
+        # --------Laming: orientation of the local slow axis ------------
+
+        V_qu = 2 * (s_t_r - V_rho) / V_delta  # <<- Vector
+        # See Note/Note 1 (sign of Farday effect in Laming's method).jpg
+        # The sign of farday rotation (rho) is opposite to that of the Laming paper, inorder
+        # to be consistant with anti-clockwise (as in Jones paper) orientation for both
+        # spin and faraday rotation.
+
+        V_gma = 0.5 * (V_delta ** 2 + 4 * ((s_t_r - V_rho) ** 2)) ** 0.5  # <<- Vector
+        '''
+        if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) > 0:
+            nf = -int(gma * self.dz / pi) - 1
+        else:
+            nf = -int(gma * self.dz / pi)
+
+        if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) > 0:
+            nb = int(gma * self.dz / pi)
+        else:
+            nb = int(gma * self.dz / pi) + 1
+        '''
+        V_n = zeros(len(V_rho))
+        for nn in range(len(V_rho)):
+            if arctan((-V_qu[nn] / ((1 + V_qu[nn] ** 2) ** 0.5)) * tan(V_gma[nn] * self.dz)) > 0:
+                V_n[nn] = -DIR*int(V_gma[nn] * self.dz / pi) - 0.5*(1+DIR)
+            else:
+                V_n[nn] = -DIR*int(V_gma[nn] * self.dz / pi) + 0.5*(1-DIR)
+
+        V_omega = s_t_r * self.dz + arctan((-V_qu / ((1 + V_qu ** 2) ** 0.5)) * tan(V_gma * self.dz)) + V_n * pi  # <<- Vector
+        V_R = 2 * arcsin(sin(V_gma * self.dz) / ((1 + V_qu ** 2) ** 0.5))  # <<- Vector
+        V_phi = ((s_t_r * self.dz) - V_omega) / 2 + m * (pi / 2)
+        V_phi += V_theta if DIR == 1 else np.flip(V_theta)
+
+        n11 = cos(V_R / 2) + 1j * sin(V_R / 2) * cos(2 * V_phi)
+        n12 = 1j * sin(V_R / 2) * sin(2 * V_phi)
+        n21 = 1j * sin(V_R / 2) * sin(2 * V_phi)
+        n22 = cos(V_R / 2) - 1j * sin(V_R / 2) * cos(2 * V_phi)
+
+        M_R = np.array([[n11, n21], [n12, n22]]).T
+        M_omega = np.array([[cos(V_omega), sin(V_omega)], [-sin(V_omega), cos(V_omega)]]).T
+
+        # Note that [[n11,n21],[n21,n22]].T calculation is [[n11[0], n12[0]],[n21[0],n22[0]], ...
+        # Therefore, M_R, M_omega array should be defined as transposed matrix to have correct matrix.
+
+        M = np.array([[1, 0], [0, 1]])
+        for nn in range(len(V_theta)-1):
+            M = M_omega[nn] @ M_R[nn] @ M
+
+        return M
+
     def f_in_bridge(self, Ip, DIR, n_Bridge, V_theta, V_LF, M_vib=None ):
         """
         :param DIR: direction (+1: forward, -1: backward)
@@ -1454,7 +1521,6 @@ class SPUNFIBER:
         S = create_Stokes('Output_S')
         fig, ax= S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         return fig, ax
-
 
 def save_Jones(filename, Vin, Ip_m, Vout):
     if os.path.exists(filename):

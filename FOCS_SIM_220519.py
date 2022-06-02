@@ -1,3 +1,9 @@
+'''
+Created 2022.06.02
+for analysing JET fiber's behavior
+
+'''
+
 # print(os.getcwd())
 # print(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
 # sys.path.append(os.path.dirname(os.path.dirname(__file__)) + '\My_library')
@@ -11,7 +17,7 @@ start = time.process_time()
 # from My_Library import SPUNFIBRE_lib
 import plotly.offline
 
-from My_Library.SPUNFIBRE_lib import *
+from My_Library.SPUNFIBER2_lib import *
 from My_Library.draw_figures_FOCS import *
 
 from My_Library.basis_correction_lib import *
@@ -42,14 +48,14 @@ def cm_to_rgba_tuple(colors,alpha=1):
     return tmp
 
 if __name__ == '__main__':
-    mode =0
+    mode =4
     # Crystal Techno lobi spun fiber
     LB = 0.3
     SP = 0.005
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 1  # lead fiber
-    len_ls = 1  # sensing fiber
+    len_ls = 5  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
     #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
@@ -259,6 +265,79 @@ if __name__ == '__main__':
         fig3.update_scenes(camera_projection_type='orthographic')
         fig3.show()
         #plotly.offline.plot(fig3, filename='xx.html')
+
+    elif mode == 4:
+        fig = None
+        V_I = arange(0e6, 10e6 + 0.1e6, 0.2e6)
+        Ip = zeros(len(V_I))
+
+        V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
+
+        # V_I = 1e6
+        out_dict = {'Ip': V_I}
+        out_dict2 = {'Ip': V_I}
+        start = pd.Timestamp.now()
+        ang_FM = 45
+
+        E = Jones_vector('input')
+        azi = np.array([0, pi/6, pi/4])
+        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=pi/12)
+        fig1, ax1 = spunfiber.init_plot_SOP()
+        S = create_Stokes('O')
+        S2 = create_Stokes('1')
+
+
+        Vin = E[1].parameters.matrix()
+
+        s_t_r = 2 * pi / spunfiber.SP
+        spunfiber.dz = spunfiber.L / 1000
+        V_L = arange(0, spunfiber.L + spunfiber.dz, spunfiber.dz)
+        nV_L = V_L/spunfiber.L
+
+        V_theta= V_L * s_t_r
+
+        V_delta = 2*pi/(LB * (1- 1*cos(2*pi*0.5*nV_L))+0.000001)
+        print(V_delta)
+
+        for mm, iter_I in enumerate(V_I):
+            M_f = spunfiber.lamming_JET(iter_I, 1, V_delta, V_theta, V_L)
+            V_out[mm] = M_f @ Vin
+
+        E = Jones_vector('Output')
+        E.from_matrix(M=V_out)
+        V_ang = zeros(len(V_I))
+
+        # SOP evolution in Lead fiber (Forward)
+        S = create_Stokes('Output_S')
+        S.from_Jones(E)
+
+        if fig is not None:
+            draw_stokes_points(fig[0], S, kind='line', color_line='b')
+        else:
+            fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
+                                      color_line='b')
+
+        m = 0
+        for kk in range(len(V_I)):
+            if kk > 0 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
+                m = m + 1
+            elif kk > 0 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
+                m = m - 1
+            V_ang[kk] = E[kk].parameters.azimuth() + m * pi
+            Ip[kk] = (V_ang[kk] - pi / 2) / (spunfiber.V)
+
+        # save_Jones(strfile1,V_I,Ip,Vout)
+        #
+        #
+        #
+        # fig2, ax2, lines = spunfiber.plot_error(strfile1)
+        #
+        # # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
+        # #              ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
+        # # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+        #
+        #
+        # fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S")
 
 
     plt.show()
