@@ -55,7 +55,7 @@ if __name__ == '__main__':
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 1  # lead fiber
-    len_ls = 5  # sensing fiber
+    len_ls = 10  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
     #strfile1 = 'Hibi_46FM_errdeg1x5_220506.csv'
@@ -73,6 +73,7 @@ if __name__ == '__main__':
         nM_vib = 1
         start = pd.Timestamp.now()
         ang_FM = 45
+
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
@@ -268,7 +269,7 @@ if __name__ == '__main__':
 
     elif mode == 4:
         fig = None
-        V_I = arange(0e6, 10e6 + 0.1e6, 0.2e6)
+        V_I = arange(0e6, 2.8e6 + 0.1e6, 0.1e6)
         Ip = zeros(len(V_I))
 
         V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
@@ -278,54 +279,70 @@ if __name__ == '__main__':
         out_dict2 = {'Ip': V_I}
         start = pd.Timestamp.now()
         ang_FM = 45
+        # Faraday mirror
+        ksi = ang_FM * pi / 180
+        Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
+        Jm = np.array([[1, 0], [0, 1]])
+        M_FR = Rot @ Jm @ Rot
 
         E = Jones_vector('input')
         azi = np.array([0, pi/6, pi/4])
-        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=pi/12)
-        fig1, ax1 = spunfiber.init_plot_SOP()
+        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
+        #fig1, ax1 = spunfiber.init_plot_SOP()
         S = create_Stokes('O')
         S2 = create_Stokes('1')
 
 
-        Vin = E[1].parameters.matrix()
+        Vin = E[0].parameters.matrix()
 
         s_t_r = 2 * pi / spunfiber.SP
-        spunfiber.dz = spunfiber.L / 1000
+        spunfiber.dz = spunfiber.L / 100
         V_L = arange(0, spunfiber.L + spunfiber.dz, spunfiber.dz)
         nV_L = V_L/spunfiber.L
 
-        V_theta= V_L * s_t_r
+        amp, freq = 0, 1
 
-        V_delta = 2*pi/(LB * (1- 1*cos(2*pi*0.5*nV_L))+0.000001)
-        print(V_delta)
+        #V_theta= V_L * s_t_r * (1+ amp*1/2*(1 - cos(2 * pi * freq* nV_L)))
+        V_theta = V_L * s_t_r * (1 + amp * 1 / 2 * cos(2 * pi * freq/2 * nV_L)**4)
 
-        for mm, iter_I in enumerate(V_I):
-            M_f = spunfiber.lamming_JET(iter_I, 1, V_delta, V_theta, V_L)
-            V_out[mm] = M_f @ Vin
+        fig2, ax2 = plt.subplots(figsize=(6,4))
+        amp, freq = 0.95, 1
+        V_order = [2,6,10]
 
-        E = Jones_vector('Output')
-        E.from_matrix(M=V_out)
-        V_ang = zeros(len(V_I))
+        #V_delta = 2*pi/(LB * (1- 0.8*1/2*(1 - cos(2 * pi * 2* nV_L))))
+        # V_delta = 2 * pi / LB * (1+ amp*1/2*(1 - cos(2 * pi * freq* nV_L)))
+        #for amp in V_amp:
+        for order in V_order:
+            #V_delta = 2 * pi / (LB * (1 - amp * 1 / 2 * (1 - cos(2 * pi * freq * nV_L))))
+            V_delta = 2 * pi / (LB * (1 - amp * (1 / 2 * (1 - cos(2 * pi * freq * nV_L)))**order))
 
-        # SOP evolution in Lead fiber (Forward)
-        S = create_Stokes('Output_S')
-        S.from_Jones(E)
+            print(V_delta)
 
-        if fig is not None:
-            draw_stokes_points(fig[0], S, kind='line', color_line='b')
-        else:
-            fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
+            for mm, iter_I in enumerate(V_I):
+                M_f = spunfiber.lamming_JET(iter_I, 1, V_delta, V_theta, V_L)
+                M_b = spunfiber.lamming_JET(iter_I, -1, V_delta, V_theta, V_L)
+
+                V_out[mm] = M_b @ M_FR @ M_f @ Vin
+
+            E = Jones_vector('Output')
+            E.from_matrix(M=V_out)
+            V_ang = zeros(len(V_I))
+
+            # SOP evolution in Lead fiber (Forward)
+            S = create_Stokes('Output_S')
+            S.from_Jones(E)
+
+            fig1, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
                                       color_line='b')
 
-        m = 0
-        for kk in range(len(V_I)):
-            if kk > 0 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
-                m = m + 1
-            elif kk > 0 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
-                m = m - 1
-            V_ang[kk] = E[kk].parameters.azimuth() + m * pi
-            Ip[kk] = (V_ang[kk] - pi / 2) / (spunfiber.V)
 
+            #ax2.plot(V_L, 2*pi/V_delta, label=str(amp*100)+"%")
+            ax2.plot(V_L, 2 * pi / V_delta, label='cosine^'+str(order) + ' function')
+
+        ax2.legend(loc='lower right')
+        ax2.set_xlabel(r'Fiber position (m)')
+        ax2.set_ylabel(r'local beatlength (m)')
+        ax2.set(xlim=(0, 10), ylim=(0, 0.35))
         # save_Jones(strfile1,V_I,Ip,Vout)
         #
         #
