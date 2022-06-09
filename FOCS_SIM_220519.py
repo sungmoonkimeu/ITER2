@@ -339,7 +339,7 @@ if __name__ == '__main__':
             #ax2.plot(V_L, 2*pi/V_delta, label=str(amp*100)+"%")
             ax2.plot(V_L, 2 * pi / V_delta, label='cosine^'+str(order) + ' function')
 
-        ax2.legend(loc='lower right')
+        ax2.legend(loc='upper right')
         ax2.set_xlabel(r'Fiber position (m)')
         ax2.set_ylabel(r'local beatlength (m)')
         ax2.set(xlim=(0, 10), ylim=(0, 0.35))
