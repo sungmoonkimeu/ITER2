@@ -969,6 +969,11 @@ class SPUNFIBER:
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
 
+            # Fiber bundle
+            phi = pi/4
+            Ret = np.array([[np.exp(1j*phi/2), 0], [0, np.exp(-1j*phi/2)]])
+            M_FB = Ret
+
             self.dz = self.LF/100
             M_lf_f = self.lamming_bridge(-iter_I, 1, 1, V_theta_lf, V_L_lf, M_vib)
             self.dz = self.L/100
@@ -1008,7 +1013,8 @@ class SPUNFIBER:
                 # print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
 
             #V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
-            V_out[mm] = M_lf_b @ M_b @ M_lf_b2 @ M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Vin
+            #V_out[mm] = M_lf_b @ M_b @ M_lf_b2 @ M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Vin
+            V_out[mm] = M_lf_b @ M_b @ M_lf_b2 @ M_FB @ M_FR @ M_FB @ M_lf_f2 @ M_f @ M_lf_f @ Vin
             # V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
             # V_out[mm] = M_f @ M_lf_f @ Vin
@@ -1521,6 +1527,7 @@ class SPUNFIBER:
         S = create_Stokes('Output_S')
         fig, ax= S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         return fig, ax
+
 
 def save_Jones(filename, Vin, Ip_m, Vout):
     if os.path.exists(filename):
