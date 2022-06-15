@@ -394,15 +394,15 @@ def f(x, Mci, Mco, fig, strfile):
 
 if __name__ == '__main__':
     strfile = 'calibration1D_log.csv'
-    mode = 1
-    theta = 10
-    phi = 10
-    theta_e = 10
+    mode = 2
+    theta = 35
+    phi = 35
+    theta_e = 15
     Mci = create_M(theta*pi/180, phi*pi/180, theta_e*pi/180)
 
-    theta = 20
-    phi = 30
-    theta_e = 40
+    theta = 15
+    phi = 25
+    theta_e = 10
     Mco = create_M(theta*pi/180, phi*pi/180, theta_e*pi/180)
 
     if mode == 0:
