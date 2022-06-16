@@ -49,7 +49,7 @@ def cm_to_rgba_tuple(colors,alpha=1):
     return tmp
 
 if __name__ == '__main__':
-    mode = 0
+    mode = 2
     LB = 0.009
     SP = 0.0048
     # dz = SP / 1000
@@ -58,19 +58,19 @@ if __name__ == '__main__':
     len_ls = 28  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
-    # strfile1 = 'Lobi_45FM_errdeg1x5_220614.csv'
-    # strfile2 = 'Lobi_46FM_errdeg1x5_220614.csv'
+    strfile1 = 'Lobi_45FM_errdeg1x5_220614.csv'
+    strfile2 = 'Lobi_46FM_errdeg1x5_220614.csv'
     # strfile3 = 'Lobi_65FM_errdeg1x5_220614.csv'
     # strfile4 = 'Lobi_0FM_errdeg1x5_220614.csv'
-    # strfile1 = 'Lobi_47FM_errdeg1x5_220614.csv'
-    # strfile2 = 'Lobi_50FM_errdeg1x5_220614.csv'
-    # strfile3 = 'Lobi_55FM_errdeg1x5_220614.csv'
+    #strfile1= 'Lobi_47FM_errdeg1x5_220614.csv'
+    strfile3 = 'Lobi_50FM_errdeg1x5_220614.csv'
+    strfile4 = 'Lobi_55FM_errdeg1x5_220614.csv'
     # strfile4 = 'Lobi_60FM_errdeg1x5_220614.csv'
 
-    strfile1 = 'Hibi_45FM_errdeg1x5_220614.csv'
-    strfile2 = 'Hibi_46FM_errdeg1x5_220614.csv'
-    strfile3 = 'Hibi_47FM_errdeg1x5_220614.csv'
-    strfile4 = 'Hibi_50FM_errdeg1x5_2206014.csv'
+    # strfile1 = 'Hibi_45FM_errdeg1x5_220614.csv'
+    # strfile2 = 'Hibi_46FM_errdeg1x5_220614.csv'
+    # strfile3 = 'Hibi_47FM_errdeg1x5_220614.csv'
+    # strfile4 = 'Hibi_50FM_errdeg1x5_2206014.csv'
 
     # strfile1 = 'Lobi_45FM_errdeg1x5_220601.csv'
     # strfile2 = 'Lobi_46FM_errdeg1x5_220601.csv'
@@ -211,7 +211,9 @@ if __name__ == '__main__':
 
                 if nn == 0:
                     dic_err['V_I'] = V_I
-                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*0.965)
+
+                # dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*0.965)
+                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2)
                 c = np.array([None, None, None])
                 nn += 1
                 # if nn > 0:
