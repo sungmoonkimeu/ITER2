@@ -50,27 +50,33 @@ def cm_to_rgba_tuple(colors,alpha=1):
 
 if __name__ == '__main__':
     mode = 2
-    LB = 0.009
-    SP = 0.0048
+    LB = 1
+    SP = 0.005
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 6  # lead fiber
     len_ls = 28  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
 
-    strfile1 = 'Lobi_45FM_errdeg1x5_220614.csv'
-    strfile2 = 'Lobi_46FM_errdeg1x5_220614.csv'
+    # strfile1 = 'Lobi_45FM_errdeg1x5_220614.csv'
+    # strfile2 = 'Lobi_46FM_errdeg1x5_220614.csv'
     # strfile3 = 'Lobi_65FM_errdeg1x5_220614.csv'
     # strfile4 = 'Lobi_0FM_errdeg1x5_220614.csv'
     #strfile1= 'Lobi_47FM_errdeg1x5_220614.csv'
-    strfile3 = 'Lobi_50FM_errdeg1x5_220614.csv'
-    strfile4 = 'Lobi_55FM_errdeg1x5_220614.csv'
+    # strfile3 = 'Lobi_50FM_errdeg1x5_220614.csv'
+    # strfile4 = 'Lobi_55FM_errdeg1x5_220614.csv'
     # strfile4 = 'Lobi_60FM_errdeg1x5_220614.csv'
 
     # strfile1 = 'Hibi_45FM_errdeg1x5_220614.csv'
     # strfile2 = 'Hibi_46FM_errdeg1x5_220614.csv'
     # strfile3 = 'Hibi_47FM_errdeg1x5_220614.csv'
     # strfile4 = 'Hibi_50FM_errdeg1x5_2206014.csv'
+
+    strfile1 = 'lobi_45FM_errdeg1x5_220617.csv'
+    strfile2 = 'lobi_46FM_errdeg1x5_220617.csv'
+    strfile3 = 'lobi_47FM_errdeg1x5_220617.csv'
+    strfile4 = 'lobi_50FM_errdeg1x5_220617.csv'
+
 
     # strfile1 = 'Lobi_45FM_errdeg1x5_220601.csv'
     # strfile2 = 'Lobi_46FM_errdeg1x5_220601.csv'
@@ -90,7 +96,7 @@ if __name__ == '__main__':
     if mode == 0:
 
         num_iter = 100
-        num_processor = 16
+        num_processor = 8
         V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
@@ -199,21 +205,22 @@ if __name__ == '__main__':
         fig10, ax10, lines10 = None, None, []
         c = np.array([None, None, None])
 
-
+        kk = 0
         for strfile1 in V_strfile:
             dic_err = {}
             nn = 0
             while isEOF is False:
                 V_I, S, isEOF = load_stokes_fromfile(strfile1 + "_S", nn)
 
-                fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2*0.965,label=str(nn))
+                fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2*1,label=str(nn))
                 fig3, lines3 = plot_Stokes(V_I[20:35:2], S[20:35:2], fig=fig3, lines=lines3, opacity=opacity)
 
                 if nn == 0:
                     dic_err['V_I'] = V_I
 
                 # dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*0.965)
-                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2)
+                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*1, v_calc_init=2*V_angFM[kk]*pi/180)
+
                 c = np.array([None, None, None])
                 nn += 1
                 # if nn > 0:
@@ -222,6 +229,7 @@ if __name__ == '__main__':
 
             fig10, ax10, lines10 = plot_errorbar_byDic(dic_err, fig=fig10, ax=ax10, lines=lines10, init_index=21)
             isEOF = False
+            kk = kk+1
         # ax10.legend(lines10, ['ITER specification', '',
         #                                  r'Ideal FM $\theta_{err}$=0$\degree$',
         #                                  r'$\theta_{err}$=1$\degree$', '', '','', ''])
@@ -229,9 +237,10 @@ if __name__ == '__main__':
         ax10.legend( [lines10[0], lines10[4], lines10[7], lines10[10], lines10[13]],
                      ['ITER specification', 'Ideal FM',
                       r'$\theta_{err}$=1$\degree$',
-                      r'$\theta_{err}$=20$\degree$',
-                      r'$\theta_{err}$=45$\degree$'],
+                      r'$\theta_{err}$=2$\degree$',
+                      r'$\theta_{err}$=5$\degree$'],
                      bbox_to_anchor=(1.01, 1.01), loc="upper left")
+        ax10.set(ylim=(-0.09, 0.09))
         fig10.savefig("fig9.(b).jpg", dpi=330)
 
         # print(legend)

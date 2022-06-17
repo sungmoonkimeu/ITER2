@@ -1590,14 +1590,13 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 
         c = V_ang[0] if v_calc_init is None else v_calc_init
         Ip[kk] = (V_ang[kk] - c) / V
-    #print("init angle? = ",V_ang[0])
+    print("init angle? = ",V_ang[0])
     return (Ip[1:] - V_I[1:]) / V_I[1:]
 
 # Progress bar is not easy/
 # Todo comparison between transmission and reflection
 # Todo FM effect
 # Todo Ip calculation method change --> azimuth angle --> arc length
-
 
 if __name__ == '__main__':
     mode =6
