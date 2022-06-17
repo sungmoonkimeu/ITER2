@@ -205,6 +205,7 @@ if __name__ == '__main__':
         fig10, ax10, lines10 = None, None, []
         c = np.array([None, None, None])
 
+        V_angerr = [90, 91.5, 93, 97]
         kk = 0
         for strfile1 in V_strfile:
             dic_err = {}
@@ -219,7 +220,8 @@ if __name__ == '__main__':
                     dic_err['V_I'] = V_I
 
                 # dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*0.965)
-                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*1, v_calc_init=2*V_angFM[kk]*pi/180)
+                # dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*1, v_calc_init=2*V_angFM[kk]*pi/180)
+                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2 * 1, v_calc_init=V_angerr[kk] * pi / 180)
 
                 c = np.array([None, None, None])
                 nn += 1
