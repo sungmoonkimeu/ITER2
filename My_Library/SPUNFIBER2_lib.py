@@ -954,7 +954,7 @@ class SPUNFIBER:
             V_theta_lf = V_L_lf * s_t_r
             # Sensing fiber vector with V_theta
             #self.dz = self.SP / 100
-            self.dz = self.L / 100
+            self.dz = self.L / 1
             V_L = arange(0, self.L + self.dz, self.dz)
             V_theta = V_theta_lf[-1] + V_L * s_t_r
 
@@ -976,12 +976,12 @@ class SPUNFIBER:
 
             self.dz = self.LF/100
             M_lf_f = self.lamming_bridge(-iter_I, 1, 1, V_theta_lf, V_L_lf, M_vib)
-            self.dz = self.L/100
+            self.dz = self.L/1
             M_f = self.lamming_VV(iter_I, 1, V_theta, V_L)
-            self.dz = self.LF / 100
+            self.dz = self.LF /100
             M_lf_f2 = self.lamming_bridge(iter_I, 1, 2, V_theta_lf2, V_L_lf2, M_vib)
             M_lf_b2 = self.lamming_bridge(iter_I, -1, 2, V_theta_lf2, V_L_lf2, M_vib)
-            self.dz = self.L / 100
+            self.dz = self.L / 1
             M_b = self.lamming_VV(iter_I, -1, V_theta, V_L)
             self.dz = self.LF / 100
             M_lf_b = self.lamming_bridge(-iter_I, -1, 1, V_theta_lf, V_L_lf, M_vib)

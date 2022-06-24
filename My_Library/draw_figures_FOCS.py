@@ -295,7 +295,7 @@ def plot_errorbar_byDic(dic_err, fig=None, ax=None, lines=[], label=[], init_ind
         absErrorlimit[nn] = 10e3 if V_I[nn] < 1e6 else V_I[nn] * 0.01
     relErrorlimit = absErrorlimit[1:] / V_I[1:]
     if fig is None:
-        fig, ax = plt.subplots(figsize=(16/2.5, 7/2.5))
+        fig, ax = plt.subplots(figsize=(16/2.5, 10.5/2.5))
         ax.set_prop_cycle(cc)
         lines += ax.plot(V_I[1:], relErrorlimit[:], 'gray',ls='--', label='ITER specification')
         lines += ax.plot(V_I[1:], -relErrorlimit[:], 'gray', ls='--')
@@ -336,6 +336,24 @@ def plot_errorbar_byDic(dic_err, fig=None, ax=None, lines=[], label=[], init_ind
     ax.legend(loc="upper right")
 
     return fig, ax, lines
+
+def plot_errorbar_byDic_inset(dic_err, ax, init_index=None):
+    #print(lines[0]) if len(lines)> 0 else print(len(lines))
+
+    data = pd.DataFrame.from_dict(dic_err)
+
+    df_mean = data.drop(['V_I'], axis=1).mean(axis=1)
+    df_std = data.drop(['V_I'], axis=1).std(axis=1)
+    V_I = data['V_I']
+    # df_mean = data.drop(['V_I'], axis=1).sub(data['V_I'], axis=0).div(data['V_I'], axis=0).mean(axis=1)
+    # df_std = data.drop(['V_I'], axis=1).sub(data['V_I'], axis=0).div(data['V_I'], axis=0).std(axis=1)
+
+    ax.plot(data['V_I'], df_mean, 'k')
+    ax.errorbar(data['V_I'][init_index::4], df_mean[init_index::4], yerr=df_std[init_index::4],ls='None', c='black',
+                ecolor='k', capsize=3, elinewidth=2,  markeredgewidth=2, zorder=5)
+
+    return ax
+
 
 
 def plot_Stokes(Ip, S, fig=None, lines=None, opacity=1, S_position=None):
