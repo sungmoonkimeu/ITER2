@@ -52,14 +52,17 @@ def cm_to_rgba_tuple(colors,alpha=1):
     return tmp
 
 if __name__ == '__main__':
-    mode = 3
-    LB = 0.009
-    SP = 0.0048
+    mode = 0
+    LB = 1
+    SP = 0.005
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 6  # lead fiber
     len_ls = 28  # sensing fiber
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
+
+    strfile1 = 'Lobi_45FM_errdeg1x5_220614_220629.csv'
+    # strfile2 = 'Lobi_46FM_errdeg1x5_220614.csv'
 
     # strfile1 = 'Lobi_45FM_errdeg1x5_220614.csv'
     # strfile2 = 'Lobi_46FM_errdeg1x5_220614.csv'
@@ -99,13 +102,14 @@ if __name__ == '__main__':
     # strfile1 = 'lobi_45FM_errdeg1x5_220622_LF_1000_500.csv'
     # strfile2 = 'lobi_45FM_errdeg1x5_220622_LF_1000_1000.csv'
 
-    strfile1 = 'hibi_45FM_errdeg1x5_220622_LF_1000_1000.csv'
+    # strfile1 = 'hibi_45FM_errdeg1x5_220622_LF_1000_1000.csv'
 
     V_strfile = [strfile1]
-    V_iter = [1000]
+    V_iter = [100]
     # V_strfile = [strfile1, strfile2, strfile3, strfile4]
     # V_angFM= [45, 46, 65, 0]
-    V_angFM = [45, 45, 47, 50]
+    # V_angFM = [45, 45, 47, 50]
+    V_angFM = [45]
     # strfile1 = 'Hibi_test.csv'
 
     if mode == 0:
