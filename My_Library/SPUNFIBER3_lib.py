@@ -69,9 +69,17 @@ class SPUNFIBER:
         self.V_theta_LF = []
         self.V_temp = []
         self.ang_FM = angle_FM
+        self.Vin = np.array([[1],[0]])
+        self.Mvib = []
+
+    def set_Vin(self, azi, ell):
+        E = Jones_vector('input')
+        E.general_azimuth_ellipticity(azimuth=azi, ellipticity=ell)
+        print("input pol: ", E)
+        self.Vin = E.parameters.matrix()
 
     def set_Vectors(self):
-        self.dz = self.L / 10000
+        self.dz = self.L / 100
         self.V_L = arange(0, self.L + self.dz, self.dz)
         self.V_LF = arange(0, self.LF + self.dz, self.dz)
 
@@ -81,11 +89,34 @@ class SPUNFIBER:
         print('Vectors are set!')
 
     def set_tempVV(self, li, lf, F_temp_interp):
+        # self.V_temp = + 273.15 + 20 + 0 * np.array([periodicf(li, lf, F_temp_interp, xi) for xi in self.V_L])
         self.V_temp = np.array([periodicf(li, lf, F_temp_interp, xi) for xi in self.V_L])
         self.V_delta_temp = 1 + 3e-5 * (self.V_temp - 273.15 - 20)
         self.V_f_temp = 1 + 8.1e-5 * (self.V_temp - 273.15 - 20)
 
         print('Temperature Vector is set!')
+
+    def create_Mvib(self, nM_vib, max_phi, max_theta_e):
+        theta = (np.random.rand(nM_vib) - 0.5) * 2 * pi / 2  # random axis of LB
+        phi = (np.random.rand(nM_vib) - 0.5) * 2 * max_phi * pi / 180  # ellipticity angle change from experiment
+        theta_e = (np.random.rand(nM_vib) - 0.5) * 2 * max_theta_e * pi / 180  # azimuth angle change from experiment
+
+        print("angle of Retarder's optic axis:", theta *180/pi, "deg")
+        print("retardation of Retarder:", phi * 180 / pi, "deg")
+        print("rotation angle of Rotator :", theta_e * 180 / pi, "deg")
+
+        M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
+        M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
+        M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
+        # print(theta)
+        # Create (2,2,n_M_vib) Birefringence matrix
+        IB = np.zeros((2, 2, nM_vib))
+        np.einsum('iij->ij', IB)[:] = 1
+        Bexp = np.exp(1j * np.vstack((phi, -phi)))
+        M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)
+
+        # Random birefringence(circular + linear), random optic axis matrix calculation
+        self.M_vib = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
 
     @staticmethod
     def _eigen_expm(A):
@@ -275,7 +306,7 @@ class SPUNFIBER:
         # print(tmp) # To show where is the position of Merr
         return M
 
-    def lamming_VV_temp(self, Ip, DIR, V_theta):
+    def lamming_VV_temp(self, Ip, DIR):
         """
         :param DIR: direction (+1: forward, -1: backward)
         :param Ip: plasma current
@@ -329,7 +360,7 @@ class SPUNFIBER:
         V_omega = s_t_r * self.dz + arctan((-V_qu / ((1 + V_qu ** 2) ** 0.5)) * tan(V_gma * self.dz)) + V_n * pi  # <<- Vector
         V_R = 2 * arcsin(sin(V_gma * self.dz) / ((1 + V_qu ** 2) ** 0.5))  # <<- Vector
         V_phi = ((s_t_r * self.dz) - V_omega) / 2 + m * (pi / 2)
-        V_phi += V_theta if DIR == 1 else np.flip(V_theta)
+        V_phi += self.V_theta if DIR == 1 else np.flip(self.V_theta)
 
         n11 = cos(V_R / 2) + 1j * sin(V_R / 2) * cos(2 * V_phi)
         n12 = 1j * sin(V_R / 2) * sin(2 * V_phi)
@@ -343,11 +374,9 @@ class SPUNFIBER:
         # Therefore, M_R, M_omega array should be defined as transposed matrix to have correct matrix.
 
         M = np.array([[1, 0], [0, 1]])
-        for nn in range(len(V_theta)-1):
+        for nn in range(len(self.V_theta)-1):
             M = M_omega[nn] @ M_R[nn] @ M
 
-        # print("rem=", rem, "nVerr=", nVerr, "nSet = ", nSet) # To show current spun fiber's info.
-        # print(tmp) # To show where is the position of Merr
         return M
 
     def lamming_bridge(self, Ip, DIR, n_Bridge, V_theta, V_LF, M_vib=None ):
@@ -560,30 +589,6 @@ class SPUNFIBER:
 
         return V_rho
 
-    def create_Mvib(self, nM_vib, max_phi, max_theta_e):
-        theta = (np.random.rand(nM_vib) - 0.5) * 2 * pi / 2  # random axis of LB
-        phi = (np.random.rand(nM_vib) - 0.5) * 2 * max_phi * pi / 180  # ellipticity angle change from experiment
-        theta_e = (np.random.rand(nM_vib) - 0.5) * 2 * max_theta_e * pi / 180  # azimuth angle change from experiment
-
-        print("angle of Retarder's optic axis:", theta *180/pi, "deg")
-        print("retardation of Retarder:", phi * 180 / pi, "deg")
-        print("rotation angle of Rotator :", theta_e * 180 / pi, "deg")
-
-        M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
-        M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
-        M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
-        # print(theta)
-        # Create (2,2,n_M_vib) Birefringence matrix
-        IB = np.zeros((2, 2, nM_vib))
-        np.einsum('iij->ij', IB)[:] = 1
-        Bexp = np.exp(1j * np.vstack((phi, -phi)))
-        M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)
-
-        # Random birefringence(circular + linear), random optic axis matrix calculation
-        M_vib = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
-
-        return M_vib
-
     def cal_rotation(self, V_Ip, ang_FM, num, Vout_dic, M_vib=None, Vin=None):
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
@@ -784,16 +789,10 @@ class SPUNFIBER:
 
         Vout_dic[num] = V_out
 
-    def cal_rotation4(self, V_Ip, num, Vout_dic, M_vib=None, Vin=None):
+    def cal_rotation4(self, V_Ip, num, Vout_dic):
         # for temperature distribution simulation
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
-
-        self.dz = self.L / 10000
-        V_L = arange(0, self.L + self.dz, self.dz)
-
-        s_t_r = 2 * pi / self.SP
-        V_theta = V_L * s_t_r
 
         mm = 0
         for iter_I in V_plasmaCurrent:
@@ -804,16 +803,16 @@ class SPUNFIBER:
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
 
-            M_f = self.lamming_VV_temp(iter_I, 1, V_theta)
-            M_b = self.lamming_VV_temp(iter_I, -1, V_theta)
+            M_f = self.lamming_VV_temp(iter_I, 1)
+            M_b = self.lamming_VV_temp(iter_I, -1)
 
-            V_out[mm] = M_b @ M_FR @ M_f @ Vin
+            V_out[mm] = M_b @ M_FR @ M_f @ self.Vin
 
             mm = mm + 1
 
         Vout_dic[num] = V_out
 
-    def calc_mp4(self, num_processor, V_I, M_vib=None, fig=None, Vin=None):
+    def calc_mp4(self, num_processor, V_I, fig=None):
         # for temperature distribution simulation
         spl_I = np.array_split(V_I, num_processor)
 
@@ -826,7 +825,7 @@ class SPUNFIBER:
         for num in range(num_processor):
             # proc = Process(target=self.cal_rotation,
             proc = Process(target=self.cal_rotation4,
-                           args=(spl_I[num], num, Vout_dic, M_vib, Vin))
+                           args=(spl_I[num], num, Vout_dic))
             procs.append(proc)
             proc.start()
 

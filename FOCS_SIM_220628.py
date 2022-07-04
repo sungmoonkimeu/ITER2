@@ -93,10 +93,10 @@ if __name__ == '__main__':
 
         num_iter = 1
         num_processor = 8
-        # V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
+        V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
-        V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
+        # V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
         nM_vib = 0
@@ -110,26 +110,27 @@ if __name__ == '__main__':
         spunfiber.set_Vectors()
         spunfiber.set_tempVV(l_vv[0], l_vv[-1], F_temp_interp)
 
-        #
-        # fig_temp, ax_temp = plt.subplots(3, 1, figsize=(5, 6))
-        # fig_temp.subplots_adjust(hspace=0.32, left=0.24)
-        # ax_temp[0].plot(spunfiber.V_L, spunfiber.V_temp)
-        # ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB*spunfiber.V_delta_temp))
-        # r = spunfiber.L / (2 * pi)
-        # V_H = V_I[-1] / (2 * pi * r) * ones(len(spunfiber.V_temp))
-        # ax_temp[2].plot(spunfiber.V_L, spunfiber.V * spunfiber.V_f_temp)
-        # ax_temp[0].set(xlim=(0, 28))
-        # ax_temp[1].set(xlim=(0, 28))
-        # ax_temp[2].set(xlim=(0, 28))
-        # #ax.yaxis.set_major_formatter(OOMFormatter(0, "%3.2f"))
-        # ax_temp[1].yaxis.set_major_formatter(OOMFormatter(-3, "%2.1f"))
-        # ax_temp[2].yaxis.set_major_formatter(OOMFormatter(-6, "%5.4f"))
-        #
-        # ax_temp[0].set_ylabel('Temperature \n(K)')
-        # ax_temp[1].set_ylabel('Beatlength \n(m)')
-        # ax_temp[2].set_ylabel('Verdet constant  \n(rad/A)')
-        # ax_temp[2].set_xlabel('Fiber potisoin (m)')
-        # fig_temp.align_ylabels(ax_temp)
+
+        fig_temp, ax_temp = plt.subplots(3, 1, figsize=(5, 6))
+        fig_temp.subplots_adjust(hspace=0.32, left=0.24)
+        ax_temp[0].plot(spunfiber.V_L, spunfiber.V_temp)
+        ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB*spunfiber.V_delta_temp))
+        r = spunfiber.L / (2 * pi)
+        V_H = V_I[-1] / (2 * pi * r) * ones(len(spunfiber.V_temp))
+        ax_temp[2].plot(spunfiber.V_L, spunfiber.V * spunfiber.V_f_temp)
+        print('avg V :', spunfiber.V * spunfiber.V_f_temp.mean())
+        ax_temp[0].set(xlim=(0, 28))
+        ax_temp[1].set(xlim=(0, 28))
+        ax_temp[2].set(xlim=(0, 28))
+        #ax.yaxis.set_major_formatter(OOMFormatter(0, "%3.2f"))
+        ax_temp[1].yaxis.set_major_formatter(OOMFormatter(-3, "%2.1f"))
+        ax_temp[2].yaxis.set_major_formatter(OOMFormatter(-6, "%5.4f"))
+
+        ax_temp[0].set_ylabel('Temperature \n(K)')
+        ax_temp[1].set_ylabel('Beatlength \n(m)')
+        ax_temp[2].set_ylabel('Verdet constant  \n(rad/A)')
+        ax_temp[2].set_xlabel('Fiber potisoin (m)')
+        fig_temp.align_ylabels(ax_temp)
 
 
         xx = 0
@@ -138,15 +139,15 @@ if __name__ == '__main__':
             # ang_FM = 45
             ang_FM = V_angFM[xx]
             num_iter = V_iter[xx]
-            E = Jones_vector('input')
+
             azi = np.array([0, pi/6, pi/4])
-            E.general_azimuth_ellipticity(azimuth=azi, ellipticity=0)
+            spunfiber.set_Vin([0], 0)
+
             fig1, ax1 = spunfiber.init_plot_SOP()
             S = create_Stokes('O')
             for nn in range(num_iter):
-                Vin = E[0].parameters.matrix()
-                M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
-                Ip, Vout = spunfiber.calc_mp4(num_processor, V_I, M_vib, fig1, Vin)
+                spunfiber.create_Mvib(nM_vib, 1, 1)
+                Ip, Vout = spunfiber.calc_mp4(num_processor, V_I, fig1)
                 save_Jones(strfile1,V_I,Ip,Vout)
 
                 checktime = pd.Timestamp.now() - start
@@ -158,7 +159,6 @@ if __name__ == '__main__':
             # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
             #              ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
             # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
-
 
             fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)
 
