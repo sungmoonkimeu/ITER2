@@ -23,7 +23,7 @@ from scipy.interpolate import CubicSpline
 start = time.process_time()
 # from My_Library import SPUNFIBRE_lib
 
-from My_Library.SPUNFIBER2_lib import *
+from My_Library.SPUNFIBER3_lib import *
 from My_Library.draw_figures_FOCS import *
 
 from My_Library.basis_correction_lib import *
@@ -68,14 +68,15 @@ if __name__ == '__main__':
     os.chdir(os.getcwd() + '\My_library')
     print(os.getcwd())
 
-    mode = 2
+    mode = 0
     LB = 1.000
     SP = 0.005
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 6  # lead fiber
     len_ls = 28  # sensing fiber
-    spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
+    angle_FM = 45
+    spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls, angle_FM)
 
     # strfile1 = 'lobi_45FM_errdeg1x5_220622_LF_1000_500.csv'
     # strfile2 = 'lobi_45FM_errdeg1x5_220622_LF_1000_1000.csv'
@@ -92,10 +93,10 @@ if __name__ == '__main__':
 
         num_iter = 1
         num_processor = 8
-        V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
+        # V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
-        # V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
+        V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
         out_dict = {'Ip': V_I}
         out_dict2 = {'Ip': V_I}
         nM_vib = 0
@@ -105,6 +106,31 @@ if __name__ == '__main__':
         l_vv = data['L'].to_numpy() / 100
         temp_vv = data['TEMP'].to_numpy()
         F_temp_interp = CubicSpline(l_vv, temp_vv)
+
+        spunfiber.set_Vectors()
+        spunfiber.set_tempVV(l_vv[0], l_vv[-1], F_temp_interp)
+
+        #
+        # fig_temp, ax_temp = plt.subplots(3, 1, figsize=(5, 6))
+        # fig_temp.subplots_adjust(hspace=0.32, left=0.24)
+        # ax_temp[0].plot(spunfiber.V_L, spunfiber.V_temp)
+        # ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB*spunfiber.V_delta_temp))
+        # r = spunfiber.L / (2 * pi)
+        # V_H = V_I[-1] / (2 * pi * r) * ones(len(spunfiber.V_temp))
+        # ax_temp[2].plot(spunfiber.V_L, spunfiber.V * spunfiber.V_f_temp)
+        # ax_temp[0].set(xlim=(0, 28))
+        # ax_temp[1].set(xlim=(0, 28))
+        # ax_temp[2].set(xlim=(0, 28))
+        # #ax.yaxis.set_major_formatter(OOMFormatter(0, "%3.2f"))
+        # ax_temp[1].yaxis.set_major_formatter(OOMFormatter(-3, "%2.1f"))
+        # ax_temp[2].yaxis.set_major_formatter(OOMFormatter(-6, "%5.4f"))
+        #
+        # ax_temp[0].set_ylabel('Temperature \n(K)')
+        # ax_temp[1].set_ylabel('Beatlength \n(m)')
+        # ax_temp[2].set_ylabel('Verdet constant  \n(rad/A)')
+        # ax_temp[2].set_xlabel('Fiber potisoin (m)')
+        # fig_temp.align_ylabels(ax_temp)
+
 
         xx = 0
         for xx, strfile1 in enumerate(V_strfile):
@@ -120,7 +146,7 @@ if __name__ == '__main__':
             for nn in range(num_iter):
                 Vin = E[0].parameters.matrix()
                 M_vib = spunfiber.create_Mvib(nM_vib, 1, 1)
-                Ip, Vout = spunfiber.calc_mp4(num_processor, V_I, F_temp_interp, ang_FM, M_vib, fig1, Vin)
+                Ip, Vout = spunfiber.calc_mp4(num_processor, V_I, M_vib, fig1, Vin)
                 save_Jones(strfile1,V_I,Ip,Vout)
 
                 checktime = pd.Timestamp.now() - start
