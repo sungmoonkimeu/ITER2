@@ -79,7 +79,7 @@ class SPUNFIBER:
         self.Vin = E.parameters.matrix()
 
     def set_Vectors(self):
-        self.dz = self.L / 100
+        self.dz = self.L / 10000
         self.V_L = arange(0, self.L + self.dz, self.dz)
         self.V_LF = arange(0, self.LF + self.dz, self.dz)
 
@@ -236,34 +236,37 @@ class SPUNFIBER:
         # print(tmp) # To show where is the position of Merr
         return M
 
-    def lamming_VV(self, Ip, DIR, V_theta, V_L):
+    def lamming_VV_temp(self, Ip, DIR):
         """
         :param DIR: direction (+1: forward, -1: backward)
         :param Ip: plasma current
-        :param L: fiber length
-        :param V_theta: vector of theta (angle of optic axes)
-        :return: M matrix calculated from N matrix
+        :return: 2x2 Jones matrix of spun fiber in VV with temperature effect
         """
         m = 0
         # Fiber parameter
         s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
-        delta = 2 * pi / self.LB
+
+        #V_delta = 2*pi / (self.LB *(1 + 3e-5*(self.V_temp-273.15-20)))
+        V_delta = 2 * pi / (self.LB * self.V_delta_temp)
+        #delta = 2 * pi / self.LB
 
         # magnetic field in unit length
         # H = Ip / (2 * pi * r)
-        r = self.L /(2*pi)
-        V_H = Ip / (2*pi*r) * ones(len(V_L))
-        V_rho = self.V * V_H    # <<- Vector
-
+        r = self.L / (2 * pi)
+        V_H = Ip / (2 * pi * r) * ones(len(self.V_temp))
+        # V_rho = self.V * V_H
+        #V_rho = self.V * V_H * (1 + 8.1e-5*(self.V_temp-273.15-20))
+        V_rho = self.V * V_H * self.V_f_temp
+        #print(V_rho)
         # --------Laming: orientation of the local slow axis ------------
 
-        V_qu = 2 * (s_t_r - V_rho) / delta  # <<- Vector
+        V_qu = 2 * (s_t_r - V_rho) / V_delta  # <<- Vector
         # See Note/Note 1 (sign of Farday effect in Laming's method).jpg
         # The sign of farday rotation (rho) is opposite to that of the Laming paper, inorder
         # to be consistant with anti-clockwise (as in Jones paper) orientation for both
         # spin and faraday rotation.
 
-        V_gma = 0.5 * (delta ** 2 + 4 * ((s_t_r - V_rho) ** 2)) ** 0.5  # <<- Vector
+        V_gma = 0.5 * (V_delta ** 2 + 4 * ((s_t_r - V_rho) ** 2)) ** 0.5  # <<- Vector
         '''
         if arctan((-qu / ((1 + qu ** 2) ** 0.5)) * tan(gma * self.dz)) > 0:
             nf = -int(gma * self.dz / pi) - 1
@@ -285,7 +288,7 @@ class SPUNFIBER:
         V_omega = s_t_r * self.dz + arctan((-V_qu / ((1 + V_qu ** 2) ** 0.5)) * tan(V_gma * self.dz)) + V_n * pi  # <<- Vector
         V_R = 2 * arcsin(sin(V_gma * self.dz) / ((1 + V_qu ** 2) ** 0.5))  # <<- Vector
         V_phi = ((s_t_r * self.dz) - V_omega) / 2 + m * (pi / 2)
-        V_phi += V_theta if DIR == 1 else np.flip(V_theta)
+        V_phi += self.V_theta if DIR == 1 else np.flip(self.V_theta)
 
         n11 = cos(V_R / 2) + 1j * sin(V_R / 2) * cos(2 * V_phi)
         n12 = 1j * sin(V_R / 2) * sin(2 * V_phi)
@@ -299,39 +302,36 @@ class SPUNFIBER:
         # Therefore, M_R, M_omega array should be defined as transposed matrix to have correct matrix.
 
         M = np.array([[1, 0], [0, 1]])
-        for nn in range(len(V_theta)-1):
+        for nn in range(len(self.V_theta)-1):
             M = M_omega[nn] @ M_R[nn] @ M
 
-        # print("rem=", rem, "nVerr=", nVerr, "nSet = ", nSet) # To show current spun fiber's info.
-        # print(tmp) # To show where is the position of Merr
         return M
 
-    def lamming_VV_temp(self, Ip, DIR):
+    def lamming_VV_const_temp(self, Ip, DIR, temp):
         """
         :param DIR: direction (+1: forward, -1: backward)
         :param Ip: plasma current
-        :param L: fiber length
-        :param V_theta: vector of theta (angle of optic axes)
-        :return: M matrix calculated from N matrix
+        :return: 2x2 Jones matrix of spun fiber in VV with constant temperature
         """
         m = 0
         # Fiber parameter
         s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
 
-        #V_delta = 2*pi / (self.LB *(1 + 3e-5*(self.V_temp-273.15-20)))
-        V_delta = 2 * pi / (self.LB * self.V_delta_temp)
-        #delta = 2 * pi / self.LB
+        # V_delta = 2*pi / (self.LB *(1 + 3e-5*(self.V_temp-273.15-20)))
+        # temp = 293.15  # kelvin
 
+        LB_temp = 1 + 3e-5 * (temp - 273.15 - 20)
+        V_delta = 2 * pi / (self.LB * LB_temp) * ones(len(self.V_L))
+
+
+        f_temp = 1 + 8.1e-5 * (temp - 273.15 - 20)
         # magnetic field in unit length
-        # H = Ip / (2 * pi * r)
-        r = self.L / (2 * pi)
-        V_H = Ip / (2 * pi * r) * ones(len(self.V_temp))
-        # V_rho = self.V * V_H
-        #V_rho = self.V * V_H * (1 + 8.1e-5*(self.V_temp-273.15-20))
-        V_rho = self.V * V_H * self.V_f_temp
-        #print(V_rho)
-        # --------Laming: orientation of the local slow axis ------------
+        r = self.L / (2 * pi)       # H = Ip / (2 * pi * r)
+        V_H = Ip / (2 * pi * r) * ones(len(self.V_L))
+        V_rho = self.V * V_H * f_temp
 
+
+        # --------Laming: orientation of the local slow axis ------------
         V_qu = 2 * (s_t_r - V_rho) / V_delta  # <<- Vector
         # See Note/Note 1 (sign of Farday effect in Laming's method).jpg
         # The sign of farday rotation (rho) is opposite to that of the Laming paper, inorder
@@ -589,7 +589,7 @@ class SPUNFIBER:
 
         return V_rho
 
-    def cal_rotation(self, V_Ip, ang_FM, num, Vout_dic, M_vib=None, Vin=None):
+    def cal_rotation_ori(self, V_Ip, ang_FM, num, Vout_dic, M_vib=None, Vin=None):
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
 
@@ -650,58 +650,6 @@ class SPUNFIBER:
 
         Vout_dic[num] = V_out
 
-    def cal_rotation2(self, V_Ip, ang_FM, num, Vout_dic, M_vib=None, Vin=None):
-        V_plasmaCurrent = V_Ip
-        V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
-
-        s_t_r = 2 * pi / self.SP
-        #Vin = np.array([[1], [0]])
-
-        mm = 0
-        for iter_I in V_plasmaCurrent:
-            # Lead fiber vector with V_theta_lf
-            V_L_lf = arange(0, self.LF+self.dz , self.dz)
-            V_theta_lf = V_L_lf * s_t_r
-
-            # Sensing fiber vector with V_theta
-            V_L = arange(0, self.L+self.dz, self.dz)
-            V_theta = V_theta_lf[-1] + V_L * s_t_r
-
-            # Faraday mirror
-            ksi = ang_FM * pi / 180
-            Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
-            Jm = np.array([[1, 0], [0, 1]])
-            M_FR = Rot @ Jm @ Rot
-
-            M_lf_f = self.lamming(iter_I, 1, V_theta_lf, M_vib)
-            M_f = self.lamming(iter_I, 1, V_theta)
-            M_b = self.lamming(iter_I, -1, V_theta)
-            M_lf_b = self.lamming(0, -1, V_theta_lf, M_vib)
-
-            # M_lf_f = self.lamming(iter_I, 1, LF, V_theta_lf)
-            # M_lf_b = self.lamming(iter_I, -1, LF, V_theta_lf)
-            # M_f = self.lamming(iter_I, 1, L, V_theta)
-            # M_b = self.lamming(iter_I, -1, L, V_theta)
-
-            # if num == 0 and iter_I == V_plasmaCurrent[0]:
-                #print("M_lf_f = ", M_lf_f[0, 1], M_lf_f[1, 0])
-                #print("M_lf_b = ", M_lf_b[0, 1], M_lf_b[1, 0])
-                #print("abs() = ", abs(M_lf_f[0, 1])-abs(M_lf_b[1, 0]))
-                #print("Norm (MLead_f - MLead_b.T) = ", norm(M_lf_f - M_lf_b.T))
-                # print("M_f = ", M_f[0, 1], M_f[1, 0])
-                # print("M_b = ", M_b[0, 1], M_b[1, 0])
-                #print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
-
-            #V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
-            V_out[mm] = M_lf_f @ Vin
-            # V_out[mm] =  M_lf_f @ V_in
-            # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
-            # V_out[mm] = M_lf_f @ V_in
-            mm = mm + 1
-        #print("done")
-
-        Vout_dic[num] = V_out
-
     def cal_rotation3(self, V_Ip, ang_FM, num, Vout_dic, M_vib=None, Vin=None):
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
@@ -749,23 +697,6 @@ class SPUNFIBER:
             self.dz = self.LF / 100
             M_lf_b = self.lamming_bridge(-iter_I, -1, 1, V_theta_lf, V_L_lf, M_vib)
 
-            # self.dz = self.LF/100
-            # M_lf_f = self.lamming_bridge(-iter_I, 1, 1, V_theta_lf, V_L_lf, M_vib)
-            # self.dz = self.SP/100
-            # M_f = self.lamming(iter_I, 1, V_theta)
-            # self.dz = self.LF / 100
-            # M_lf_f2 = self.lamming_bridge(iter_I, 1, 2, V_theta_lf2, V_L_lf2, M_vib)
-            # M_lf_b2 = self.lamming_bridge(iter_I, -1, 2, V_theta_lf2, V_L_lf2, M_vib)
-            # self.dz = self.SP / 100
-            # M_b = self.lamming(iter_I, -1, V_theta)
-            # self.dz = self.LF / 100
-            # M_lf_b = self.lamming_bridge(-iter_I, -1, 1, V_theta_lf, V_L_lf, M_vib)
-
-            # M_lf_f = self.lamming(iter_I, 1, V_theta_lf, M_vib)
-            # M_lf_b = self.lamming(iter_I, -1, V_theta_lf, M_vib)
-            # M_f = self.lamming(iter_I, 1, L, V_theta)
-            # M_b = self.lamming(iter_I, -1, L, V_theta)
-
             if num == 0 and iter_I == V_plasmaCurrent[0]:
                 # print("M_lf_f = ", M_lf_f[0, 1], M_lf_f[1, 0])
                 # print("M_lf_b = ", M_lf_b[0, 1], M_lf_b[1, 0])
@@ -775,21 +706,14 @@ class SPUNFIBER:
                 # print("M_b = ", M_b[0, 1], M_b[1, 0])
                 # print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
 
-            #V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
-            #V_out[mm] = M_lf_b @ M_b @ M_lf_b2 @ M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Vin
             V_out[mm] = M_lf_b @ M_b @ M_lf_b2 @ M_FB @ M_FR @ M_FB @ M_lf_f2 @ M_f @ M_lf_f @ Vin
-            # V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
-            # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
-            # V_out[mm] = M_f @ M_lf_f @ Vin
-            # V_out[mm] =  M_lf_f @ V_in
-            # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
-            # V_out[mm] = M_lf_f @ V_in
+
             mm = mm + 1
         # print("done")
 
         Vout_dic[num] = V_out
 
-    def cal_rotation4(self, V_Ip, num, Vout_dic):
+    def cal_rotation(self, V_Ip, num, Vout_dic, temp = None):
         # for temperature distribution simulation
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
@@ -802,9 +726,12 @@ class SPUNFIBER:
             Rot = np.array([[cos(ksi), -sin(ksi)], [sin(ksi), cos(ksi)]])
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
-
-            M_f = self.lamming_VV_temp(iter_I, 1)
-            M_b = self.lamming_VV_temp(iter_I, -1)
+            if temp == None:
+                M_f = self.lamming_VV_temp(iter_I, 1)
+                M_b = self.lamming_VV_temp(iter_I, -1)
+            else:
+                M_f = self.lamming_VV_const_temp(iter_I, 1, temp)
+                M_b = self.lamming_VV_const_temp(iter_I, -1, temp)
 
             V_out[mm] = M_b @ M_FR @ M_f @ self.Vin
 
@@ -812,7 +739,7 @@ class SPUNFIBER:
 
         Vout_dic[num] = V_out
 
-    def calc_mp4(self, num_processor, V_I, fig=None):
+    def calc_mp(self, num_processor, V_I):
         # for temperature distribution simulation
         spl_I = np.array_split(V_I, num_processor)
 
@@ -820,11 +747,10 @@ class SPUNFIBER:
         manager = Manager()
         Vout_dic = manager.dict()
 
-        Ip = zeros(len(V_I))
         #print("Vin_calc_mp", Vin)
         for num in range(num_processor):
             # proc = Process(target=self.cal_rotation,
-            proc = Process(target=self.cal_rotation4,
+            proc = Process(target=self.cal_rotation,
                            args=(spl_I[num], num, Vout_dic))
             procs.append(proc)
             proc.start()
@@ -836,30 +762,14 @@ class SPUNFIBER:
         for kk in range(num_processor - 1):
             Vout = np.vstack((Vout, Vout_dic[kk + 1]))
 
-        E = Jones_vector('Output')
-        E.from_matrix(M=Vout)
-        V_ang = zeros(len(V_I))
+        return Vout
 
-        # SOP evolution in Lead fiber (Forward)
-        S = create_Stokes('Output_S')
-        S.from_Jones(E)
+    def calc_sp(self, V_I, temp = None):
 
-        if fig is not None:
-            draw_stokes_points(fig[0], S, kind='line', color_line='b')
-        else:
-            fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line',
-                                  color_line='b')
+        Vout = [[]]
+        self.cal_rotation(V_I, 0, Vout, temp)
 
-        m = 0
-        for kk in range(len(V_I)):
-            if kk > 0 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] < -pi * 0.8:
-                m = m + 1
-            elif kk > 0 and E[kk].parameters.azimuth() + m * pi - V_ang[kk - 1] > pi * 0.8:
-                m = m - 1
-            V_ang[kk] = E[kk].parameters.azimuth() + m * pi
-            Ip[kk] = (V_ang[kk] - pi/2) / (2 * self.V)
-        # print(V_ang[0])
-        return Ip, Vout
+        return Vout[0]
 
     def plot_error(self, filename):
 
@@ -1009,6 +919,20 @@ class SPUNFIBER:
         return fig, ax
 
 
+def save_Jones2(filename, V_I, V_out):
+    if os.path.exists(filename + "_S"):
+        df2 = pd.read_csv(filename + "_S")
+        ncol2 = int((df2.shape[1] - 1) / 2)
+        df2[str(ncol2) + ' Ex'] = V_out[:, 0, 0]
+        df2[str(ncol2) + ' Ey'] = V_out[:, 1, 0]
+    else:
+        out_dict2 = {'Ip': V_I}
+        out_dict2['0 Ex'] = V_out[:, 0, 0]
+        out_dict2['0 Ey'] = V_out[:, 1, 0]
+        df2 = pd.DataFrame(out_dict2)
+
+    df2.to_csv(filename + "_S", index=False)
+
 def save_Jones(filename, Vin, Ip_m, Vout):
     if os.path.exists(filename):
         df = pd.read_csv(filename)
@@ -1031,7 +955,6 @@ def save_Jones(filename, Vin, Ip_m, Vout):
 
     df.to_csv(filename, index=False)
     df2.to_csv(filename + "_S", index=False)
-
 
 def load_stokes_fromfile(filename, ncol=0):
     data = pd.read_csv(filename)

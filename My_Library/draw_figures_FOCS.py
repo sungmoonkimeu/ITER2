@@ -114,7 +114,7 @@ def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None
     V_ang = zeros(len(V_I))
     Ip = zeros([int((data.shape[1] - 1) / 2), len(V_I)])
 
-    V = 0.54 * 4 * pi * 1e-7 if V_custom is None else V_custom
+    V = 0.54 * 4 * pi * 1e-7 *2 if V_custom is None else V_custom
 
     # Calcuation of ITER specification
     absErrorlimit = zeros(len(V_I))
@@ -173,7 +173,6 @@ def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None
     fig.subplots_adjust(hspace=0.4, right=0.95, top=0.93, bottom=0.2)
     return fig, ax, lines
 
-
 # plotting error from Stokes parameters
 def plot_error_byStokes(V_I, S, fig=None, ax=None, lines=None, v_calc_init=None, V_custom=None, label=None):
 
@@ -229,7 +228,6 @@ def plot_error_byStokes(V_I, S, fig=None, ax=None, lines=None, v_calc_init=None,
 
     return fig, ax, lines
 
-
 def plot_Stokes_byfile(filename, fig=None, lines=None, opacity=1):
     data = pd.read_csv(filename)
     V_I = data['Ip']
@@ -276,7 +274,6 @@ def plot_Stokes_byfile(filename, fig=None, lines=None, opacity=1):
                           name='F1')
 
     return fig, lines
-
 
 def plot_errorbar_byDic(dic_err, fig=None, ax=None, lines=[], label=[], init_index=None):
     #print(lines[0]) if len(lines)> 0 else print(len(lines))
@@ -354,8 +351,6 @@ def plot_errorbar_byDic_inset(dic_err, ax, init_index=None):
 
     return ax
 
-
-
 def plot_Stokes(Ip, S, fig=None, lines=None, opacity=1, S_position=None):
 
     if fig is None:
@@ -391,7 +386,6 @@ def plot_Stokes(Ip, S, fig=None, lines=None, opacity=1, S_position=None):
 
     return fig, lines
 
-
 def plot_Stokes_pnt(Ip, S, fig=None, lines=None, opacity=1):
     if fig is None:
         fig = PS5(opacity)
@@ -421,7 +415,6 @@ def plot_Stokes_pnt(Ip, S, fig=None, lines=None, opacity=1):
                       name='F1')
 
     return fig, lines
-
 
 def plot_Stokes_pnt2( S, fig=None, lines=None, opacity=1, color_pnt=None):
     if fig is None:

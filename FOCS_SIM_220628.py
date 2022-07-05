@@ -13,6 +13,7 @@ import time
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
+from brokenaxes import brokenaxes
 from matplotlib.colors import rgb2hex
 
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
@@ -84,11 +85,11 @@ if __name__ == '__main__':
     strfile1 = 'test.csv'
 
     V_strfile = [strfile1]
-    V_iter = [1]
+    V_iter = [3]
     # V_strfile = [strfile1, strfile2, strfile3, strfile4]
     V_angFM = [45]
     # strfile1 = 'Hibi_test.csv'
-
+    V_temp = [20+ 273.15, 92+ 273.15, None]
     if mode == 0:
 
         num_iter = 1
@@ -97,41 +98,22 @@ if __name__ == '__main__':
         # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
-        out_dict = {'Ip': V_I}
-        out_dict2 = {'Ip': V_I}
+
         nM_vib = 0
         start = pd.Timestamp.now()
 
+        # Load the temperature distribution along the VV (20 cm with a clamp)
         data = pd.read_csv('VVtemp.csv', delimiter=';')
         l_vv = data['L'].to_numpy() / 100
         temp_vv = data['TEMP'].to_numpy()
         F_temp_interp = CubicSpline(l_vv, temp_vv)
 
+        # Spunfiber model initialization
         spunfiber.set_Vectors()
+        # Spunfiber model with temperature information
         spunfiber.set_tempVV(l_vv[0], l_vv[-1], F_temp_interp)
-
-
-        fig_temp, ax_temp = plt.subplots(3, 1, figsize=(5, 6))
-        fig_temp.subplots_adjust(hspace=0.32, left=0.24)
-        ax_temp[0].plot(spunfiber.V_L, spunfiber.V_temp)
-        ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB*spunfiber.V_delta_temp))
-        r = spunfiber.L / (2 * pi)
-        V_H = V_I[-1] / (2 * pi * r) * ones(len(spunfiber.V_temp))
-        ax_temp[2].plot(spunfiber.V_L, spunfiber.V * spunfiber.V_f_temp)
-        print('avg V :', spunfiber.V * spunfiber.V_f_temp.mean())
-        ax_temp[0].set(xlim=(0, 28))
-        ax_temp[1].set(xlim=(0, 28))
-        ax_temp[2].set(xlim=(0, 28))
-        #ax.yaxis.set_major_formatter(OOMFormatter(0, "%3.2f"))
-        ax_temp[1].yaxis.set_major_formatter(OOMFormatter(-3, "%2.1f"))
-        ax_temp[2].yaxis.set_major_formatter(OOMFormatter(-6, "%5.4f"))
-
-        ax_temp[0].set_ylabel('Temperature \n(K)')
-        ax_temp[1].set_ylabel('Beatlength \n(m)')
-        ax_temp[2].set_ylabel('Verdet constant  \n(rad/A)')
-        ax_temp[2].set_xlabel('Fiber potisoin (m)')
-        fig_temp.align_ylabels(ax_temp)
-
+        # No_vib matrix
+        spunfiber.create_Mvib(nM_vib, 1, 1)
 
         xx = 0
         for xx, strfile1 in enumerate(V_strfile):
@@ -142,25 +124,75 @@ if __name__ == '__main__':
 
             azi = np.array([0, pi/6, pi/4])
             spunfiber.set_Vin([0], 0)
-
-            fig1, ax1 = spunfiber.init_plot_SOP()
-            S = create_Stokes('O')
             for nn in range(num_iter):
-                spunfiber.create_Mvib(nM_vib, 1, 1)
-                Ip, Vout = spunfiber.calc_mp4(num_processor, V_I, fig1)
-                save_Jones(strfile1,V_I,Ip,Vout)
+                #V_out = spunfiber.calc_mp(num_processor, V_I)
+                V_out = spunfiber.calc_sp(V_I, V_temp[nn])
+                save_Jones2(strfile1,V_I,V_out)
 
                 checktime = pd.Timestamp.now() - start
                 print(nn, "/", num_iter, checktime)
                 start = pd.Timestamp.now()
 
-            # fig2, ax2, lines = spunfiber.plot_error(strfile1)
+            # 1, plot error directly from file
+            fig, ax, lines = None, None, None
+            fig, ax, lines = plot_error_byfile2(strfile1 + "_S")
 
-            # labelTups = [('Stacking matrix (dz = SP/25)', 0), ('Lamming method with small step (dz = SP/25)', 1),
-            #              ('Lamming method for whole fiber (dz = L)', 2), ('Iter specification', 3)]
-            # ax2.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+            labelTups = [('20 degC', 0), ('100 degC', 1),
+                         ('Temp. distribution', 2), ('Iter specification', 3)]
+            ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
 
-            fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)
+            # fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)
+
+        # plot the temperature effect
+        fig_temp, ax_temp = plt.subplots(3, 1, figsize=(8, 5))
+        fig_temp.subplots_adjust(hspace=0.32, left=0.24)
+        ax_temp[0].plot(spunfiber.V_L, spunfiber.V_temp-273.15)
+        ax_temp[0].plot(spunfiber.V_L, 20+ (spunfiber.V_temp - 273.15)*0)
+        ax_temp[0].plot(spunfiber.V_L, 100 + (spunfiber.V_temp - 273.15) * 0)
+
+        ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB*spunfiber.V_delta_temp))
+        ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB + 0*spunfiber.V_delta_temp))
+        ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB *(1 + 3e-5 * (373.15 - 273.15 - 20)) + 0 * spunfiber.V_delta_temp))
+
+        r = spunfiber.L / (2 * pi)
+        V_H = V_I[-1] / (2 * pi * r) * ones(len(spunfiber.V_temp))
+        ax_temp[2].plot(spunfiber.V_L, spunfiber.V * spunfiber.V_f_temp)
+        ax_temp[2].plot(spunfiber.V_L, spunfiber.V + 0* spunfiber.V_f_temp)
+        ax_temp[2].plot(spunfiber.V_L, spunfiber.V*(1 + 8.1e-5 * (373.15 - 273.15 - 20)) + 0 * spunfiber.V_f_temp)
+
+        print('avg V :', spunfiber.V * spunfiber.V_f_temp.mean())
+        print('avg T :', spunfiber.V_temp.mean())
+        ax_temp[0].set(xlim=(0, 5.5), ylim=(18,110))
+        ax_temp[1].set(xlim=(0, 5.5), ylim=(0.9995, 1.003))
+        ax_temp[2].set(xlim=(0, 5.5), ylim=(0.6780e-6, 0.6835e-6))
+        #ax.yaxis.set_major_formatter(OOMFormatter(0, "%3.2f"))
+        ax_temp[1].yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+        ax_temp[2].yaxis.set_major_formatter(OOMFormatter(-6, "%5.4f"))
+        ax_temp[0].set_ylabel('Temperature \n(degC)')
+        ax_temp[1].set_ylabel('Beatlength \n(m)')
+        ax_temp[2].set_ylabel('Verdet constant  \n(rad/A)')
+        ax_temp[2].set_xlabel('Fiber position (m)')
+        fig_temp.align_ylabels(ax_temp)
+
+        for nn in range(3):
+            ax_temp[nn].spines['right'].set_visible(False)
+
+        # # hide the spines between ax and ax2
+        # ax.spines['right'].set_visible(False)
+        # ax2.spines['left'].set_visible(False)
+        # ax.yaxis.tick_left()
+        # ax.tick_params(labelright='off')
+        # ax2.yaxis.tick_right()
+        #
+        # d = .015  # how big to make the diagonal lines in axes coordinates
+        # # arguments to pass plot, just so we don't keep repeating them
+        # kwargs = dict(transform=ax.transAxes, color='k', clip_on=False)
+        # ax.plot((1 - d, 1 + d), (-d, +d), **kwargs)
+        # ax.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)
+        #
+        # kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
+        # ax2.plot((-d, +d), (1 - d, 1 + d), **kwargs)
+        # ax2.plot((-d, +d), (-d, +d), **kwargs)
 
     elif mode == 1:
         #strfile1 = 'Hibi_test.csv'
@@ -206,129 +238,14 @@ if __name__ == '__main__':
         fig3.show()
 
     elif mode == 2:
-        # strfile1 = 'Lobi_45FM_errdeg1x5_220529_2.csv'
-        # strfile1 = "IdealFM_Hibi_Errdeg1x5_0.csv"
-        # strfile1 = "Hibi_44FM_errdeg1x5.csv"
-        # strfile1 = "IdealFM_Errdeg1x5_1.csv"
-        # load whole Jones and convert to measured Ip
-        # V2 = 0.54 * 4 * pi * 1e-7 * 2 *(0.9700180483394489)
-        # V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv',
-        #              'Lobi_46FM_errdeg1x5_220531.csv',
-        #              'Lobi_65FM_errdeg1x5_220531.csv',
-        #              'Lobi_0FM_errdeg1x5_220531.csv']
-        #
-        # V_strfile = ['Hibi_45FM_errdeg1x5_220531.csv',
-        #              'Hibi_46FM_errdeg1x5_220531.csv',
-        #              'Hibi_65FM_errdeg1x5_220531.csv',
-        #              'Hibi_0FM_errdeg1x5_220531.csv']
-        #V_strfile = ['Lobi_45FM_errdeg1x5_220531.csv']
-        # V_strfile = ['Hibi_0FM_errdeg1x5_220531.csv']
-        V_label = ['Ideal FM', 'Nonideal ']
-        V2 = 0.54 * 4 * pi * 1e-7 * 2
+        # 1, plot error directly from file
+        fig, ax, lines = None, None, None
+        fig, ax, lines = plot_error_byfile2(strfile1 + "_S")
 
-        fig, ax, lines, isEOF, nn = None, None, None, False, 0
-        fig3, lines3, opacity = None, None, 0.5
-        fig10, ax10, lines10 = None, None, []
-        c = np.array([None, None, None])
-
-        V_angerr = [90, 91.5, 93, 97]
-        kk = 0
-        for strfile1 in V_strfile:
-            dic_err = {}
-            nn = 0
-            while isEOF is False:
-                V_I, S, isEOF = load_stokes_fromfile(strfile1 + "_S", nn)
-
-                fig, ax, lines = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines, V_custom=V2*1,label=str(nn))
-                fig3, lines3 = plot_Stokes(V_I[20:35:2], S[20:35:2], fig=fig3, lines=lines3, opacity=opacity)
-
-                if nn == 0:
-                    dic_err['V_I'] = V_I
-
-                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2)
-                # dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*0.965)
-                # dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2*1, v_calc_init=2*V_angFM[kk]*pi/180)
-                # dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=V2 * 1, v_calc_init=V_angerr[kk] * pi / 180)
-
-                c = np.array([None, None, None])
-                nn += 1
-                # if nn > 0:
-                #     break
-
-
-            fig10, ax10, lines10 = plot_errorbar_byDic(dic_err, fig=fig10, ax=ax10, lines=lines10, init_index=21)
-            isEOF = False
-            kk = kk+1
-        # ax10.legend(lines10, ['ITER specification', '',
-        #                                  r'Ideal FM $\theta_{err}$=0$\degree$',
-        #                                  r'$\theta_{err}$=1$\degree$', '', '','', ''])
-
-        # ax10.legend( [lines10[0], lines10[4], lines10[7], lines10[10], lines10[13]],
-        #              ['ITER specification', 'Ideal FM',
-        #               r'$\theta_{err}$=1$\degree$',
-        #               r'$\theta_{err}$=2$\degree$',
-        #               r'$\theta_{err}$=5$\degree$'],
-        #              bbox_to_anchor=(1.01, 1.01), loc="upper left")
-        ax10.set(ylim=(-0.09, 0.09))
-        #fig10.savefig("fig9.(b).jpg", dpi=330)
-        fig3.show()
-
-    elif mode == 3:
-
-        # V_strfile = ['Lobi_45FM_errdeg1x5_220601.csv',
-        #              'Hibi_45FM_errdeg1x5_220601.csv']
-        V_strfile = ['lobi_45FM_errdeg1x5_220622_LF_1000_1000.csv', 'hibi_45FM_errdeg1x5_220622_LF_1000_1000.csv']
-
-        V_label = ['Ideal FM', 'Nonideal ']
-        V2 = 0.54 * 4 * pi * 1e-7 * 2
-
-        fig, ax, lines, isEOF, nn = None, None, None, False, 0
-        fig3, lines3, opacity = None, None, 0.5
-        fig10, ax10, lines10 = None, None, []
-        c = np.array([None, None, None])
-
-
-
-        for strfile1 in V_strfile:
-            dic_err = {}
-            nn = 0
-            while isEOF is False:
-                V_I, S, isEOF = load_stokes_fromfile(strfile1 + "_S", nn)
-
-                Vtmp  = V2 if strfile1 == V_strfile[0] else V2 * 0.9665
-                if nn == 0:
-                    dic_err['V_I'] = V_I
-                dic_err[str(nn)] = cal_error_fromStocks(V_I, S, V_custom=Vtmp)
-                c = np.array([None, None, None])
-                nn += 1
-                # if nn > 10:
-                #      break
-
-            fig10, ax10, lines10 = plot_errorbar_byDic(dic_err, fig=fig10, ax=ax10, lines=lines10, init_index=21)
-            if strfile1 == V_strfile[0]:
-                ax10ins = inset_axes(ax10, width="45%", height=0.8, loc=1)
-                x1, x2, y1, y2 = 0, 8e6, -0.005, 0.005
-                ax10ins.set_xlim(x1, x2)
-                ax10ins.set_ylim(y1, y2)
-                ax10ins= plot_errorbar_byDic_inset(dic_err, ax=ax10ins, init_index=21)
-            isEOF = False
-        # ax10.legend(lines10, ['ITER specification', '',
-        #                                  r'Ideal FM $\theta_{err}$=0$\degree$',
-        #                                  r'$\theta_{err}$=1$\degree$', '', '','', ''])
-
-        ax10.legend( [lines10[0], lines10[4], lines10[7]],
-                     ['ITER specification',
-                      'lo-bi spun fiber',
-                      'hi-bi spun fiber'],
-                     bbox_to_anchor=(1.01, 1.01), loc="upper left")
-
-        # fig10.savefig("fig9.jpg", dpi=330)
-
-        # print(legend)
-        # r'$\theta_{err}$=20$\degree$'])
-        # r'$\theta_{err}$=45$\degree$'])
-
-        #ax.legend()
+        labelTups = [('Uniform dist. 20 degC', 0), ('Uniform dist. 100 degC', 1),
+                     ('From temp. simulation data', 2), ('Iter specification', 3)]
+        ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right')
+        ax.set(ylim=(0, 0.012))
 
     plt_fmt, plt_res = '.png', 330  # 330 is max in Word'16
     plt.rcParams["axes.titlepad"] = 5  # offset for the fig title
