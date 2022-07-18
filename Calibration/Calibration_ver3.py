@@ -394,7 +394,7 @@ def f(x, Mci, Mco, fig, strfile):
 
 if __name__ == '__main__':
     strfile = 'calibration1D_log.csv'
-    mode = 2
+    mode = 1
     theta = 35
     phi = 35
     theta_e = 15
@@ -417,16 +417,16 @@ if __name__ == '__main__':
         minimum = optimize.fmin(f, 0, (Mci, Mco, fig, strfile), maxiter=20, xtol=1, ftol=0.0001, initial_simplex=init_polstate, retall=True)
         print(minimum[0])
 
-    elif mode ==1:
+    elif mode == 1:
         Stmp = create_Stokes('tmp')
         fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')
         #fig = plt.figure()
         #ax = fig.add_subplot(111, projection='3d')
         #simplex_trace(strfile, fig[0], ax)
-        #simple_trace1D(strfile, fig[0], ax)
+        simple_trace1D(strfile, fig[0], ax)
         #simplex_trace2(strfile, fig[0], ax)
         eval_result(strfile)
-        eval_result3_1D(strfile, Mci, Mco, fig[0],ax)
+        #eval_result3_1D(strfile, Mci, Mco, fig[0],ax)
 
         '''
         fig, ax = Stmp.draw_poincare(figsize=(7, 7), angle_view=[24 * pi / 180, 31 * pi / 180], kind='line')

@@ -156,7 +156,6 @@ def show_result_cal_azimuth(strfile_background, strfile_calibration, fig, ax):
     ax.set_xlabel('azimuth angle [deg]')
     ax.set_ylabel('Normalized sensitivity')
     ax.set(xlim=(0,360),ylim=(0,1.1))
-
     # draw calibration footstep
     prop = dict(arrowstyle="-|>,head_width=0.2,head_length=0.4", shrinkA=0, shrinkB=0)
     data = pd.read_csv(strfile_calibration)
@@ -424,7 +423,7 @@ if __name__ == '__main__':
     [theta, phi, theta_e] = np.array(inputb)*pi/180
     Mco = create_M_arb(theta, phi, theta_e)
 
-    mode = 5
+    mode = 4
     if mode == 0:
         # scanning 2D space
         strfile = 'scanning.csv'
@@ -628,7 +627,7 @@ if __name__ == '__main__':
         strfile = 'scanning1D_noise.csv'
         n_azi = 100  # 20
 
-        MaxIp = 5e3
+        MaxIp = 40e3
         dIp = MaxIp / 50
         V_Ip = arange(0e6, MaxIp + dIp, dIp)
         V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
