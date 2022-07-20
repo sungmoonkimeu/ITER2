@@ -57,7 +57,7 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
         if self._useMathText:
             self.format = r'$\mathdefault{%s}$' % self.format
 
-def create_gif(gif_name = None):
+def create_gif(gif_name = None, remove = True):
 
     if gif_name is None:
         gif_name = 'mygif.gif'
@@ -68,7 +68,8 @@ def create_gif(gif_name = None):
     images = []
     for img in file_list:
         images.append(imageio.imread(img))
-        os.remove(img)
+        if remove == True:
+            os.remove(img)
     imageio.mimsave(gif_name, images, fps=2)
 
 def show_result_poincare(strfile, Mci, Mco, ax, fig):
@@ -84,7 +85,7 @@ def show_result_poincare(strfile, Mci, Mco, ax, fig):
 
     V_out = np.einsum('...i,jk->ijk', ones(len(E0)) * 1j, np.mat([[0], [0]]))
 
-    V = 0.7 * 4 * pi * 1e-7
+    V = 0.54 * 4 * pi * 1e-7
     MaxIp = 40e3
     dIp = MaxIp/20
     V_Ip = arange(0e6,MaxIp+dIp,dIp)
@@ -143,42 +144,55 @@ def show_result_aziellspace(strfile, aziell, sensitivity, ax, fig):
     create_gif('mygif2.gif')
 
 def show_result_cal_azimuth(strfile_background, strfile_calibration, fig, ax):
-    V = 0.7 * 4 * pi * 1e-7
+    V = 0.54 * 4 * pi * 1e-7
     maxVI = 40e3
 
     # draw background
     data_bg = pd.read_csv(strfile_background)
     azi_bg = np.array(data_bg['azi'])
     l_bg = np.array(data_bg['l'])
-    Ip_bg = l_bg / 4 / V
-    sensitivity_bg = Ip_bg / maxVI
-    ax.plot(azi_bg*180/pi*2, sensitivity_bg)
+    #Ip_bg = l_bg / 4 / V
+    #sensitivity_bg = Ip_bg / maxVI
+    FOCSresponse_bg = l_bg/4/maxVI*180/pi *1e6
+    ax.plot(azi_bg*180/pi, FOCSresponse_bg)
     ax.set_xlabel('azimuth angle [deg]')
-    ax.set_ylabel('Normalized sensitivity')
-    ax.set(xlim=(0,360),ylim=(0,1.1))
+    ax.set_ylabel('FOCS response (deg/MA)')
+    ax.set(xlim=(0, 180),ylim=(0,55))
     # draw calibration footstep
     prop = dict(arrowstyle="-|>,head_width=0.2,head_length=0.4", shrinkA=0, shrinkB=0)
     data = pd.read_csv(strfile_calibration)
     x0 = data['x'][0]
-    y0 = data['L'][0]/(4*V)/maxVI
+    #y0 = data['L'][0]/(4*V)/maxVI
+    y0 = data['L'][0] / 4 / maxVI * 180/pi * 1e6
 
     for nn in range(len(data['x'])-1):
         x = data['x'][nn]
-        y = data['L'][nn]/(4*V)/maxVI
+        y = data['L'][nn]/4/maxVI* 180/pi *1e6
 
-        ax.annotate("", xy=(x*180/pi*2, y),
-                    xytext=(x0*180/pi*2, y0), arrowprops=prop)
+        if nn < 11:
+            ax.annotate("", xy=(x*180/pi, y),
+                    xytext=(x0*180/pi, y0), arrowprops=prop)
+            if nn == 10:
+                plt.cla()
+                ax.plot(azi_bg * 180 / pi, FOCSresponse_bg)
+                ax.set_xlabel('azimuth angle [deg]')
+                ax.set_ylabel('FOCS response (deg/MA)')
+                ax.set(xlim=(55/2, 69/2), ylim=(38.5, 39))
+        else:
+            ax.annotate("", xy=(x*180/pi, y),
+                    xytext=(x0*180/pi, y0), arrowprops=prop)
         x0 = x
         y0 = y
         plt.savefig(str(nn)+'.png')
 
-    create_gif('mygif2.gif')
+    create_gif('mygif2.gif', remove=False)
 
 def f(x, Mci, Mco, strfile):
+    # 1st Optimization function without uncertainty
     E0 = Jones_vector('input')
     E1 = Jones_vector('output')
     E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
-    V = 0.7 * 4 * pi * 1e-7
+    V = 0.54 * 4 * pi * 1e-7
     MaxIp = 40e3
     dIp = MaxIp / 100
     V_Ip = arange(0e6, MaxIp + dIp, dIp)
@@ -197,12 +211,56 @@ def f(x, Mci, Mco, strfile):
     # print(S.parameters.ellipticity_angle()[0])
     # print(S.parameters.azimuth()[-1])
     L = cal_arclength(S)  # Arc length is orientation angle psi -->
-    Veff = L / 2 / (MaxIp * 2)  # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
-    errV = abs((Veff - V) / V)
+    #Veff = L / 2 / (MaxIp * 2)  # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    #errV = abs((Veff - V) / V)
+    Veff = L / 2 / (MaxIp * 2) * 180/pi * 1e6  # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    errV = L / 2 / (MaxIp * 2)  * 180/pi * 1e6 * -1
 
     outdict = {'x': x, 'L': np.array(L), 'errV': np.array(errV)}
     df = pd.DataFrame(outdict)
     df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
+
+    return errV
+
+def f2(x, Mci, Mco, strfile):
+    # 2nd Optimization function SOP control and measurement uncertainty
+    E0 = Jones_vector('input')
+    E1 = Jones_vector('output')
+    x = x + (np.random.rand(1)-0.5)*pi/180 # 0.5 deg SOP control uncertainty
+    # x = x + (np.random.rand(1)*2 - 1) * pi / 180  # 1 deg SOP control uncertainty
+    E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
+    V = 0.54 * 4 * pi * 1e-7
+    MaxIp = 40e3
+    dIp = MaxIp/100
+    V_Ip = arange(0e6,MaxIp+dIp,dIp)
+    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+
+    for mm, iter_I in enumerate(V_Ip):
+        [theta, phi, theta_e] = (np.random.rand(3) *
+        #                         [90, 1, 1] - [45, .5, 0.5]) * np.pi / 180
+                                [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
+
+        Mn = create_M_arb(theta, phi, theta_e)
+
+        # Faraday rotation matirx
+        th_FR = iter_I * V*2
+        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
+        V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0.parameters.matrix()
+
+    E1.from_matrix(M=V_out)
+    S = create_Stokes('output')
+    S.from_Jones(E1)
+
+    L = cal_arclength(S)    # Arc length is orientation angle psi -->
+    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    errV = abs((Veff-V)/V)
+
+    outdict = {'x': x, 'L': np.array(L), 'errV': np.array(errV)}
+    df = pd.DataFrame(outdict)
+    df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
+
+    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
+    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
 
     return errV
 
@@ -268,19 +326,19 @@ if __name__ == '__main__':
     phi = -10 * pi / 180  # ellipticity angle change from experiment
     theta_e = 30* pi / 180  # azimuth angle change from experiment
     '''
-    inputa = [30, -35, 30]
+    inputa = [30, 35, 30]
     [theta, phi, theta_e] = np.array(inputa)*pi/180
     Mci = create_M_arb(theta, phi, theta_e)
 
     # Circulator output matrix
 
-    inputb = [15, -25, 10]
+    inputb = [15, 25, 10]
     [theta, phi, theta_e] = np.array(inputb)*pi/180
     Mco = create_M_arb(theta, phi, theta_e)
 
-    mode = 2
+    mode = 4
     if mode == 0:
-        #Calbiratoin_1D space
+        #Calbiratoin_1D space wo uncertainty
         strfile = 'calibration_log.csv'
 
         if os.path.exists(strfile):
@@ -288,12 +346,17 @@ if __name__ == '__main__':
             os.remove(strfile)
 
         # initial point
-        init_polstate = np.array([[pi/6], [pi / 3]])
+        init_polstate = np.array([[0], [pi / 4]])
 
-        #fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
-        #                            initial_simplex=init_polstate, retall=True, full_output=1)
+        # f ==> without uncertainty
         fmin_result = optimize.fmin(f, pi / 6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
                                     initial_simplex=init_polstate, retall=True, full_output=1)
+        # f2 ==> with uncertainty of SOP measurement and SOP control
+        # fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
+        #                            initial_simplex=init_polstate, retall=True, full_output=1)
+        # f3 ==> with uncertainty of SOP measurement, SOP control, and Calibration current uncertainty
+        # fmin_result = optimize.fmin(f3, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
+        #                            initial_simplex=init_polstate, retall=True, full_output=1)
         print(fmin_result[0])
     elif mode == 1:
         #Scanning 1D space w/o noise
@@ -303,7 +366,7 @@ if __name__ == '__main__':
         V_I = arange(0e6, 40e3 + 1e3, 5e3)
 
         V_out = np.einsum('...i,jk->ijk', ones(len(V_I)) * 1j, np.mat([[0], [0]]))
-        V = 0.7 * 4 * pi * 1e-7
+        V = 0.54 * 4 * pi * 1e-7
 
         E0 = Jones_vector('input')
         E = Jones_vector('Output')
@@ -355,14 +418,131 @@ if __name__ == '__main__':
         sensitivity = Ip_measured / max(V_I)
         errV = abs(sensitivity - 1)
 
-        ax.plot(azi*180/pi*2,sensitivity)
-        #ax.plot(azi*180/pi*2, errV)
-        ax.set_xlabel('azimuth angle [deg]')
-        ax.set_ylabel('normalized sensitivity')
-        ax.set(xlim=(0,360), ylim=(0, 1.1))
-
+        # ax.plot(azi*180/pi*2,sensitivity)
+        ax.plot(azi*180/pi, l_measured/4/max(V_I)*180/pi*1e6)
+        ax.set_xlabel('azimuth [deg]')
+        #ax.set_ylabel('normalized sensitivity')
+        ax.set_ylabel('FOCS response (deg/MA)')
+        ax.set(xlim=(0,180), ylim=(0, 55))
     elif mode == 2:
+        # overlap complete response and optimization w/o noise
         strfile1 = 'scanning1D_xy.csv'
+        fig, ax = plt.subplots(figsize=(6,5))
+        #fig.subplots_adjust(left=0.2, bottom=0.25)
+
+        strfile2 = 'calibration_log.csv'
+        show_result_cal_azimuth(strfile1, strfile2, fig, ax)
+
+        #Stmp = create_Stokes('tmp')
+        #fig, ax = Stmp.draw_poincare(figsize=(5, 5), angle_view=[4 * pi / 180, 124 * pi / 180], kind='line')
+        #show_result_poincare(strfile2, Mci, Mco, fig[0], ax)
+    elif mode == 3:
+        # Calbiratoin_1D space with uncertainty
+        strfile = 'calibration_log.csv'
+
+        if os.path.exists(strfile):
+            print("previous data(", strfile, ") has been deleted")
+            os.remove(strfile)
+
+        # initial point
+        init_polstate = np.array([[0], [pi / 4]])
+
+        # f2 ==> with uncertainty of SOP measurement and SOP control
+        fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
+                                    initial_simplex=init_polstate, retall=True, full_output=1)
+        # f3 ==> with uncertainty of SOP measurement, SOP control, and Calibration current uncertainty
+        # fmin_result = optimize.fmin(f3, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
+        #                            initial_simplex=init_polstate, retall=True, full_output=1)
+        print(fmin_result[0])
+    elif mode == 4:
+        #scanning 1D space with noise
+        strfile = 'scanning1D_noise.csv'
+        n_azi = 100  # 20
+
+        MaxIp = 40e3
+        dIp = MaxIp / 100
+        V_Ip = arange(0e6, MaxIp + dIp, dIp)
+        V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+        V = 0.54 * 4 * pi * 1e-7
+
+        E0 = Jones_vector('input')
+        E = Jones_vector('Output')
+
+        azi = np.linspace(0, 180, n_azi) * pi / 180
+        azi_noise = azi + (np.random.rand(len(azi)) - 0.5) * pi / 180
+        colors = pl.cm.hsv(np.linspace(0, 1, len(azi)))
+
+        E0.general_azimuth_ellipticity(azimuth=azi_noise, ellipticity=0)
+
+        OV = np.array([])
+        midpnt = int(len(V_Ip) / 2)
+        length_S = []
+        S = create_Stokes('Output_S')
+
+        for nn in range(len(E0)):
+            for mm, iter_I in enumerate(V_Ip):
+                [theta, phi, theta_e] = (np.random.rand(3) *
+                                        [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
+                Mn = create_M_arb(theta, phi, theta_e)
+                # Faraday rotation matirx
+                th_FR = iter_I * V * 2
+                M_FR = np.array([[cos(th_FR), sin(th_FR)], [-sin(th_FR), cos(th_FR)]])
+                # V_out[mm] = M_co @ M_FR @ M_ci @ V_in[nn]
+                V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0[nn].parameters.matrix()
+
+            E.from_matrix(M=V_out)
+            S.from_Jones(E)
+
+            #L= cal_arclength(S)[0]
+            #L = L * (1 + np.random.rand(1) * 0.01 - 0.005)  # 1% error including
+            #length_S.append(L)
+            length_S.append(cal_arclength(S)[0])
+
+            #
+            # if nn != 0:
+            #     draw_stokes_points(fig[0], S, kind='line', color_line=rgb2hex(colors[nn]))
+            #     draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=rgb2hex(colors[nn]))
+            # else:
+            #     fig, ax = S.draw_poincare(figsize=(7, 7), angle_view=[23 * pi / 180, 32 * pi / 180], kind='line',
+            #                               color_line=rgb2hex(colors[nn]))
+            #     draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter=rgb2hex(colors[nn]))
+            # print(S[-1])
+
+        print(length_S)
+        l_measured = np.array(length_S)
+        print(l_measured)
+
+        fig, ax = plt.subplots(figsize=(5, 3))
+
+        Ip_measured = l_measured / 4 / V
+
+        # ax.plot(azi*180/pi*2,sensitivity)
+        ax.plot(azi * 180 / pi, l_measured / 4 / MaxIp * 180 / pi * 1e6, label='with SOP uncertainties', zorder = 10)
+        ax.set_xlabel('azimuth [deg]')
+        # ax.set_ylabel('normalized sensitivity')
+        ax.set_ylabel('FOCS response (deg/MA)')
+        ax.set(xlim=(0, 180), ylim=(0, 55))
+
+        outdict0 = {'azi': azi, 'l': l_measured}
+        df0 = pd.DataFrame(outdict0)
+        df0.to_csv(strfile.split('.')[0] + '_xy.' + strfile.split('.')[1], index=False, mode='w',
+                   header=not os.path.exists(strfile))
+
+
+
+        # Overlapping ideal case (without uncertainty)
+        strfile_ideal = 'scanning1D_xy.csv'
+
+        data_ideal = pd.read_csv(strfile_ideal)
+        azi_ideal = np.array(data_ideal['azi'])
+        l_ideal = np.array(data_ideal['l'])
+
+        FOCSresponse_ideal = l_ideal / 4 / MaxIp * 180 / pi * 1e6
+        ax.plot(azi_ideal * 180 / pi, FOCSresponse_ideal, label='w/o SOP uncertainties', zorder = 0)
+        ax.legend(loc='lower right')
+
+    elif mode == 5:
+        strfile1 = 'scanning1D_noise_xy.csv'
         fig, ax = plt.subplots(figsize=(5,4))
         strfile2 = 'calibration_log.csv'
         show_result_cal_azimuth(strfile1, strfile2, fig, ax)
@@ -370,5 +550,6 @@ if __name__ == '__main__':
         #Stmp = create_Stokes('tmp')
         #fig, ax = Stmp.draw_poincare(figsize=(5, 5), angle_view=[4 * pi / 180, 124 * pi / 180], kind='line')
         #show_result_poincare(strfile2, Mci, Mco, fig[0], ax)
+
     plt.show()
 
