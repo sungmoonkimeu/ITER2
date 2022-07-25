@@ -353,20 +353,20 @@ def create_M_arb(theta, phi, theta_e):
 
     return M_rot @ M_theta @ M_phi @ M_theta_T
 
-def f(x, Mci, Mco, strfile):
+def f(x, Mci, Mco, strfile = None):
+    # 1st Optimization function without uncertainty
     E0 = Jones_vector('input')
     E1 = Jones_vector('output')
-    #E0.general_azimuth_ellipticity(azimuth=x[0], ellipticity=x[1])
     E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
-    V = 0.7 * 4 * pi * 1e-7
+    V = 0.54 * 4 * pi * 1e-7
     MaxIp = 40e3
-    dIp = MaxIp/100
-    V_Ip = arange(0e6,MaxIp+dIp,dIp)
+    dIp = MaxIp / 100
+    V_Ip = arange(0e6, MaxIp + dIp, dIp)
     V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
 
     for mm, iter_I in enumerate(V_Ip):
         # Faraday rotation matirx
-        th_FR = iter_I * V*2
+        th_FR = iter_I * V * 2
         M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
         V_out[mm] = Mco @ M_FR @ Mci @ E0.parameters.matrix()
 
@@ -374,60 +374,27 @@ def f(x, Mci, Mco, strfile):
     S = create_Stokes('output')
     S.from_Jones(E1)
 
-    #print(S.parameters.ellipticity_angle()[0])
-
-    #draw_stokes_points(fig[0], S  , kind='line', color_scatter='k')
-    #draw_stokes_points(fig[0], S[0], kind='scatter', color_scatter='b')
-    #draw_stokes_points(fig[0], S[-1], kind='scatter', color_scatter='r')
-    #print(S.parameters.azimuth()[-1])
-    L = cal_arclength(S)    # Arc length is orientation angle psi -->
-    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
-    errV = abs((Veff-V)/V)
-    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
-    print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
+    # print(S.parameters.ellipticity_angle()[0])
+    # print(S.parameters.azimuth()[-1])
+    L = cal_arclength(S)  # Arc length is orientation angle psi -->
+    #Veff = L / 2 / (MaxIp * 2)  # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    #errV = abs((Veff - V) / V)
+    Veff = L / 2 / (MaxIp * 2) * 180/pi * 1e6  # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
+    errV = L / 2 / (MaxIp * 2)  * 180/pi * 1e6 * -1
 
     outdict = {'x': x, 'L': np.array(L), 'errV': np.array(errV)}
-    df = pd.DataFrame(outdict)
-    df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
-
-    return errV
-
-
-def f2(x, Mci, Mco):
-    E0 = Jones_vector('input')
-    E1 = Jones_vector('output')
-    E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
-    V = 0.7 * 4 * pi * 1e-7
-    MaxIp = 40e3
-    dIp = MaxIp/50
-    V_Ip = arange(0e6,MaxIp+dIp,dIp)
-    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
-
-    for mm, iter_I in enumerate(V_Ip):
-        # Faraday rotation matirx
-        th_FR = iter_I * V*2
-        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
-        V_out[mm] = Mco @ M_FR @ Mci @ E0.parameters.matrix()
-
-    E1.from_matrix(M=V_out)
-    S = create_Stokes('output')
-    S.from_Jones(E1)
-
-    L = cal_arclength(S)    # Arc length is orientation angle psi -->
-    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
-    errV = abs((Veff-V)/V)
-    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
-    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
+    # df = pd.DataFrame(outdict)
+    # df.to_csv(strfile, index=False, mode='a', header=not os.path.exists(strfile))
 
     return errV
 
 # Noise included fuction
-def f3(x, Mci, Mco):
+def f2(x, Mci, Mco):
     E0 = Jones_vector('input')
     E1 = Jones_vector('output')
     x = x + (np.random.rand(1)-0.5)*pi/180 # 0.5 deg SOP control uncertainty
     E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
-    V = 0.7 * 4 * pi * 1e-7
+    V = 0.54 * 4 * pi * 1e-7
     MaxIp = 40e3
     dIp = MaxIp/50
     V_Ip = arange(0e6,MaxIp+dIp,dIp)
@@ -449,7 +416,9 @@ def f3(x, Mci, Mco):
 
     L = cal_arclength(S)    # Arc length is orientation angle psi -->
     Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
-    errV = abs((Veff-V)/V)
+    errV = L / 2 / (MaxIp * 2)  * 180/pi * 1e6 * -1
+
+    #errV = abs((Veff-V)/V)
     #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
     #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
 
@@ -495,16 +464,16 @@ def f4(x, Mci, Mco):
 if __name__ == '__main__':
 
     start = pd.Timestamp.now()
-    mode =1
+    mode = 0
 
     ## 2nd step
     #strfile = 'Multiple_Cal_ideal.csv'
-    #strfile = 'Multiple_Cal_with_SOPnoise.csv'
-    strfile = 'Multiple_Cal_with_Cur5kA_noise_0.01.csv'
+    strfile = 'Multiple_Cal_with_SOPnoise.csv'
+    #strfile = 'Multiple_Cal_with_Cur5kA_noise_0.01.csv'
 
     if mode == 0:
 
-        n_iter = 10
+        n_iter = 1
         n_iter2 = 100
         fig, ax = plt.subplots(figsize=(6, 6))
         for mm in range(n_iter2):
@@ -518,9 +487,9 @@ if __name__ == '__main__':
                 Mco = create_M_arb(theta1*pi/180, phi1*pi/180, theta_e1*pi/180)
 
                 # initial point
-                init_polstate = np.array([[pi/6], [pi / 3]])
+                init_polstate = np.array([[0], [pi / 4]])
 
-                fmin_result = optimize.fmin(f4, pi/6, (Mci, Mco), maxiter=30, xtol=1, ftol=0.01,
+                fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco), maxiter=30, xtol=1, ftol=0.005,
                                     initial_simplex=init_polstate, retall=True, full_output=1)
 
                 v_out[nn] = fmin_result[3]
@@ -540,9 +509,9 @@ if __name__ == '__main__':
         #bins = [3, 7, 11, 15, 19]
         fig, ax = plt.subplots(figsize=(6, 6))
 
-        # strfile = 'Multiple_Cal_ideal.csv'
-        # data = pd.read_csv(strfile)
-        # ax.hist(data['out'], bins, label='ideal', alpha=0.7, facecolor = 'g')
+        #strfile = 'Multiple_Cal_ideal.csv'
+        data = pd.read_csv(strfile)
+        ax.hist(data['out'], bins, label='ideal', alpha=0.7, facecolor = 'g')
 
         # strfile = 'Multiple_Cal_with_SOPnoise_0.001.csv'
         # data = pd.read_csv(strfile)
@@ -552,9 +521,9 @@ if __name__ == '__main__':
         # data = pd.read_csv(strfile)
         # ax.hist(data['out'], bins, label='>99.95%', alpha=0.7, facecolor='b')
 
-        strfile ='Multiple_Cal_with_Cur5kA_noise_0.01.csv'
-        data = pd.read_csv(strfile)
-        ax.hist(data['out'], bins, label='>99%',alpha=0.7, facecolor = 'b')
+        # strfile ='Multiple_Cal_with_Cur5kA_noise_0.01.csv'
+        # data = pd.read_csv(strfile)
+        # ax.hist(data['out'], bins, label='>99%',alpha=0.7, facecolor = 'b')
 
         ax.set_xlabel('iteration')
         ax.set_ylabel('n')
