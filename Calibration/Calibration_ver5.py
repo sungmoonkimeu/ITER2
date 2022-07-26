@@ -430,8 +430,8 @@ def f4(x, Mci, Mco):
     E1 = Jones_vector('output')
     x = x + (np.random.rand(1)*1 - 0.5) * pi / 180  # 1 deg SOP control uncertainty
     E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
-    V = 0.7 * 4 * pi * 1e-7
-    MaxIp = 5e3
+    V = 0.54 * 4 * pi * 1e-7
+    MaxIp = 40e3 * (1+np.random.rand(1)*0.01-0.005) # 1% error including
     dIp = MaxIp/50
     V_Ip = arange(0e6,MaxIp+dIp,dIp)
     V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
@@ -451,10 +451,12 @@ def f4(x, Mci, Mco):
     S.from_Jones(E1)
 
     L = cal_arclength(S)    # Arc length is orientation angle psi -->
-    L = L*(1+np.random.rand(1)*0.01-0.005) # 1% error including
+    #L = L*(1+np.random.rand(1)*0.01-0.005) # 1% error including
     Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
     #print(Veff)
-    errV = abs((Veff-V)/V)
+    #errV = abs((Veff-V)/V)
+    errV = L / 2 / (MaxIp * 2)  * 180/pi * 1e6 * -1
+
     #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
     #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
 
@@ -468,12 +470,12 @@ if __name__ == '__main__':
 
     ## 2nd step
     #strfile = 'Multiple_Cal_ideal.csv'
-    strfile = 'Multiple_Cal_with_SOPnoise.csv'
-    #strfile = 'Multiple_Cal_with_Cur5kA_noise_0.01.csv'
+    #strfile = 'Multiple_Cal_with_SOPnoise.csv'
+    strfile = 'Multiple_Cal_with_Cur40kA_noise_0.8.csv'
 
     if mode == 0:
 
-        n_iter = 1
+        n_iter = 10
         n_iter2 = 100
         fig, ax = plt.subplots(figsize=(6, 6))
         for mm in range(n_iter2):
@@ -489,7 +491,7 @@ if __name__ == '__main__':
                 # initial point
                 init_polstate = np.array([[0], [pi / 4]])
 
-                fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco), maxiter=30, xtol=1, ftol=0.005,
+                fmin_result = optimize.fmin(f4, pi/6, (Mci, Mco), maxiter=30, xtol=1, ftol=0.8,
                                     initial_simplex=init_polstate, retall=True, full_output=1)
 
                 v_out[nn] = fmin_result[3]
