@@ -243,7 +243,7 @@ def f2(x, Mci, Mco, strfile):
         Mn = create_M_arb(theta, phi, theta_e)
 
         # Faraday rotation matirx
-        th_FR = iter_I * V*2
+        th_FR = iter_I * V*2 * (1+np.random.rand(1)*0.01-0.005)[0] # 1% error including
         M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
         V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0.parameters.matrix()
 
@@ -253,7 +253,9 @@ def f2(x, Mci, Mco, strfile):
 
     L = cal_arclength(S)    # Arc length is orientation angle psi -->
     Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
-    errV = abs((Veff-V)/V)
+    errV = L / 2 / (MaxIp * 2) * 180/pi * 1e6 * -1
+
+    #errV = abs((Veff-V)/V)
 
     outdict = {'x': x, 'L': np.array(L), 'errV': np.array(errV)}
     df = pd.DataFrame(outdict)
@@ -336,7 +338,7 @@ if __name__ == '__main__':
     [theta, phi, theta_e] = np.array(inputb)*pi/180
     Mco = create_M_arb(theta, phi, theta_e)
 
-    mode = 4
+    mode =1
     if mode == 0:
         #Calbiratoin_1D space wo uncertainty
         strfile = 'calibration_log.csv'
@@ -349,19 +351,17 @@ if __name__ == '__main__':
         init_polstate = np.array([[0], [pi / 4]])
 
         # f ==> without uncertainty
-        fmin_result = optimize.fmin(f, pi / 6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
-                                    initial_simplex=init_polstate, retall=True, full_output=1)
-        # f2 ==> with uncertainty of SOP measurement and SOP control
-        # fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
-        #                            initial_simplex=init_polstate, retall=True, full_output=1)
-        # f3 ==> with uncertainty of SOP measurement, SOP control, and Calibration current uncertainty
-        # fmin_result = optimize.fmin(f3, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
-        #                            initial_simplex=init_polstate, retall=True, full_output=1)
+        # fmin_result = optimize.fmin(f, pi / 6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
+        #                             initial_simplex=init_polstate, retall=True, full_output=1)
+        # f2 ==> with uncertainty of SOP measurement and SOP control and Calibration current uncertainty
+        fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.05,
+                                   initial_simplex=init_polstate, retall=True, full_output=1)
+
         print(fmin_result[0])
     elif mode == 1:
         #Scanning 1D space w/o noise
         strfile = 'scanning1D.csv'
-        n_azi = 100  # 20
+        n_azi = 1  # 20
 
         V_I = arange(0e6, 40e3 + 1e3, 5e3)
 
@@ -437,24 +437,6 @@ if __name__ == '__main__':
         #fig, ax = Stmp.draw_poincare(figsize=(5, 5), angle_view=[4 * pi / 180, 124 * pi / 180], kind='line')
         #show_result_poincare(strfile2, Mci, Mco, fig[0], ax)
     elif mode == 3:
-        # Calbiratoin_1D space with uncertainty
-        strfile = 'calibration_log.csv'
-
-        if os.path.exists(strfile):
-            print("previous data(", strfile, ") has been deleted")
-            os.remove(strfile)
-
-        # initial point
-        init_polstate = np.array([[0], [pi / 4]])
-
-        # f2 ==> with uncertainty of SOP measurement and SOP control
-        fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
-                                    initial_simplex=init_polstate, retall=True, full_output=1)
-        # f3 ==> with uncertainty of SOP measurement, SOP control, and Calibration current uncertainty
-        # fmin_result = optimize.fmin(f3, pi/6, (Mci, Mco, strfile), maxiter=30, xtol=1, ftol=0.0001,
-        #                            initial_simplex=init_polstate, retall=True, full_output=1)
-        print(fmin_result[0])
-    elif mode == 4:
         #scanning 1D space with noise
         strfile = 'scanning1D_noise.csv'
         n_azi = 100  # 20
@@ -485,7 +467,7 @@ if __name__ == '__main__':
                                         [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
                 Mn = create_M_arb(theta, phi, theta_e)
                 # Faraday rotation matirx
-                th_FR = iter_I * V * 2
+                th_FR = iter_I * V * 2 * (1+np.random.rand(1)*0.01-0.005)[0] # 1% error including
                 M_FR = np.array([[cos(th_FR), sin(th_FR)], [-sin(th_FR), cos(th_FR)]])
                 # V_out[mm] = M_co @ M_FR @ M_ci @ V_in[nn]
                 V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0[nn].parameters.matrix()

@@ -406,7 +406,7 @@ def f2(x, Mci, Mco):
         Mn = create_M_arb(theta, phi, theta_e)
 
         # Faraday rotation matirx
-        th_FR = iter_I * V*2
+        th_FR = iter_I * V*2 * (1+np.random.rand(1)*0.01-0.005)[0] # 1% error including
         M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
         V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0.parameters.matrix()
 
@@ -416,62 +416,25 @@ def f2(x, Mci, Mco):
 
     L = cal_arclength(S)    # Arc length is orientation angle psi -->
     Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
-    errV = L / 2 / (MaxIp * 2)  * 180/pi * 1e6 * -1
+    errV = L / 2 / (MaxIp * 2) * 180/pi * 1e6 * -1
 
     #errV = abs((Veff-V)/V)
     #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
     #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
 
     return errV
-
-# adding noise of calibration current
-def f4(x, Mci, Mco):
-    E0 = Jones_vector('input')
-    E1 = Jones_vector('output')
-    x = x + (np.random.rand(1)*1 - 0.5) * pi / 180  # 1 deg SOP control uncertainty
-    E0.general_azimuth_ellipticity(azimuth=x, ellipticity=0)
-    V = 0.54 * 4 * pi * 1e-7
-    MaxIp = 40e3 * (1+np.random.rand(1)*0.01-0.005) # 1% error including
-    dIp = MaxIp/50
-    V_Ip = arange(0e6,MaxIp+dIp,dIp)
-    V_out = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
-
-    for mm, iter_I in enumerate(V_Ip):
-        [theta, phi, theta_e] = (np.random.rand(3) *
-                                [90, 0.01, 0.01]-[45, .005, 0.005])*np.pi/180
-        Mn = create_M_arb(theta, phi, theta_e)
-
-        # Faraday rotation matirx
-        th_FR = iter_I * V*2
-        M_FR = np.array([[cos(th_FR), -sin(th_FR)], [sin(th_FR), cos(th_FR)]])
-        V_out[mm] = Mn @ Mco @ M_FR @ Mci @ E0.parameters.matrix()
-
-    E1.from_matrix(M=V_out)
-    S = create_Stokes('output')
-    S.from_Jones(E1)
-
-    L = cal_arclength(S)    # Arc length is orientation angle psi -->
-    #L = L*(1+np.random.rand(1)*0.01-0.005) # 1% error including
-    Veff = L/2/(MaxIp*2)    # Ip = V * psi *2 (Pol. rotation angle is 2*psi)
-    #print(Veff)
-    #errV = abs((Veff-V)/V)
-    errV = L / 2 / (MaxIp * 2)  * 180/pi * 1e6 * -1
-
-    #Lazi = S.parameters.azimuth()[-1]-S.parameters.azimuth()[0]
-    #print("E=", E0.parameters.matrix()[0], E0.parameters.matrix()[1], "arc length= ", L, "Veff = ", Veff, "V=", V, "errV=", errV)
-
-    return errV
-
 
 if __name__ == '__main__':
 
     start = pd.Timestamp.now()
-    mode = 0
+    mode = 1
 
     ## 2nd step
     #strfile = 'Multiple_Cal_ideal.csv'
     #strfile = 'Multiple_Cal_with_SOPnoise.csv'
-    strfile = 'Multiple_Cal_with_Cur40kA_noise_0.8.csv'
+    #strfile = 'Multiple_Cal_with_Cur40kA_noise_0.1.csv'
+    strfile = 'Multiple_Cal_with_Cur40kA_noise_0.05.csv'
+
 
     if mode == 0:
 
@@ -491,7 +454,7 @@ if __name__ == '__main__':
                 # initial point
                 init_polstate = np.array([[0], [pi / 4]])
 
-                fmin_result = optimize.fmin(f4, pi/6, (Mci, Mco), maxiter=30, xtol=1, ftol=0.8,
+                fmin_result = optimize.fmin(f2, pi/6, (Mci, Mco), maxiter=30, xtol=1, ftol=0.05,
                                     initial_simplex=init_polstate, retall=True, full_output=1)
 
                 v_out[nn] = fmin_result[3]
@@ -506,14 +469,15 @@ if __name__ == '__main__':
     elif mode ==1:
         # Plotting
 
-        bins = np.arange(1, 100, 2)
+        bins = np.arange(1, 40, 2)
         #bins = np.append(bins, 40)
         #bins = [3, 7, 11, 15, 19]
         fig, ax = plt.subplots(figsize=(6, 6))
 
         #strfile = 'Multiple_Cal_ideal.csv'
         data = pd.read_csv(strfile)
-        ax.hist(data['out'], bins, label='ideal', alpha=0.7, facecolor = 'g')
+        #ax.hist(data['out'], bins, label='ideal', alpha=0.7, facecolor = 'g')
+        ax.hist(data['out'], bins, label='ftol = 0.1', alpha=0.7, facecolor='g')
 
         # strfile = 'Multiple_Cal_with_SOPnoise_0.001.csv'
         # data = pd.read_csv(strfile)
@@ -529,7 +493,7 @@ if __name__ == '__main__':
 
         ax.set_xlabel('iteration')
         ax.set_ylabel('n')
-        ax.legend(loc='upper left')
+        ax.legend(loc='upper right')
 
 
     end = pd.Timestamp.now()
