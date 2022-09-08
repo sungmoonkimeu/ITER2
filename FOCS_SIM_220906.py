@@ -73,7 +73,7 @@ if __name__ == '__main__':
     LB = 1.000
     SP = 0.005
     # dz = SP / 1000
-    dz = 0.0001
+    dz = 0.0005
     len_lf = 6  # lead fiber
     len_ls = 28  # sensing fiber
     angle_FM = 45
@@ -83,8 +83,6 @@ if __name__ == '__main__':
     # strfile2 = 'lobi_45FM_errdeg1x5_220622_LF_1000_1000.csv'
 
     strfile1 = 'test.csv'
-    strfile_B= 'B-field_around_VV.txt'
-    data_B = np.loadtxt(strfile_B)
 
     V_strfile = [strfile1]
     V_iter = [3]
@@ -110,12 +108,20 @@ if __name__ == '__main__':
         temp_vv = data['TEMP'].to_numpy()
         F_temp_interp = CubicSpline(l_vv, temp_vv)
 
+        # Load the magnetic field distribution along the VV (30 m)
+        strfile_B = 'B-field_around_VV.txt'
+        data_B = np.loadtxt(strfile_B)
+        F_B_interp = scipy.interpolate.interp1d(data_B[:,0], data_B[:,1], kind='cubic')
+
         # Spunfiber model initialization
         spunfiber.set_Vectors()
         # Spunfiber model with temperature information
         spunfiber.set_tempVV(l_vv[0], l_vv[-1], F_temp_interp)
         # No_vib matrix
         spunfiber.create_Mvib(nM_vib, 1, 1)
+        # nonunifrom Magnetic field
+        spunfiber.set_B(F_B_interp)
+
 
         xx = 0
         for xx, strfile1 in enumerate(V_strfile):
@@ -139,41 +145,45 @@ if __name__ == '__main__':
             fig, ax, lines = None, None, None
             fig, ax, lines = plot_error_byfile2(strfile1 + "_S")
 
-            labelTups = [('20 degC', 0), ('100 degC', 1),
-                         ('Temp. distribution', 2), ('Iter specification', 3)]
+            labelTups = [('Uniform Temp. + B-field', 0), ('Nonuniform Temp.', 1),
+                         ('Nonuniform Temp.+ B-field', 2), ('Iter specification', 3)]
             ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
 
             # fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)
 
         # plot the temperature effect
-        fig_temp, ax_temp = plt.subplots(3, 1, figsize=(8, 5))
+        fig_temp, ax_temp = plt.subplots(4, 1, figsize=(8, 5))
         fig_temp.subplots_adjust(hspace=0.32, left=0.24)
         ax_temp[0].plot(spunfiber.V_L, spunfiber.V_temp-273.15)
-        ax_temp[0].plot(spunfiber.V_L, 20+ (spunfiber.V_temp - 273.15)*0)
-        ax_temp[0].plot(spunfiber.V_L, 100 + (spunfiber.V_temp - 273.15) * 0)
+        # ax_temp[0].plot(spunfiber.V_L, 20+ (spunfiber.V_temp - 273.15)*0)
+        # ax_temp[0].plot(spunfiber.V_L, 100 + (spunfiber.V_temp - 273.15) * 0)
 
         ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB*spunfiber.V_delta_temp))
-        ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB + 0*spunfiber.V_delta_temp))
-        ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB *(1 + 3e-5 * (373.15 - 273.15 - 20)) + 0 * spunfiber.V_delta_temp))
+        # ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB + 0*spunfiber.V_delta_temp))
+        # ax_temp[1].plot(spunfiber.V_L, (spunfiber.LB *(1 + 3e-5 * (373.15 - 273.15 - 20)) + 0 * spunfiber.V_delta_temp))
 
         r = spunfiber.L / (2 * pi)
         V_H = V_I[-1] / (2 * pi * r) * ones(len(spunfiber.V_temp))
         ax_temp[2].plot(spunfiber.V_L, spunfiber.V * spunfiber.V_f_temp)
-        ax_temp[2].plot(spunfiber.V_L, spunfiber.V + 0* spunfiber.V_f_temp)
-        ax_temp[2].plot(spunfiber.V_L, spunfiber.V*(1 + 8.1e-5 * (373.15 - 273.15 - 20)) + 0 * spunfiber.V_f_temp)
+        # ax_temp[2].plot(spunfiber.V_L, spunfiber.V + 0* spunfiber.V_f_temp)
+        # ax_temp[2].plot(spunfiber.V_L, spunfiber.V*(1 + 8.1e-5 * (373.15 - 273.15 - 20)) + 0 * spunfiber.V_f_temp)
+
+        ax_temp[3].plot(spunfiber.V_L, spunfiber.V_B)
 
         print('avg V :', spunfiber.V * spunfiber.V_f_temp.mean())
         print('avg T :', spunfiber.V_temp.mean())
-        ax_temp[0].set(xlim=(0, 5.5), ylim=(18,110))
+        ax_temp[0].set(xlim=(0, 5.5), ylim=(18, 110))
         ax_temp[1].set(xlim=(0, 5.5), ylim=(0.9995, 1.003))
         ax_temp[2].set(xlim=(0, 5.5), ylim=(0.6780e-6, 0.6835e-6))
+        ax_temp[3].set(xlim=(0, 5.5), ylim=(-2, 2))
         #ax.yaxis.set_major_formatter(OOMFormatter(0, "%3.2f"))
         ax_temp[1].yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
         ax_temp[2].yaxis.set_major_formatter(OOMFormatter(-6, "%5.4f"))
         ax_temp[0].set_ylabel('Temperature \n(degC)')
         ax_temp[1].set_ylabel('Beatlength \n(m)')
         ax_temp[2].set_ylabel('Verdet constant  \n(rad/A)')
-        ax_temp[2].set_xlabel('Fiber position (m)')
+        ax_temp[3].set_ylabel('B-field  \n(T)')
+        ax_temp[3].set_xlabel('Fiber position (m)')
         fig_temp.align_ylabels(ax_temp)
 
         for nn in range(3):

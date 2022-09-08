@@ -60,7 +60,9 @@ class SPUNFIBER:
         self.LB = beat_length
         self.SP = spin_pitch
         self.dz = delta_l
-        self.V = 0.54 * 4* pi * 1e-7
+        self.V = 0.54 * 4* pi * 1e-7 # μV [rad/A]
+        # Verdet constant
+        # V=0.54 [rad/mT] --> μV = 0.54 * 4*pi*1e-7 [rad/A]
         self.LF = len_lf
         self.L = len_sf
         self.V_L = []
@@ -68,6 +70,7 @@ class SPUNFIBER:
         self.V_theta = []
         self.V_theta_LF = []
         self.V_temp = []
+        self.V_B =[]
         self.ang_FM = angle_FM
         self.Vin = np.array([[1],[0]])
         self.Mvib = []
@@ -87,11 +90,16 @@ class SPUNFIBER:
         self.V_theta = self.V_L * s_t_r
 
         print('Vectors are set!')
+    def set_B(self, F_B_interp):
+        self.V_B = F_B_interp(self.V_L)
+        print('Nonunifrom magnetic vector has set!')
 
     def set_tempVV(self, li, lf, F_temp_interp):
         # self.V_temp = + 273.15 + 20 + 0 * np.array([periodicf(li, lf, F_temp_interp, xi) for xi in self.V_L])
         self.V_temp = np.array([periodicf(li, lf, F_temp_interp, xi) for xi in self.V_L])
+        # birefringence (delta) distribution due to the temperature distribution
         self.V_delta_temp = 1 + 3e-5 * (self.V_temp - 273.15 - 20)
+        # faraday effect distibution due to the temperature distribution
         self.V_f_temp = 1 + 8.1e-5 * (self.V_temp - 273.15 - 20)
 
         print('Temperature Vector is set!')
@@ -251,12 +259,18 @@ class SPUNFIBER:
         #delta = 2 * pi / self.LB
 
         # magnetic field in unit length
+        # unifrom magnetic field
         # H = Ip / (2 * pi * r)
-        r = self.L / (2 * pi)
-        V_H = Ip / (2 * pi * r) * ones(len(self.V_temp))
+        # unifrom magnetic field array
+        # r = self.L / (2 * pi)
+        # V_H = Ip / (2 * pi * r) * ones(len(self.V_temp))
         # V_rho = self.V * V_H
-        #V_rho = self.V * V_H * (1 + 8.1e-5*(self.V_temp-273.15-20))
-        V_rho = self.V * V_H * self.V_f_temp
+        # V_rho = self.V * V_H * (1 + 8.1e-5*(self.V_temp-273.15-20))
+        # V_rho = self.V * V_H * self.V_f_temp
+
+        # V_rho = self.V/(4*pi*1e-7) * -self.V_B *self.V_f_temp * Ip/15e6
+        shiftV_B = int(np.random.rand(1)*(0.2/self.dz))
+        V_rho = self.V / (4 * pi * 1e-7) * -np.roll(self.V_B,shiftV_B) * self.V_f_temp * Ip / 15e6
         #print(V_rho)
         # --------Laming: orientation of the local slow axis ------------
 
@@ -976,7 +990,6 @@ def load_stokes_fromfile(filename, ncol=0):
     isEOF = True if ncol >= int((data.shape[1] - 1) / 2)-1 else False
 
     return V_I, S, isEOF
-
 
 def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
     V_ang = zeros(len(V_I))
