@@ -271,7 +271,7 @@ class SPUNFIBER:
         # V_rho = self.V/(4*pi*1e-7) * -self.V_B *self.V_f_temp * Ip/15e6
         shiftV_B = int(np.random.rand(1)*(0.2/self.dz))
         V_rho = self.V / (4 * pi * 1e-7) * -np.roll(self.V_B,shiftV_B) * self.V_f_temp * Ip / 15e6
-        #print(V_rho)
+        print(shiftV_B)
         # --------Laming: orientation of the local slow axis ------------
 
         V_qu = 2 * (s_t_r - V_rho) / V_delta  # <<- Vector

@@ -73,9 +73,9 @@ if __name__ == '__main__':
     LB = 1.000
     SP = 0.005
     # dz = SP / 1000
-    dz = 0.0005
+    dz = 0.0001
     len_lf = 6  # lead fiber
-    len_ls = 28  # sensing fiber
+    len_ls = 29.5 # sensing fiber
     angle_FM = 45
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls, angle_FM)
 
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
         num_iter = 1
         num_processor = 8
-        V_I = np.hstack((np.zeros(1),np.logspace(0,5, 20), np.arange(0.1e6, 18e6, 0.2e6)))
+        V_I = np.hstack((np.zeros(1),np.logspace(0,5, 5), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
         # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
         # V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
@@ -145,8 +145,8 @@ if __name__ == '__main__':
             fig, ax, lines = None, None, None
             fig, ax, lines = plot_error_byfile2(strfile1 + "_S")
 
-            labelTups = [('Uniform Temp. + B-field', 0), ('Nonuniform Temp.', 1),
-                         ('Nonuniform Temp.+ B-field', 2), ('Iter specification', 3)]
+            labelTups = [('Uniform Temp. & Uniform B-field', 0), ('Nonuniform Temp. & unifrom B-field', 1),
+                         ('Nonuniform Temp. & Nonuniform B-field', 2), ('Iter specification', 3)]
             ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
 
             # fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)
@@ -168,14 +168,17 @@ if __name__ == '__main__':
         # ax_temp[2].plot(spunfiber.V_L, spunfiber.V + 0* spunfiber.V_f_temp)
         # ax_temp[2].plot(spunfiber.V_L, spunfiber.V*(1 + 8.1e-5 * (373.15 - 273.15 - 20)) + 0 * spunfiber.V_f_temp)
 
-        ax_temp[3].plot(spunfiber.V_L, spunfiber.V_B)
+        ax_temp[3].plot(spunfiber.V_L, spunfiber.V_B /5, label='3MA')
+        ax_temp[3].plot(spunfiber.V_L, spunfiber.V_B/3, label='5MA')
+        ax_temp[3].plot(spunfiber.V_L, spunfiber.V_B/1, label='15MA')
 
         print('avg V :', spunfiber.V * spunfiber.V_f_temp.mean())
         print('avg T :', spunfiber.V_temp.mean())
-        ax_temp[0].set(xlim=(0, 5.5), ylim=(18, 110))
-        ax_temp[1].set(xlim=(0, 5.5), ylim=(0.9995, 1.003))
-        ax_temp[2].set(xlim=(0, 5.5), ylim=(0.6780e-6, 0.6835e-6))
-        ax_temp[3].set(xlim=(0, 5.5), ylim=(-2, 2))
+        xmax = 29
+        ax_temp[0].set(xlim=(0, xmax), ylim=(18, 110))
+        ax_temp[1].set(xlim=(0, xmax), ylim=(0.9995, 1.003))
+        ax_temp[2].set(xlim=(0, xmax), ylim=(0.6780e-6, 0.6835e-6))
+        ax_temp[3].set(xlim=(0, xmax), ylim=(-2, 2))
         #ax.yaxis.set_major_formatter(OOMFormatter(0, "%3.2f"))
         ax_temp[1].yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
         ax_temp[2].yaxis.set_major_formatter(OOMFormatter(-6, "%5.4f"))
@@ -184,10 +187,11 @@ if __name__ == '__main__':
         ax_temp[2].set_ylabel('Verdet constant  \n(rad/A)')
         ax_temp[3].set_ylabel('B-field  \n(T)')
         ax_temp[3].set_xlabel('Fiber position (m)')
+        ax_temp[3].legend()
         fig_temp.align_ylabels(ax_temp)
 
-        for nn in range(3):
-            ax_temp[nn].spines['right'].set_visible(False)
+        # for nn in range(3):
+        #     ax_temp[nn].spines['right'].set_visible(False)
 
         # # hide the spines between ax and ax2
         # ax.spines['right'].set_visible(False)
