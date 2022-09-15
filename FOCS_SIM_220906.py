@@ -75,7 +75,7 @@ if __name__ == '__main__':
     # dz = SP / 1000
     dz = 0.0001
     len_lf = 6  # lead fiber
-    len_ls = 29.5 # sensing fiber
+    len_ls = 29.975 # sensing fiber
     angle_FM = 45
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls, angle_FM)
 
@@ -85,11 +85,12 @@ if __name__ == '__main__':
     strfile1 = 'test.csv'
 
     V_strfile = [strfile1]
-    V_iter = [3]
+    V_iter = [1]
     # V_strfile = [strfile1, strfile2, strfile3, strfile4]
     V_angFM = [45]
     # strfile1 = 'Hibi_test.csv'
-    V_temp = [20+ 273.15, 92+ 273.15, None]
+    # V_temp = [20 + 273.15, 92 + 273.15, None]
+    V_temp = [None]
     if mode == 0:
 
         num_iter = 1
@@ -143,10 +144,14 @@ if __name__ == '__main__':
 
             # 1, plot error directly from file
             fig, ax, lines = None, None, None
-            fig, ax, lines = plot_error_byfile2(strfile1 + "_S")
+            fig, ax, lines = plot_error_byfile3(strfile1 + "_S",
+                                                V_custom=spunfiber.V*spunfiber.f_temp_avg,
+                                                I_custom=(18.474 /(4*pi*1e-7))/15000000
+                                                )
 
-            labelTups = [('Uniform Temp. & Uniform B-field', 0), ('Nonuniform Temp. & unifrom B-field', 1),
-                         ('Nonuniform Temp. & Nonuniform B-field', 2), ('Iter specification', 3)]
+            # labelTups = [('Uniform Temp. & Uniform B-field', 0), ('Nonuniform Temp. & unifrom B-field', 1),
+            #              ('Nonuniform Temp. & Nonuniform B-field', 2), ('Iter specification', 3)]
+            labelTups = [('Nonuniform Temp. & Nonuniform B-field', 1), ('Iter specification', 2)]
             ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
 
             # fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)

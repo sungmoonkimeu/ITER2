@@ -2,7 +2,7 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 17 13:45:38 2020
+Created on Mon Sep 12 15:54:00 2022
 
 @author: sungmoon
 
@@ -12,20 +12,36 @@ To show how calibration works for each iterations.
 you can change "mode" variale in main function to run:
 
 mode == 0:
-    Scanning 2D space
-    FOCS output response for each (azi, ell) of input SOP
-    'scanning.csv' will be generated
-
-mode == 1:
-    Calbiratoin in 1D space
+    Calbiratoin in 1D space with or without uncertainties
     Run optimization function in 1D space
 
     Choose desired function to evalute
     f : ideal cases (without any uncertainity, with poincare sphere drawing)
-    f2 : ideal cases (without any uncertainity)
-    f3 : with input SOP control uncertainty (x) + SOP measurment uncertainty (Mn)
-    f4 : f3 + calibration current uncertainty
+    f2 : with input SOP control uncertainty (x) + SOP measurment uncertainty (Mn)
+
     'calibration_log.csv' will be generated
+
+mode == 1:
+    Scanning FOCS response for each input azimuth from 0 to 180 deg
+    'scanning1d_xy.csv' will be generated
+
+mode == 2:
+    overlap the complete response (scanning1d_xy.csv) and optimization (calibration_log.csv)
+    The optimization process will be shown on the graph for each iterations and
+    recorded as a gif file
+
+mode == 3:
+    Scanning FOCS response with noise
+    for each input azimuth from 0 to 180 deg
+    'scanning1d_noise_xy.csv' will be generated
+
+mode == 5:
+    overlap the noise included simulation result
+    FOCS comlete response (scanning1d_noise_xy.csv)
+    and optimization generated using f2 in mode 0 (calibration_log.csv)
+    The optimization process will be shown on the graph for each iterations and
+    recorded as a gif file
+
 
 
 """
@@ -138,31 +154,6 @@ def show_result_poincare(strfile, Mci, Mco, ax, fig):
         o = St[0].parameters.matrix()
 
     create_gif('mygif3.gif')
-
-def show_result_aziellspace(strfile, aziell, sensitivity, ax, fig):
-    data = pd.read_csv(strfile)
-
-    azi0 = data['x'][0]
-    ell0 = 0
-    prop = dict(arrowstyle="-|>,head_width=0.4,head_length=0.8", shrinkA=0, shrinkB=0)
-
-    for nn in range(len(data['x'])-1):
-        if nn> 1:
-            plt.cla()
-            plot_contour(aziell, sensitivity, fig,ax, True)
-        azi = data['x'][nn+1]
-        ell = 0
-        print("azi0, azi ", azi0*180/pi, azi*180/pi)
-
-        ax.annotate("", xy=(azi*180/pi, ell*180/pi),
-                    xytext=(azi0*180/pi, ell0*180/pi), arrowprops=prop)
-
-        azi0 = azi
-        ell0 = ell
-
-        plt.savefig(str(nn)+'.png')
-
-    create_gif('mygif2.gif')
 
 def show_result_cal_azimuth(strfile_background, strfile_calibration, fig, ax):
     V = 0.54 * 4 * pi * 1e-7
@@ -361,7 +352,7 @@ if __name__ == '__main__':
 
     mode =1
     if mode == 0:
-        #Calbiratoin_1D space wo uncertainty
+        #Calbiratoin_1D space with or without uncertainties
         strfile = 'calibration_log.csv'
 
         if os.path.exists(strfile):
@@ -445,6 +436,7 @@ if __name__ == '__main__':
         #ax.set_ylabel('normalized sensitivity')
         ax.set_ylabel('FOCS response (deg/MA)')
         ax.set(xlim=(0,180), ylim=(0, 55))
+
     elif mode == 2:
         # overlap complete response and optimization w/o noise
         strfile1 = 'scanning1D_xy.csv'

@@ -36,6 +36,7 @@ import os
 import glob
 import imageio
 
+
 class Arrow3D(FancyArrowPatch):
     def __init__(self, xs, ys, zs, *args, **kwargs):
         FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
@@ -61,6 +62,7 @@ def create_gif(gif_name = None):
         images.append(imageio.imread(img))
         os.remove(img)
     imageio.mimsave(gif_name, images, fps=5)
+
 
 def eval_result3_1D(strfile, Mci, Mco, ax, fig):
     data = pd.read_csv(strfile)
@@ -498,7 +500,6 @@ if __name__ == '__main__':
 
     end = pd.Timestamp.now()
     print("Total time = ", (end-start).total_seconds())
-
 
     plt.show()
 

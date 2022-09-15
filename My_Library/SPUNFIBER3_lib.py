@@ -99,9 +99,10 @@ class SPUNFIBER:
         self.V_temp = np.array([periodicf(li, lf, F_temp_interp, xi) for xi in self.V_L])
         # birefringence (delta) distribution due to the temperature distribution
         self.V_delta_temp = 1 + 3e-5 * (self.V_temp - 273.15 - 20)
-        # faraday effect distibution due to the temperature distribution
+        # Faraday effect distibution due to the temperature distribution
         self.V_f_temp = 1 + 8.1e-5 * (self.V_temp - 273.15 - 20)
-
+        # averaged Faraday effect osillation
+        self.f_temp_avg = self.V_f_temp.mean()
         print('Temperature Vector is set!')
 
     def create_Mvib(self, nM_vib, max_phi, max_theta_e):
@@ -268,10 +269,10 @@ class SPUNFIBER:
         # V_rho = self.V * V_H * (1 + 8.1e-5*(self.V_temp-273.15-20))
         # V_rho = self.V * V_H * self.V_f_temp
 
-        # V_rho = self.V/(4*pi*1e-7) * -self.V_B *self.V_f_temp * Ip/15e6
-        shiftV_B = int(np.random.rand(1)*(0.2/self.dz))
-        V_rho = self.V / (4 * pi * 1e-7) * -np.roll(self.V_B,shiftV_B) * self.V_f_temp * Ip / 15e6
-        print(shiftV_B)
+        V_rho = self.V/(4*pi*1e-7) * -self.V_B *self.V_f_temp * Ip/15e6
+        # shiftV_B = int(np.random.rand(1)*(0.2/self.dz))
+        # V_rho = self.V / (4 * pi * 1e-7) * -np.roll(self.V_B,shiftV_B) * self.V_f_temp * Ip / 15e6
+        # print(shiftV_B)
         # --------Laming: orientation of the local slow axis ------------
 
         V_qu = 2 * (s_t_r - V_rho) / V_delta  # <<- Vector

@@ -6,6 +6,27 @@ Created on Tue Nov 17 13:45:38 2020
 
 @author: sungmoon
 
+Simulation of FOCS calibration.
+To show how calibration works for each iterations.
+
+you can change "mode" variale in main function to run:
+
+mode == 0:
+    Scanning 2D space
+    FOCS output response for each (azi, ell) of input SOP
+    'scanning.csv' will be generated
+
+mode == 1:
+    Calbiratoin in 1D space
+    Run optimization function in 1D space
+
+    Choose desired function to evalute
+    f : ideal cases (without any uncertainity, with poincare sphere drawing)
+    f2 : ideal cases (without any uncertainity)
+    f3 : with input SOP control uncertainty (x) + SOP measurment uncertainty (Mn)
+    f4 : f3 + calibration current uncertainty
+    'calibration_log.csv' will be generated
+
 
 """
 import numpy as np
@@ -426,6 +447,8 @@ if __name__ == '__main__':
     mode = 4
     if mode == 0:
         # scanning 2D space
+        # FOCS output response for each (azi, ell) of input SOP
+
         strfile = 'scanning.csv'
         n_azi = 20 #20
         n_ell = 25 #25
