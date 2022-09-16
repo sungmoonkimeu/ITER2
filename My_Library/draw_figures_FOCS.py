@@ -196,11 +196,15 @@ def plot_error_byfile3(filename, fig=None, ax=None, lines=None, v_calc_init=None
         absErrorlimit[nn] = 10e3 if V_I[nn] < 1e6 else V_I[nn] * 0.01
     relErrorlimit = absErrorlimit / V_I
 
+    if lines is None:
+        lines = []
+
     if fig is None :
         fig, ax = plt.subplots(figsize=(6, 3))
         ax.set_prop_cycle(cc)
-    if lines is None:
-        lines = []
+        lines += ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
+
+
 
 
     for nn in range(int((data.shape[1] - 1) / 2)):
@@ -228,7 +232,6 @@ def plot_error_byfile3(filename, fig=None, ax=None, lines=None, v_calc_init=None
         # print(V_I, Ip[0])
         lines += ax.plot(V_I, abs((Ip[nn, :] - V_I) / V_I), label=str(nn))
     #print(V_I)
-    lines += ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
     ax.legend(loc="upper right")
 
     ax.set_xlabel(r'Plasma current $I_{p}(A)$')

@@ -73,7 +73,7 @@ if __name__ == '__main__':
     LB = 1.000
     SP = 0.005
     # dz = SP / 1000
-    dz = 0.0001
+    dz = 0.001
     len_lf = 6  # lead fiber
     len_ls = 29.975 # sensing fiber
     angle_FM = 45
@@ -82,15 +82,16 @@ if __name__ == '__main__':
     # strfile1 = 'lobi_45FM_errdeg1x5_220622_LF_1000_500.csv'
     # strfile2 = 'lobi_45FM_errdeg1x5_220622_LF_1000_1000.csv'
 
-    strfile1 = 'test.csv'
+    strfile1 = 'FOCS_uniform_Temp_B_field.csv'
+    strfile2 = 'FOCS_nonuniform_Temp_uniform_B_field.csv'
+    strfile3 = 'FOCS_nonuniform_Temp_B_field.csv'
 
-    V_strfile = [strfile1]
-    V_iter = [1]
-    # V_strfile = [strfile1, strfile2, strfile3, strfile4]
-    V_angFM = [45]
-    # strfile1 = 'Hibi_test.csv'
-    # V_temp = [20 + 273.15, 92 + 273.15, None]
-    V_temp = [None]
+    V_strfile = [strfile1, strfile2, strfile3]
+    V_iter = [1, 1, 1]
+    V_angFM = [45, 45, 45]
+    V_temp = [92 + 273.15, None, None]
+    V_nonuniform= [None, 'T', 'MT']
+
     if mode == 0:
 
         num_iter = 1
@@ -118,14 +119,16 @@ if __name__ == '__main__':
         spunfiber.set_Vectors()
         # Spunfiber model with temperature information
         spunfiber.set_tempVV(l_vv[0], l_vv[-1], F_temp_interp)
+        print(spunfiber.f_temp_avg)
+
         # No_vib matrix
         spunfiber.create_Mvib(nM_vib, 1, 1)
         # nonunifrom Magnetic field
         spunfiber.set_B(F_B_interp)
-
+        print(((spunfiber.int_V_B / (4 * pi * 1e-7)) / 15000000))
 
         xx = 0
-        for xx, strfile1 in enumerate(V_strfile):
+        for xx, strfile in enumerate(V_strfile):
 
             # ang_FM = 45
             ang_FM = V_angFM[xx]
@@ -133,28 +136,41 @@ if __name__ == '__main__':
 
             azi = np.array([0, pi/6, pi/4])
             spunfiber.set_Vin([0], 0)
-            for nn in range(num_iter):
-                #V_out = spunfiber.calc_mp(num_processor, V_I)
-                V_out = spunfiber.calc_sp(V_I, V_temp[nn])
-                save_Jones2(strfile1,V_I,V_out)
 
-                checktime = pd.Timestamp.now() - start
-                print(nn, "/", num_iter, checktime)
-                start = pd.Timestamp.now()
+            V_out = spunfiber.calc_sp(V_I, V_temp[xx], V_nonuniform[xx])
+
+            if V_nonuniform[xx] is None:
+                save_Jones2(strfile, V_I, V_out)
+            elif V_nonuniform[xx] == 'T':
+                save_Jones2(strfile, V_I, V_out)
+            elif V_nonuniform[xx]== 'MT' or 'M':
+                V_Itotal = V_I * ((-spunfiber.int_V_B/(4*pi*1e-7))/15000000)
+                save_Jones2(strfile, V_Itotal, V_out)
+
+            if V_nonuniform[xx] == 'MT' or 'T':
+                V_custom = spunfiber.V*spunfiber.f_temp_avg*2
+
+            print("temperature effect on V: ", V_custom)
+            checktime = pd.Timestamp.now() - start
+            print(xx, "/", num_iter, checktime)
+            start = pd.Timestamp.now()
 
             # 1, plot error directly from file
-            fig, ax, lines = None, None, None
-            fig, ax, lines = plot_error_byfile3(strfile1 + "_S",
-                                                V_custom=spunfiber.V*spunfiber.f_temp_avg,
-                                                I_custom=(18.474 /(4*pi*1e-7))/15000000
+            if xx == 0:
+                fig, ax, lines = None, None, None
+            fig, ax, lines = plot_error_byfile3(strfile + "_S", fig, ax, lines,
+                                                V_custom=V_custom,
+                                                I_custom=None
                                                 )
 
-            # labelTups = [('Uniform Temp. & Uniform B-field', 0), ('Nonuniform Temp. & unifrom B-field', 1),
-            #              ('Nonuniform Temp. & Nonuniform B-field', 2), ('Iter specification', 3)]
-            labelTups = [('Nonuniform Temp. & Nonuniform B-field', 1), ('Iter specification', 2)]
-            ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+        labelTups = [('Iter specification', 0),
+                     ('Uniform Temp. & B-field', 1),
+                     ('Nonuniform Temp. & unifrom B-field', 2),
+                     ('Nonuniform Temp. & Nonuniform B-field', 3)]
+        # labelTups = [('Nonuniform Temp. & Nonuniform B-field', 1), ('Iter specification', 2)]
+        # ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
+        ax.legend(lines, [lt[0] for lt in labelTups], loc='lower right')
 
-            # fig3, ax3, lines3 = plot_error_byfile2(strfile1+"_S", V_custom=0.54 * 4 * pi * 1e-7*2)
 
         # plot the temperature effect
         fig_temp, ax_temp = plt.subplots(4, 1, figsize=(8, 5))
@@ -281,5 +297,6 @@ if __name__ == '__main__':
     plt.rc('axes', titlesize=11)  # f-size of the axes title (??)
     plt.rc('figure', titlesize=11)  # f-size of the figure title
     plt.show()
+
 
 

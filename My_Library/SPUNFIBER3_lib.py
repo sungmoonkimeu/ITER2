@@ -74,6 +74,7 @@ class SPUNFIBER:
         self.ang_FM = angle_FM
         self.Vin = np.array([[1],[0]])
         self.Mvib = []
+        self.int_V_B = 0
 
     def set_Vin(self, azi, ell):
         E = Jones_vector('input')
@@ -90,9 +91,13 @@ class SPUNFIBER:
         self.V_theta = self.V_L * s_t_r
 
         print('Vectors are set!')
+
     def set_B(self, F_B_interp):
         self.V_B = F_B_interp(self.V_L)
+        self.int_V_B = np.trapz(self.V_B, x=self.V_L)
+
         print('Nonunifrom magnetic vector has set!')
+        print('Total magnetic field is', self.int_V_B)
 
     def set_tempVV(self, li, lf, F_temp_interp):
         # self.V_temp = + 273.15 + 20 + 0 * np.array([periodicf(li, lf, F_temp_interp, xi) for xi in self.V_L])
@@ -245,36 +250,41 @@ class SPUNFIBER:
         # print(tmp) # To show where is the position of Merr
         return M
 
-    def lamming_VV_temp(self, Ip, DIR):
+    def lamming_VV_nonuniform_effect(self, Ip, DIR, nonuniform):
         """
+        Uniform magnetic field, non uniform temperature
         :param DIR: direction (+1: forward, -1: backward)
         :param Ip: plasma current
+        :param nonuniform: choose nonuniform parameter
+                'M': non-uniform magnetic field
+                    - run self.set_B() function before using this
+                'T': non-uniform temperature
+                    - run self.set_tempVV() function before using this
+                'MT': non-uniform magnetic field & temperature
+                    - run self.set_B() function before using this
+                    - run self.set_tempVV() function before using this
         :return: 2x2 Jones matrix of spun fiber in VV with temperature effect
         """
         m = 0
         # Fiber parameter
         s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
+        if nonuniform == 'MT':
+            V_delta = 2 * pi / (self.LB * self.V_delta_temp)
+            V_rho = self.V / (4 * pi * 1e-7) * -self.V_B * self.V_f_temp * Ip / 15e6
+        elif nonuniform == 'T':
+            V_H = Ip / self.L * ones(len(self.V_temp))
+            V_delta = 2 * pi / (self.LB * self.V_delta_temp)
+            V_rho = self.V * V_H * self.V_f_temp
+        elif nonuniform == 'M':
+            V_delta = 2 * pi / (self.LB)
+            V_rho = self.V / (4 * pi * 1e-7) * -self.V_B * Ip / 15e6
 
-        #V_delta = 2*pi / (self.LB *(1 + 3e-5*(self.V_temp-273.15-20)))
-        V_delta = 2 * pi / (self.LB * self.V_delta_temp)
-        #delta = 2 * pi / self.LB
-
-        # magnetic field in unit length
-        # unifrom magnetic field
-        # H = Ip / (2 * pi * r)
-        # unifrom magnetic field array
-        # r = self.L / (2 * pi)
-        # V_H = Ip / (2 * pi * r) * ones(len(self.V_temp))
-        # V_rho = self.V * V_H
-        # V_rho = self.V * V_H * (1 + 8.1e-5*(self.V_temp-273.15-20))
-        # V_rho = self.V * V_H * self.V_f_temp
-
-        V_rho = self.V/(4*pi*1e-7) * -self.V_B *self.V_f_temp * Ip/15e6
+        # V_rho = self.V/(4*pi*1e-7) * -self.V_B * self.V_f_temp * Ip/15e6
         # shiftV_B = int(np.random.rand(1)*(0.2/self.dz))
         # V_rho = self.V / (4 * pi * 1e-7) * -np.roll(self.V_B,shiftV_B) * self.V_f_temp * Ip / 15e6
         # print(shiftV_B)
-        # --------Laming: orientation of the local slow axis ------------
 
+        # --------Laming: orientation of the local slow axis ------------
         V_qu = 2 * (s_t_r - V_rho) / V_delta  # <<- Vector
         # See Note/Note 1 (sign of Farday effect in Laming's method).jpg
         # The sign of farday rotation (rho) is opposite to that of the Laming paper, inorder
@@ -326,6 +336,7 @@ class SPUNFIBER:
         """
         :param DIR: direction (+1: forward, -1: backward)
         :param Ip: plasma current
+        :param temp: temperature along VV (uniform) in Kelvin
         :return: 2x2 Jones matrix of spun fiber in VV with constant temperature
         """
         m = 0
@@ -338,8 +349,9 @@ class SPUNFIBER:
         LB_temp = 1 + 3e-5 * (temp - 273.15 - 20)
         V_delta = 2 * pi / (self.LB * LB_temp) * ones(len(self.V_L))
 
-
+        # Temperature dependence of the Verdet constant
         f_temp = 1 + 8.1e-5 * (temp - 273.15 - 20)
+
         # magnetic field in unit length
         r = self.L / (2 * pi)       # H = Ip / (2 * pi * r)
         V_H = Ip / (2 * pi * r) * ones(len(self.V_L))
@@ -594,7 +606,7 @@ class SPUNFIBER:
         r = self.L /(2*pi)
         if DIR == 1 and n_Bridge == 1:
             V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
-        elif DIR ==1 and n_Bridge == 2:
+        elif DIR == 1 and n_Bridge == 2:
             V_H = Ip * r / (2*pi*(r**2+ V_LF**2))
         elif DIR == -1 and n_Bridge == 2:
             V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
@@ -645,18 +657,18 @@ class SPUNFIBER:
             # M_b = self.lamming(iter_I, -1, L, V_theta)
 
             if num == 0 and iter_I == V_plasmaCurrent[0]:
-                #print("M_lf_f = ", M_lf_f[0, 1], M_lf_f[1, 0])
-                #print("M_lf_b = ", M_lf_b[0, 1], M_lf_b[1, 0])
-                #print("abs() = ", abs(M_lf_f[0, 1])-abs(M_lf_b[1, 0]))
+                # print("M_lf_f = ", M_lf_f[0, 1], M_lf_f[1, 0])
+                # print("M_lf_b = ", M_lf_b[0, 1], M_lf_b[1, 0])
+                # print("abs() = ", abs(M_lf_f[0, 1])-abs(M_lf_b[1, 0]))
                 print("Norm (MLead_f - MLead_b.T) = ", norm(M_lf_f - M_lf_b.T))
                 # print("M_f = ", M_f[0, 1], M_f[1, 0])
                 # print("M_b = ", M_b[0, 1], M_b[1, 0])
                 #print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
 
             V_out[mm] = M_lf_b @ M_b @ M_lf_b2 @ M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Vin
-            #V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
-            #V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
-            #V_out[mm] = M_f @ M_lf_f @ Vin
+            # V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
+            # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
+            # V_out[mm] = M_f @ M_lf_f @ Vin
             # V_out[mm] =  M_lf_f @ V_in
             # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
             # V_out[mm] = M_lf_f @ V_in
@@ -728,7 +740,7 @@ class SPUNFIBER:
 
         Vout_dic[num] = V_out
 
-    def cal_rotation(self, V_Ip, num, Vout_dic, temp = None):
+    def cal_rotation(self, V_Ip, num, Vout_dic, temp=None, nonuniform='MT'):
         # for temperature distribution simulation
         V_plasmaCurrent = V_Ip
         V_out = np.einsum('...i,jk->ijk', ones(len(V_plasmaCurrent)) * 1j, np.mat([[0], [0]]))
@@ -742,9 +754,11 @@ class SPUNFIBER:
             Jm = np.array([[1, 0], [0, 1]])
             M_FR = Rot @ Jm @ Rot
             if temp == None:
-                M_f = self.lamming_VV_temp(iter_I, 1)
-                M_b = self.lamming_VV_temp(iter_I, -1)
+                # non uniform temp, non uniform Magnetic field
+                M_f = self.lamming_VV_nonuniform_effect(iter_I, 1, nonuniform)
+                M_b = self.lamming_VV_nonuniform_effect(iter_I, -1, nonuniform)
             else:
+                # Uniform temp, Uniform Magnetic field
                 M_f = self.lamming_VV_const_temp(iter_I, 1, temp)
                 M_b = self.lamming_VV_const_temp(iter_I, -1, temp)
 
@@ -779,10 +793,10 @@ class SPUNFIBER:
 
         return Vout
 
-    def calc_sp(self, V_I, temp = None):
+    def calc_sp(self, V_I, temp=None, nonuniform='MT'):
 
         Vout = [[]]
-        self.cal_rotation(V_I, 0, Vout, temp)
+        self.cal_rotation(V_I, 0, Vout, temp, nonuniform)
 
         return Vout[0]
 
