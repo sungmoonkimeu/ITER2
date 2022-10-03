@@ -175,13 +175,13 @@ def plot_error_byfile2(filename, fig=None, ax=None, lines=None, v_calc_init=None
 
 
 # plotting error from Stokes parameters
-def plot_error_byfile3(filename, fig=None, ax=None, lines=None, v_calc_init=None, V_custom=None, I_custom=None):
+def plot_error_byfile3(filename, fig=None, ax=None, lines=None, v_calc_init=None, V_custom=None, I_custom=None, markers=None):
     data = pd.read_csv(filename)
     data_0 = data.loc[0]
     if data['Ip'][0] == 0:
         data.drop(0, inplace=True)
         data.index -= 1
-    V_I = data['Ip'] if I_custom is None else data['Ip'] * I_custom
+    V_I = data['Ip'] if I_custom is None else I_custom
     E = Jones_vector('Output')
     E0 = Jones_vector('Output0')
     S = create_Stokes('Output_S')
@@ -202,11 +202,9 @@ def plot_error_byfile3(filename, fig=None, ax=None, lines=None, v_calc_init=None
     if fig is None :
         fig, ax = plt.subplots(figsize=(6, 3))
         ax.set_prop_cycle(cc)
-        lines += ax.plot(V_I, relErrorlimit, 'r--', label='ITER specification')
-
-
-
-
+        lines += ax.plot(V_I, relErrorlimit, color='gray',
+                         linestyle='dashed',
+                         label='ITER specification')
     for nn in range(int((data.shape[1] - 1) / 2)):
         str_Ex = str(nn) + ' Ex'
         str_Ey = str(nn) + ' Ey'
@@ -230,7 +228,9 @@ def plot_error_byfile3(filename, fig=None, ax=None, lines=None, v_calc_init=None
             Ip[nn][kk] = (V_ang[kk] - c) / V
 
         # print(V_I, Ip[0])
-        lines += ax.plot(V_I, abs((Ip[nn, :] - V_I) / V_I), label=str(nn))
+        Err = abs((Ip[nn, :] - V_I) / V_I)
+        lines += ax.plot(V_I[5::5], Err[5::5], label=str(nn),
+                         marker=markers)
     #print(V_I)
     ax.legend(loc="upper right")
 

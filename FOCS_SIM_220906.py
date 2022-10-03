@@ -69,7 +69,7 @@ if __name__ == '__main__':
     os.chdir(os.getcwd() + '\My_library')
     print(os.getcwd())
 
-    mode = 0
+    mode = 2
     LB = 1.000
     SP = 0.005
     # dz = SP / 1000
@@ -79,27 +79,28 @@ if __name__ == '__main__':
     angle_FM = 45
     spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls, angle_FM)
 
-    # strfile1 = 'lobi_45FM_errdeg1x5_220622_LF_1000_500.csv'
-    # strfile2 = 'lobi_45FM_errdeg1x5_220622_LF_1000_1000.csv'
+    strfile1 = 'FOCS_uniform_T92_uniform_B.csv'
+    strfile2 = 'FOCS_uniform_T20_uniform_B.csv'
+    strfile3 = 'FOCS_nonuniform_T_uniform_B.csv'
+    strfile4 = 'FOCS_nonuniform_T_nonuniform_B.csv'
 
-    strfile1 = 'FOCS_uniform_Temp_B_field.csv'
-    strfile2 = 'FOCS_nonuniform_Temp_uniform_B_field.csv'
-    strfile3 = 'FOCS_nonuniform_Temp_B_field.csv'
+    # V_strfile = [strfile1, strfile2, strfile3, strfile4]
+    # V_iter = [1, 1, 1, 1]
+    # V_angFM = [45, 45, 45, 1]
+    # V_temp = [92.052056 + 273.15, 20 + 273.15, None, None]
+    # V_nonuniform= [None, None, 'T', 'MT']
 
-    V_strfile = [strfile1, strfile2, strfile3]
-    V_iter = [1, 1, 1]
-    V_angFM = [45, 45, 45]
-    V_temp = [92 + 273.15, None, None]
-    V_nonuniform= [None, 'T', 'MT']
+    V_strfile = [strfile4]
+    V_iter = [1]
+    V_angFM = [45]
+    V_temp = [None]
+    V_nonuniform= ['MT']
 
     if mode == 0:
 
         num_iter = 1
         num_processor = 8
         V_I = np.hstack((np.zeros(1),np.logspace(0,5, 5), np.arange(0.1e6, 18e6, 0.2e6)))
-        # V_I = arange(0e6, 18e6 + 0.1e6, 0.1e6)
-        # V_I = np.hstack((np.arange(0e6, 0.1e6, 0.005e6), np.arange(0.1e6, 18e6, 0.2e6)))
-        # V_I = arange(0e6, 4e6 + 0.1e6, 0.1e6)
 
         nM_vib = 0
         start = pd.Timestamp.now()
@@ -148,7 +149,8 @@ if __name__ == '__main__':
                 save_Jones2(strfile, V_Itotal, V_out)
 
             if V_nonuniform[xx] == 'MT' or 'T':
-                V_custom = spunfiber.V*spunfiber.f_temp_avg*2
+                # V_custom = spunfiber.V*spunfiber.f_temp_avg*2
+                V_custom = None
 
             print("temperature effect on V: ", V_custom)
             checktime = pd.Timestamp.now() - start
@@ -164,9 +166,11 @@ if __name__ == '__main__':
                                                 )
 
         labelTups = [('Iter specification', 0),
-                     ('Uniform Temp. & B-field', 1),
-                     ('Nonuniform Temp. & unifrom B-field', 2),
-                     ('Nonuniform Temp. & Nonuniform B-field', 3)]
+                     ('Uniform 92degC', 1),
+                     ('Uniform 20degC', 2),
+                     ('Nonuniform_T', 3),
+                     ('Nonuniform_BT', 4)]
+
         # labelTups = [('Nonuniform Temp. & Nonuniform B-field', 1), ('Iter specification', 2)]
         # ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right', bbox_to_anchor=(0.7, .8))
         ax.legend(lines, [lt[0] for lt in labelTups], loc='lower right')
@@ -210,26 +214,6 @@ if __name__ == '__main__':
         ax_temp[3].set_xlabel('Fiber position (m)')
         ax_temp[3].legend()
         fig_temp.align_ylabels(ax_temp)
-
-        # for nn in range(3):
-        #     ax_temp[nn].spines['right'].set_visible(False)
-
-        # # hide the spines between ax and ax2
-        # ax.spines['right'].set_visible(False)
-        # ax2.spines['left'].set_visible(False)
-        # ax.yaxis.tick_left()
-        # ax.tick_params(labelright='off')
-        # ax2.yaxis.tick_right()
-        #
-        # d = .015  # how big to make the diagonal lines in axes coordinates
-        # # arguments to pass plot, just so we don't keep repeating them
-        # kwargs = dict(transform=ax.transAxes, color='k', clip_on=False)
-        # ax.plot((1 - d, 1 + d), (-d, +d), **kwargs)
-        # ax.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)
-        #
-        # kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
-        # ax2.plot((-d, +d), (1 - d, 1 + d), **kwargs)
-        # ax2.plot((-d, +d), (-d, +d), **kwargs)
 
     elif mode == 1:
         #strfile1 = 'Hibi_test.csv'
@@ -275,14 +259,70 @@ if __name__ == '__main__':
         fig3.show()
 
     elif mode == 2:
-        # 1, plot error directly from file
-        fig, ax, lines = None, None, None
-        fig, ax, lines = plot_error_byfile2(strfile1 + "_S")
 
-        labelTups = [('Uniform dist. 20 degC', 0), ('Uniform dist. 100 degC', 1),
-                     ('From temp. simulation data', 2), ('Iter specification', 3)]
+        V_strfile = [strfile1, strfile2, strfile3]
+        xx = 0
+        markers = ['o', 'v', '>']
+        for xx, strfile in enumerate(V_strfile):
+            if xx == 0:
+                fig, ax, lines = None, None, None
+            fig, ax, lines = plot_error_byfile3(strfile + "_S", fig, ax, lines,
+                                                V_custom=None,
+                                                I_custom=None,
+                                                markers=markers[xx])
+        labelTups = [('Iter specification', 0),
+                     ('Uniform 92degC', 1),
+                     ('Uniform 20degC', 2),
+                     ('Nonuniform', 3)]
+        ax.legend(lines, [lt[0] for lt in labelTups], loc='lower right')
+        ax.set(ylim=(0, 0.012))
+
+
+
+        V_strfile2 = [strfile1, strfile3]
+        xx = 0
+        markers = ['o', '>']
+        for xx, strfile in enumerate(V_strfile2):
+
+            V_custom = spunfiber.V*1.0058362165940955*2
+
+            if xx == 0:
+                fig, ax, lines = None, None, None
+            fig, ax, lines = plot_error_byfile3(strfile + "_S", fig, ax, lines,
+                                                V_custom=V_custom,
+                                                I_custom=None,
+                                                markers=markers[xx])
+
+        labelTups = [('Iter specification', 0),
+                     ('Uniform 92degC (V='+r'V$_{92^\circ C})$', 1),
+                     ('Nonuniform (V='+r'V$_{92^\circ C})$', 2)]
+        ax.legend(lines, [lt[0] for lt in labelTups], loc='lower right')
+        ax.set(ylim=(0, 0.012))
+
+
+        V_I = np.hstack((np.zeros(1),np.logspace(0,5, 5), np.arange(0.1e6, 18e6, 0.2e6)))
+        xx = 0
+        markers = ['o', 'x']
+        fig, ax, lines = None, None, None
+        V_custom = spunfiber.V * 1.0058362165940955 * 2
+
+        fig, ax, lines = plot_error_byfile3(strfile4 + "_S", fig, ax, lines,
+                                            V_custom=V_custom,
+                                            I_custom=V_I[1:],
+                                            markers=markers[0]
+                                            )
+        fig, ax, lines = plot_error_byfile3(strfile4 + "_S", fig, ax, lines,
+                                            V_custom=V_custom,
+                                            I_custom=None,
+                                            markers=markers[1]
+                                            )
+
+        labelTups = [('Iter specification', 0),
+                     ('Nonuniform T & Nonuniform B' + r' (I=I$_p$)', 1),
+                     ('Nonuniform T & Nonuniform B' + r' (I=I$_{total}$)', 2)]
         ax.legend(lines, [lt[0] for lt in labelTups], loc='upper right')
         ax.set(ylim=(0, 0.012))
+
 
     plt_fmt, plt_res = '.png', 330  # 330 is max in Word'16
     plt.rcParams["axes.titlepad"] = 5  # offset for the fig title
