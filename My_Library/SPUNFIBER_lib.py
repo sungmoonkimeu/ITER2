@@ -29,7 +29,8 @@ import csv
 # import parmap
 # import tqdm
 
-
+# Control the number of digit with scientific expression in matplot x or y axis
+# https://stackoverflow.com/questions/42656139/set-scientific-notation-with-fixed-exponent-and-significant-digits-for-multiple
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
         self.oom = order
@@ -44,7 +45,8 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
         if self._useMathText:
             self.format = r'$\mathdefault{%s}$' % self.format
 
-# Function that will convert any given function 'f' defined in a given range '[li,lf]' to a periodic function of period 'lf-li'
+# Function that will convert any given function 'f' defined in a given range '[li,lf]' to
+# a periodic function of period 'lf-li' for given range 'x'
 def periodicf(li, lf, f, x):
     if x >= li and x <= lf:
         return f(x)
@@ -60,9 +62,9 @@ class SPUNFIBER:
         self.LB = beat_length
         self.SP = spin_pitch
         self.dz = delta_l
-        self.V = 0.54 * 4* pi * 1e-7 # μV [rad/A]
+        self.V = 0.54 * 4 * pi * 1e-7 # μV [rad/A]
         # Verdet constant
-        # V=0.54 [rad/mT] --> μV = 0.54 * 4*pi*1e-7 [rad/A]
+        # V=0.54 [rad/mT] --> μV = 4*pi*1e-7 * 0.54  [rad/A]
         self.LF = len_lf
         self.L = len_sf
         self.V_L = []
@@ -70,9 +72,9 @@ class SPUNFIBER:
         self.V_theta = []
         self.V_theta_LF = []
         self.V_temp = []
-        self.V_B =[]
+        self.V_B = []
         self.ang_FM = angle_FM
-        self.Vin = np.array([[1],[0]])
+        self.Vin = np.array([[1], [0]])
         self.Mvib = []
         self.int_V_B = 0
 
@@ -188,8 +190,6 @@ class SPUNFIBER:
 
         M = np.array([[1, 0], [0, 1]])
 
-        kk = 0  # for counting M_vib
-
         if DIR == 1:
             V_phi = ((s_t_r * self.dz) - omega) / 2 + m * (pi / 2) + V_theta
 
@@ -201,11 +201,7 @@ class SPUNFIBER:
         n21 = R_z / 2 * 1j * sin(2 * V_phi) + omega
         n22 = R_z / 2 * -1j * cos(2 * V_phi)
 
-        N = np.array([[n11, n21], [n12, n22]]).T
-        # Trasnpose matirx to reshape N matrix from (2,2,n) to (n,2,2), so that access each 2x2 matrix by N[x].
-        # However 2x2 N[x] matrix is also transposed.
-        # Therefore, determine N matrix like transposed matrix
-
+        N = np.array([[n11, n21], [n12, n22]]).T       # See Note/Note 2(building array and reshape).jpg
         N_integral = self._eigen_expm(N)
 
         tmp = np.array([])  # for test
@@ -213,7 +209,7 @@ class SPUNFIBER:
             nM_vib = M_vib.shape[2]
             nSet = int((len(V_theta)-1) / (nM_vib + 1))
             rem = (len(V_theta)-1) % nSet
-
+        kk = 0  # for counting M_vib
 
         for nn in range(len(V_theta)-1):
             M = N_integral[nn] @ M
@@ -590,30 +586,27 @@ class SPUNFIBER:
 
         return M
 
-    def f_in_bridge(self, Ip, DIR, n_Bridge, V_theta, V_LF, M_vib=None ):
+    def f_in_bridge(self, Ip, DIR, n_Bridge, V_LF):
         """
-        :param DIR: direction (+1: forward, -1: backward)
+        Assuming the magnetic field is presence along bridge section
+        Define the faraday-induced rotation per unit meter
+
         :param Ip: plasma current
-        :param L: fiber length
+        :param DIR: direction (+1: forward, -1: backward)
+        :param n_Bridge (1: cubicle (laser) to VV, 2: VV to cubicle (FM))
         :param V_theta: vector of theta (angle of optic axes)
         :return: M matrix calculated from N matrix
         """
-        m = 0
-        # Fiber parameter
-        s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
-        delta = 2 * pi / self.LB
 
-        # magnetic field in unit length
-        # H = Ip / (2 * pi * r)
-        r = self.L /(2*pi)
+        r = self.L / (2*pi)
         if DIR == 1 and n_Bridge == 1:
-            V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
+            V_H = Ip * r / (2*pi*(r**2 + (self.LF - V_LF)**2))
         elif DIR == 1 and n_Bridge == 2:
-            V_H = Ip * r / (2*pi*(r**2+ V_LF**2))
+            V_H = Ip * r / (2*pi*(r**2 + V_LF**2))
         elif DIR == -1 and n_Bridge == 2:
-            V_H = Ip * r / (2*pi*(r**2+ (self.LF - V_LF)**2))
+            V_H = Ip * r / (2*pi*(r**2 + (self.LF - V_LF)**2))
         elif DIR == -1 and n_Bridge == 1:
-            V_H = Ip * r / (2*pi*(r**2+ V_LF**2))
+            V_H = Ip * r / (2*pi*(r**2 + V_LF**2))
         V_rho = self.V * V_H    # <<- Vector
 
         return V_rho
@@ -668,12 +661,6 @@ class SPUNFIBER:
                 #print("Norm (Msens_f - Msens_b) = ", norm(M_f - M_b))
 
             V_out[mm] = M_lf_b @ M_b @ M_lf_b2 @ M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Vin
-            # V_out[mm] = M_lf_b @ M_b @ M_FR @ M_f @ M_lf_f @ Vin
-            # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ Vin
-            # V_out[mm] = M_f @ M_lf_f @ Vin
-            # V_out[mm] =  M_lf_f @ V_in
-            # V_out[mm] = M_lf_b @ M_FR @ M_lf_f @ V_in
-            # V_out[mm] = M_lf_f @ V_in
             mm = mm + 1
             print("mm")
 
@@ -1222,7 +1209,7 @@ if __name__ == '__main__':
         fig1, ax1 = spunfiber.init_plot_SOP()
         tmp, SOPchange_mean, SOPchange_std, SOPchange_max = np.array([]), np.array([]), np.array([]), np.array([])
         tmp2 = np.array([])
-        V_ang = np.arange(0,45,5)
+        V_ang = np.arange(0, 45, 5)
         for ang_FM in V_ang:
             for nn in range(50):
                 ksi = (45-ang_FM) * pi / 180
