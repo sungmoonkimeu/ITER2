@@ -43,33 +43,13 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
         if self._useMathText:
             self.format = r'$\mathdefault{%s}$' % self.format
 
-def cm_to_rgba_tuple(colors,alpha=1):
-    for nn in range(len(colors)):
-        r = int(colors[nn].split(",")[0].split("(")[1])/256
-        g = int(colors[nn].split(",")[1])/256
-        b = int(colors[nn].split(",")[2].split(")")[0])/256
-        if nn == 0:
-            tmp = np.array([r, g, b, alpha])
-        else:
-            tmp = np.vstack((tmp, np.array([r, g, b, alpha])))
-    return tmp
-
-
-# try:
-#     sys.path.append(os.getcwd() + '\My_library')
-#     os.chdir(os.getcwd() + '\My_library')
-#     print("os path is changed")
-# except:
-#     print("ggg")
-
-
 if __name__ == '__main__':
     sys.path.append(os.getcwd() + '\My_library')
     print(os.getcwd())
     os.chdir(os.getcwd() + '\My_library')
     print(os.getcwd())
 
-    mode = 2
+    mode = 1
     LB = 1.000
     SP = 0.005
     # dz = SP / 1000
@@ -214,49 +194,6 @@ if __name__ == '__main__':
         ax_temp[3].set_xlabel('Fiber position (m)')
         ax_temp[3].legend()
         fig_temp.align_ylabels(ax_temp)
-
-    elif mode == 1:
-        #strfile1 = 'Hibi_test.csv'
-        #strfile1 = 'Hibi_IdealFM_Errdeg1x5.csv'
-        opacity = 0.8
-        V2 = 0.54 * 4 * pi * 1e-7 * 2 / 1.0375
-
-        # 1, plot error directly from file
-        fig, ax, lines, V2 = None, None, None, None
-        fig, ax, lines3 = plot_error_byfile2(strfile1 + "_S", V_custom=V2)
-
-        # 1-1, plot Stokes on the Poincare directly from file
-        opacity = 1
-        fig3, ax = plot_Stokes_byfile(strfile1 + "_S", opacity=opacity)
-
-        # 2, Load Stokes from file data
-        ncol = 0
-        V_I, S, isEOF = load_stokes_fromfile(strfile1+"_S", ncol)
-
-        # 2-1, plot error from Stokes
-        fig, ax, line3, V2 = None, None, None, None
-        fig, ax, lines3 = plot_error_byStokes(V_I, S, fig=fig, ax=ax, lines=lines3, V_custom=V2)
-
-        # 2-2, plot Stokes from loaded Stokes
-        fig, opacity = None, None
-        fig, lines = plot_Stokes(V_I, S, fig=fig, opacity=opacity)
-
-        # 3, Basis correction
-        c = [None, None, None]
-        S2, c = basis_correction1(S, c=c)
-
-        # 3-1, draw Farday roataion plane vector
-        fig3, opacity = None, 0.5
-        fig3, lines = plot_Stokes(V_I, S2, fig=fig3, opacity=opacity)
-        fig3.add_scatter3d(x=(0, c[0]*1.2), y=(0, c[1]*1.2), z=(0,c[2]*1.2),
-                            mode='lines',
-                            line=dict(width=8))
-
-        # These three functions need fig.show() to show figure in new browser
-        # add_scatter3d
-        # plot_Stokes
-        # plot_Stokes_byfile
-        fig3.show()
 
     elif mode == 2:
 
