@@ -6,32 +6,32 @@ Created on Mon May 02 15:14:00 2022
 functions to investigate Spun fiber's behavior
 """
 import numpy as np
-from numpy import pi, cos, sin, ones, zeros, einsum, arange, arcsin, arctan, tan, arccos, savetxt, log10
+from numpy import pi, cos, sin, ones, zeros, einsum, arange, arcsin, arctan, tan
 from numpy.linalg import norm, eig
 import matplotlib.pyplot as plt
-from py_pol.jones_vector import Jones_vector, degrees
-from py_pol.stokes import Stokes, create_Stokes
-from py_pol.drawings import draw_stokes_points, draw_poincare, draw_ellipse
-
-from scipy.interpolate import CubicSpline
+from py_pol.jones_vector import Jones_vector
+from py_pol.stokes import create_Stokes
+from py_pol.drawings import draw_stokes_points
 
 import matplotlib.ticker
-from matplotlib.ticker import (MaxNLocator,
-                               FormatStrFormatter, ScalarFormatter)
-from multiprocessing import Process, Queue, Manager,Lock
+from matplotlib.ticker import MaxNLocator
+from multiprocessing import Process, Manager
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
 import csv
-# from .basis_correction_lib import calib_basis3
-# from .draw_poincare_plotly import *
 
-# import parmap
-# import tqdm
 
-# Control the number of digit with scientific expression in matplot x or y axis
-# https://stackoverflow.com/questions/42656139/set-scientific-notation-with-fixed-exponent-and-significant-digits-for-multiple
+
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
+    """
+    patch of a function in matplotlib
+    Control the number of digit with scientific expression of ticks in x or y axis in Matplotlib
+
+    # See link below
+    # Set scientific notation with fixed exponent and significant digits for multiple subplots
+    # https://stackoverflow.com/questions/42656139/set-scientific-notation-with-fixed-exponent-and-significant-digits-for-multiple
+    """
+
     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
         self.oom = order
         self.fformat = fformat
@@ -45,9 +45,23 @@ class OOMFormatter(matplotlib.ticker.ScalarFormatter):
         if self._useMathText:
             self.format = r'$\mathdefault{%s}$' % self.format
 
-# Function that will convert any given function 'f' defined in a given range '[li,lf]' to
-# a periodic function of period 'lf-li' for given range 'x'
 def periodicf(li, lf, f, x):
+    """ The value of a new function is periodically determined by comparing
+    the length [li-lf] of the given function [f] with the current position (x).
+
+    :param li: initial point of desired vector
+    :param lf: finial point of desired vector
+    :param f: source function
+    :param x: accessing parameter to create the new vector value
+    :return the value of a new periodic fuction
+
+    example:
+    V_new = np.zeros(10)
+    f = np.array([1,2,3,4])
+    V_new = np.array([periodicf(li, lf, F_source, x) for x in V_new])
+
+    """
+
     if x >= li and x <= lf:
         return f(x)
     elif x > lf:
@@ -137,15 +151,12 @@ class SPUNFIBER:
     @staticmethod
     def _eigen_expm(A):
         """
-
         Parameters
         ----------
         A : 2 x 2 diagonalizable matrix
             DESCRIPTION.
-
         scify.linalg.expm() is available but only works for a (2,2) matrix.
         This function is for (2,2,n) matrix
-
         Returns
         -------
         expm(A): exponential of the matrix A.
@@ -157,12 +168,13 @@ class SPUNFIBER:
 
     def lamming(self, Ip, DIR, V_theta, M_vib=None):
         """
+        2nd version of spun fiber model : N-matrix technique
+        Use of infinisimal approximation
         :param DIR: direction (+1: forward, -1: backward)
         :param Ip: plasma current
         :param L: fiber length
         :param V_theta: vector of theta (angle of optic axes)
         :return: M matrix calculated from N matrix
-        Only valid dz < SP/100
         """
 
         s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
@@ -1019,7 +1031,7 @@ def cal_error_fromStocks(V_I, S, V_custom=None, v_calc_init=None):
 # Todo Ip calculation method change --> azimuth angle --> arc length
 
 if __name__ == '__main__':
-    mode =6
+    mode = 0
     if mode == 0:
         LB = 0.009
         SP = 0.005
@@ -1028,8 +1040,6 @@ if __name__ == '__main__':
         len_lf = 1  # lead fiber
         len_ls = 1  # sensing fiber
         spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
-        # 44FM_Errdeg1x5_0 : length of leadfiber 10 m
-        # 44FM_Errdeg1x5_1 : length of leadfiber 10->20 m
 
         num_iter = 4
         strfile1 = 'AAAA1.csv'
