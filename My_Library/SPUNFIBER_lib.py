@@ -303,32 +303,8 @@ class SPUNFIBER:
                       default = 1 (laming1)
 
         :return:
-        Case 1) normal calculation --> output Jones vectors
-        Case 2) multiprocssing calculation --> No return
-
-        example:
-
-        Case 1) normal calculation
-
-        LB = 0.009
-        SP = 0.005
-        dz = 0.0001
-        len_bf = 1  # lead fiber
-        len_sf = 1  # sensing fiber
-        spunfiber = SPUNFIBER(LB, SP, dz, len_sf, len_bf)
-        V_Jout = spunfiber.cal_rotation0()
-
-        Case 2) Using the multiprocessing
-        No return!!!
-        - The calcuated vectors for each Ip in V_Ip will be saved in Vout_dic[num] variable
-        - Dictionary is required to regroup the results randomly seperated by multiprocessing
-
-        LB = 0.009
-        SP = 0.005
-        dz = 0.0001
-        len_bf = 1  # lead fiber
-        len_sf = 1  # sensing fiber
-        spunfiber = SPUNFIBER(LB, SP, dz, len_sf, len_bf)
+        Case 1) normal calculation --> output Jones vectors (see example #1)
+        Case 2) multiprocssing calculation --> No return    (see example #2)
 
         """
 
@@ -513,7 +489,11 @@ class SPUNFIBER:
         return V_Iref, V_Jout, isEOF
 
     def cal_Jout0_mp(self, num_processor):
-        # for temperature distribution simulation
+        """ FOCS simulation using multiprocessing technique
+
+        :param num_processor: number of processor to use in multiprocess
+        :return: Calculated output Jones vector for each input Plasma current
+        """
         spl_I = np.array_split(self.V_Ip, num_processor)
 
         procs = []
@@ -538,15 +518,14 @@ class SPUNFIBER:
         return V_Jout
 
     def draw_empty_poincare(self, title=None):
-        """
+        """ plot empty Poincare Sphere, ver. 20/03/2020
         Created on Fri Jan 14 11:50:03 2022
         @author: agoussar
+        :param title: figure title
+        :return: ax of figure
         """
-        '''
-            plot Poincare Sphere, ver. 20/03/2020
-            return:
-            ax, fig
-            '''
+
+
         fig = plt.figure(figsize=(6, 6))
         #    plt.figure(constrained_layout=True)
         ax = fig.add_subplot(projection='3d')
@@ -662,17 +641,16 @@ if __name__ == '__main__':
         # spunfiber.save_Jones(str_file1, V_Jout)
 
         # example 2
-        V_Iref, V_Jout, isEOF = spunfiber.load_Jones(str_file1)
-        V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
-        fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
-        fig2, ax2 = spunfiber.draw_Stokes(V_Jout)
-
-        # example 3
         # num_processor = 2
         # V_Jout= spunfiber.cal_Jout0_mp(num_processor)
         # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
         # fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
         # spunfiber.save_Jones(str_file1, V_Jout)
 
+        # example 2
+        # V_Iref, V_Jout, isEOF = spunfiber.load_Jones(str_file1)
+        # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
+        # fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+        # fig2, ax2 = spunfiber.draw_Stokes(V_Jout)
 
 plt.show()
