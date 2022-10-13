@@ -3,7 +3,12 @@
 Created on Mon May 02 15:14:00 2022
 @author: SMK
 
-functions to investigate Spun fiber's behavior
+FOCS simulation with optical modeling of spun fiber
+
+Note)
+py_pol module is used for conversion between numpy array and Jones matrix and Stokes vector.
+used py_pol version is 1.0.3
+pip install py-pol==1.0.3 (Conda install does not work for this module)
 """
 import numpy as np
 from numpy import pi, cos, sin, ones, zeros, einsum, arange, arcsin, arctan, tan
