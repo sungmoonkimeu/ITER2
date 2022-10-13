@@ -147,7 +147,14 @@ class SPUNFIBER:
         print('-Plasma current values (Ip) to be used for simulation: V_Ip = ',
               self.V_Ip[0:5],'...',self.V_Ip[-5:-1])
 
-        print('---------------------------------------------------------------\n\n')
+        print('---------------------------------------------------------------\n')
+
+    def set_input_current(self,I0,Imax,step):
+        self.V_Ip = arange(I0,Imax+step, step)
+        print("-input current (V_Ip) has been reset")
+        print("V_Ip = ",
+              self.V_Ip[0:5],'...', self.V_Ip[-5:-1])
+        print('---------------------------------------------------------------\n')
 
     @staticmethod
     def _eigen_expm(A):
@@ -344,7 +351,7 @@ class SPUNFIBER:
             V_Jout[mm] = M_lf_b @ M_b @ M_lf_b2 @ self.M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Jin
 
             mm = mm + 1
-            print("[",num,"], ",mm,"/",len(V_Ip))
+            print("process [",num,"], ",mm,"/",len(V_Ip))
 
         if dic_Jout is None:
             return V_Jout
@@ -352,7 +359,9 @@ class SPUNFIBER:
             dic_Jout[num] = V_Jout
 
     def eval_FOCS_fromJones(self, V_Jout, V_Itotal=None, V_custom=None, angle_init=None, FOCSTYPE=2):
-        """
+        """ evaluation of FOCS for given paramters
+        Calculate the measured current from the SOP rotation that FOCS will be measured
+        Convert the SOP rotation to Plasma current by using the Verdet constant
 
         :param V_Jout: output Jones vectors calculated from FOCS simulation
         :param V_Itotal: Total current (default: None --> using the Plasma current, self.V_Ip)
@@ -366,7 +375,7 @@ class SPUNFIBER:
         """
         V_Iref = self.V_Ip if V_Itotal is None else V_Itotal
         if V_Iref[0] != 0:
-            print("V_Iref[0] must be 0A for referencing the intiial point")
+            print("V_Iref[0] must be 0A for referencing the initial point")
         V_ang, V_IFOCS = zeros(len(V_Iref)), zeros(len(V_Iref))
 
         J = Jones_vector('Output')
@@ -389,7 +398,7 @@ class SPUNFIBER:
         return V_IFOCS, V_err
 
     def plot_error(self, V_err, V_Iref=None, fig=None, ax=None, lines=None, label=None):
-        """ Plot calculated relative error
+        """ Plot the calculated relative error
 
         :param V_err: Calculated error
         :param V_Iref: Reference current (Ip or Itotal) self.V_Ip will be used if None
@@ -440,17 +449,18 @@ class SPUNFIBER:
 
         return fig, ax, lines
 
-    def save_Jones(self, filename, V_Jout, V_Iref=None):
+    def save_Jones(self, filename, V_Jout, V_Iref=None, append=True):
         """ save the output Jones vectors from FOCS simulation
             If there is the same file,
-            the data will be saved in the last column of data file (appended)
+            the data will be saved in the last column of data file (when append=Ture)
 
         :param filename: file name
         :param V_Jout: numpy array of output Jones vector
         :param V_Iref: reference current (default=None : self.V_Ip)
+        :param append: selecte save mode (defualt=True)
         """
         V_I = self.V_Ip if V_Iref is None else V_Iref
-        if os.path.exists(filename):
+        if os.path.exists(filename) and append is True:
             df2 = pd.read_csv(filename)
             ncol2 = int((df2.shape[1] - 1) / 2)
             df2[str(ncol2) + ' Ex'] = V_Jout[:, 0, 0]
@@ -599,6 +609,14 @@ class SPUNFIBER:
         return fig, ax
 
     def draw_Stokes(self, V_Jout, ax=None, label=None):
+        """ draw stokes points on the poincare sphere
+        Use py-pol library to convert numpy array to Stokes vector array
+
+        :param V_Jout: output Jones vector
+        :param ax: axis of figure
+        :param label: legend
+        :return: fig, ax of matplotlib figure
+        """
         if ax is None:
             fig, ax = self.draw_empty_poincare()
 
@@ -641,11 +659,12 @@ if __name__ == '__main__':
         # spunfiber.save_Jones(str_file1, V_Jout)
 
         # example 2
-        # num_processor = 2
-        # V_Jout= spunfiber.cal_Jout0_mp(num_processor)
-        # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
-        # fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
-        # spunfiber.save_Jones(str_file1, V_Jout)
+        num_processor = 8
+        spunfiber.set_input_current(0,18e6,1e5)
+        V_Jout= spunfiber.cal_Jout0_mp(num_processor)
+        V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
+        fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+        spunfiber.save_Jones(str_file1, V_Jout)
 
         # example 2
         # V_Iref, V_Jout, isEOF = spunfiber.load_Jones(str_file1)
