@@ -646,6 +646,37 @@ class SPUNFIBER:
             ax.legend()
         return fig, ax
 
+    # advanced version
+
+    def create_Mvib(self, nM_vib, max_phi, max_theta_e):
+        theta = (np.random.rand(nM_vib) - 0.5) * 2 * pi / 2  # random axis of LB
+        phi = (np.random.rand(nM_vib) - 0.5) * 2 * max_phi * pi / 180  # ellipticity angle change from experiment
+        theta_e = (np.random.rand(nM_vib) - 0.5) * 2 * max_theta_e * pi / 180  # azimuth angle change from experiment
+
+        print("angle of Retarder's optic axis:", theta *180/pi, "deg")
+        print("retardation of Retarder:", phi * 180 / pi, "deg")
+        print("rotation angle of Rotator :", theta_e * 180 / pi, "deg")
+
+        M_rot = np.array([[cos(theta_e), -sin(theta_e)], [sin(theta_e), cos(theta_e)]])  # shape (2,2,nM_vib)
+        M_theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
+        M_theta_T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])  # shape (2,2,nM_vib)
+        # print(theta)
+        # Create (2,2,n_M_vib) Birefringence matrix
+        IB = np.zeros((2, 2, nM_vib))
+        np.einsum('iij->ij', IB)[:] = 1
+        Bexp = np.exp(1j * np.vstack((phi, -phi)))
+        M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)
+
+        # Random birefringence(circular + linear), random optic axis matrix calculation
+        self.M_vib = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
+
+    # Bridge vibration
+
+    # Nonuniform Temperature effect
+
+    # Nonuniform Magnetic effect
+
+
 if __name__ == '__main__':
     mode = 0
     if mode == 0:
