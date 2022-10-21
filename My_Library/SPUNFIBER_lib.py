@@ -119,6 +119,8 @@ class SPUNFIBER:
         self.ang_FM = angle_FM
         self.Vin = np.array([[1], [0]])
         self.Mvib = []
+        self.is_spunfiber_set_with_Mvib_in_forward = False
+        self.is_spunfiber_set_with_Mvib_in_backward = False
         self.int_V_B = 0
 
         self.V_SF = arange(0, self.len_sf + self.dz, self.dz)
@@ -131,6 +133,10 @@ class SPUNFIBER:
         self.V_theta_BF2 = self.V_theta[-1] + self.V_BF1 * s_t_r
 
         self.V_H = 1 / self.len_sf * ones(len(self.V_theta))
+        self.V_h1_f = zeros(len(self.V_theta_BF1))
+        self.V_h2_f = zeros(len(self.V_theta_BF2))
+        self.V_h2_b = zeros(len(self.V_theta_BF2))
+        self.V_h1_b = zeros(len(self.V_theta_BF1))
 
         print('Initialized spun fiber model: '
               '\n-LB = ', self.LB,
@@ -677,6 +683,9 @@ class SPUNFIBER:
         Bexp = np.exp(1j * np.vstack((phi, -phi)))
         M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)
 
+        self.is_spunfiber_set_with_Mvib_in_forward = False
+        self.is_spunfiber_set_with_Mvib_in_backward = False
+
         # Random birefringence(circular + linear), random optic axis matrix calculation
         self.M_vib = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
 
@@ -823,7 +832,6 @@ class SPUNFIBER:
         :param Jin: Input Jones vector (default: None) --> using LHP (np.array([[1],[0]]))
         :param perturbations: Perturbations
                               'V': Vibration
-                              'T':
 
         :return:
         Case 1) normal calculation --> output Jones vectors (see example #3)
@@ -835,7 +843,6 @@ class SPUNFIBER:
             V_Ip = self.V_Ip
 
         laming = self.laming2
-
 
         V_Jout = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
         if Jin is None:
@@ -888,7 +895,7 @@ class SPUNFIBER:
         # print("Vin_calc_mp", Vin)
         for num in range(num_processor):
             # proc = Process(target=self.cal_rotation,
-            proc = Process(target=self.cal_Jout0,
+            proc = Process(target=self.cal_Jout1,
                            args=(num, dic_Jout, spl_I[num], None, 'V'))
             procs.append(proc)
             proc.start()
@@ -983,7 +990,6 @@ class SPUNFIBER:
         :param V_theta: vector of theta (angle of optic axes)
         :return: M matrix calculated from N matrix
         """
-
         # magnetic field in unit length
         # H = Ip / (2 * pi * r)
         r = self.len_sf /(2*pi)
@@ -1013,8 +1019,8 @@ class SPUNFIBER:
                     None (default)--> no magenetic field
                     self.V_H: unifrom magnetic field around VV
                     self.V_h1_f : 1st bridge forward direction
-                    self.V_h2_f : 2st bridge forward direction
-                    self.V_h2_b : 2st bridge backward direction
+                    self.V_h2_f : 2nd bridge forward direction
+                    self.V_h2_b : 2nd bridge backward direction
                     self.V_h1_b : 1st bridge backward direction
         :param Vib: False : no vibration
                True : including the Vibration matrices
@@ -1125,14 +1131,16 @@ class SPUNFIBER:
                             kk = kk + 1
 
         if Vib is True:
-            if DIR == 1:
+            if DIR == 1 and self.is_spunfiber_set_with_Mvib_in_forward is False:
+                self.is_spunfiber_set_with_Mvib_in_forward = True
                 np.savetxt("MatrixCalculationlog_forward.txt", tmp, fmt='%s')
                 print("Merr matrices have been added at", end='')
                 for nn in tmp2:
                     print(int(nn), "th, ", end='')
                 print("postions of spun fiber model")
                 print("Entire spun fiber model has been saved in MatrixCalculationlog_forward.txt")
-            elif DIR == -1:
+            elif DIR == -1 and self.is_spunfiber_set_with_Mvib_in_backward is False:
+                self.is_spunfiber_set_with_Mvib_in_backward = True
                 np.savetxt("MatrixCalculationlog_backward.txt", tmp, fmt='%s')
                 print("Merr matrices have been added at ", end='')
                 for nn in tmp2:
@@ -1142,7 +1150,7 @@ class SPUNFIBER:
 
         return M
 
-    def cal_Jout2(self, num=0, dic_Jout=None, V_Ip=None, Jin=None, Vib=True):
+    def cal_Jout2(self, num=0, dic_Jout=None, V_Ip=None, Jin=None):
         """ Calcuate the output Jones vector for each Ip
 
         :param num: index of dictionary of Vout_dic (default: num = 0 --> Not using the multiprocessing)
@@ -1197,6 +1205,35 @@ class SPUNFIBER:
             return V_Jout
         else:
             dic_Jout[num] = V_Jout
+
+    def cal_Jout2_mp(self, num_processor):
+        """ FOCS simulation using multiprocessing technique
+
+        :param num_processor: number of processor to use in multiprocess
+        :return: Calculated output Jones vector for each input Plasma current
+        """
+        spl_I = np.array_split(self.V_Ip, num_processor)
+
+        procs = []
+        manager = Manager()
+        dic_Jout = manager.dict()
+
+        # print("Vin_calc_mp", Vin)
+        for num in range(num_processor):
+            # proc = Process(target=self.cal_rotation,
+            proc = Process(target=self.cal_Jout2,
+                           args=(num, dic_Jout, spl_I[num], None))
+            procs.append(proc)
+            proc.start()
+
+        for proc in procs:
+            proc.join()
+
+        V_Jout = dic_Jout[0]
+        for kk in range(num_processor - 1):
+            V_Jout = np.vstack((V_Jout, dic_Jout[kk + 1]))
+
+        return V_Jout
 
     # Nonuniform Temperature effect
     #    - No vibration
@@ -1285,7 +1322,7 @@ class SPUNFIBER:
         # However,
         self.V_H = -func_B_interp(self.V_SF) * 1 / (4 * pi * 1e-7) / 15e6
         tmp = np.trapz(self.V_H, x=self.V_SF) # integral calculation of B-field along VV
-        c = ((-tmp/(4*pi*1e-7))/15e6)
+        c = tmp
         print('Use total current Itotal = Ip x', c)
         return c
 
@@ -1409,26 +1446,28 @@ if __name__ == '__main__':
         # Vibration with nonunifrom magnetic field along Bridge
         # -------------------------------------------------------------------------------- #
 
-        # num_iter = 3  # number of iterations
-        # nM_vib = 5
-        # spunfiber.set_input_current(0, 1e6, 2e5)
-        # spunfiber.set_nonuniform_B_along_bridge()
-        #
-        # for nn in range(num_iter):
-        #     spunfiber.create_Mvib(nM_vib, 1, 1)
-        #     V_Jout = spunfiber.cal_Jout2()
-        #     V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
-        #     if nn == 0:
-        #         spunfiber.save_Jones(str_file1, V_Jout, append=False)
-        #         spunfiber.save_error(str_file2, V_err, append=False)
-        #         fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
-        #     else:
-        #         spunfiber.save_Jones(str_file1, V_Jout, append=True)
-        #         spunfiber.save_error(str_file2, V_err, append=True)
-        #         fig, ax, lines = spunfiber.plot_error(V_err,
-        #                                               fig=fig, ax=ax, lines=lines,
-        #                                               label='LB/SP=200')
-        # fig, ax, lines = spunfiber.plot_errorbar(str_file2)
+        num_iter = 10  # number of iterations
+        nM_vib = 5
+        num_processor = 16
+        spunfiber.set_input_current(0, 18e6, 2e5)
+        spunfiber.set_nonuniform_B_along_bridge()
+
+        for nn in range(num_iter):
+            spunfiber.create_Mvib(nM_vib, 1, 1)
+            # V_Jout = spunfiber.cal_Jout2()
+            V_Jout = spunfiber.cal_Jout2_mp(num_processor)
+            V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
+            if nn == 0:
+                spunfiber.save_Jones(str_file1, V_Jout, append=False)
+                spunfiber.save_error(str_file2, V_err, append=False)
+                fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+            else:
+                spunfiber.save_Jones(str_file1, V_Jout, append=True)
+                spunfiber.save_error(str_file2, V_err, append=True)
+                fig, ax, lines = spunfiber.plot_error(V_err,
+                                                      fig=fig, ax=ax, lines=lines,
+                                                      label='LB/SP=200')
+        fig, ax, lines = spunfiber.plot_errorbar(str_file2)
 
         # -------------------------------------------------------------------------------- #
         # example 6
@@ -1439,21 +1478,21 @@ if __name__ == '__main__':
         # todo: multiprocessing
         # -------------------------------------------------------------------------------- #
 
-        spunfiber.set_input_current(0, 1e6, 2e5)
-
-        # Load a part of temperature distribution along the VV (20 cm, a clamp in the middle)
-        data = pd.read_csv('VVtemp.csv', delimiter=';')
-        V_l = data['L'].to_numpy() / 100
-        V_temp = data['TEMP'].to_numpy()
-        func_temp_interp = CubicSpline(V_l, V_temp)
-        V_custom = spunfiber.set_tempVV(V_l[0], V_l[-1], func_temp_interp)
-
-        V_Jout = spunfiber.cal_Jout3()
-        # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)          # without considering temp dependence of Verdet constant in VV section
-        V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout, V_custom=V_custom)
-
-        spunfiber.save_Jones(str_file1, V_Jout, append=False)
-        fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+        # spunfiber.set_input_current(0, 1e6, 2e5)
+        #
+        # # Load a part of temperature distribution along the VV (20 cm, a clamp in the middle)
+        # data = pd.read_csv('VVtemp.csv', delimiter=';')
+        # V_l = data['L'].to_numpy() / 100
+        # V_temp = data['TEMP'].to_numpy()
+        # func_temp_interp = CubicSpline(V_l, V_temp)
+        # V_custom = spunfiber.set_tempVV(V_l[0], V_l[-1], func_temp_interp)
+        #
+        # V_Jout = spunfiber.cal_Jout3()
+        # # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)          # without considering temp dependence of Verdet constant in VV section
+        # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout, V_custom=V_custom)
+        #
+        # spunfiber.save_Jones(str_file1, V_Jout, append=False)
+        # fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
 
         # -------------------------------------------------------------------------------- #
         # example 7
@@ -1463,9 +1502,7 @@ if __name__ == '__main__':
         # No Vibration
         # -------------------------------------------------------------------------------- #
 
-        # num_iter = 1  # number of iterations
-        #
-        # spunfiber.set_input_current(0, 1e6, 2e5)
+        # spunfiber.set_input_current(0, 18e6, 2e5)
         # #spunfiber.set_nonuniform_B_along_bridge()
         #
         # # Load a part of temperature distribution along the VV (20 cm, a clamp in the middle)
@@ -1473,19 +1510,48 @@ if __name__ == '__main__':
         # V_l = data['L'].to_numpy() / 100
         # V_temp = data['TEMP'].to_numpy()
         # func_temp_interp = CubicSpline(V_l, V_temp)
-        # spunfiber.set_tempVV(V_l[0], V_l[-1], func_temp_interp)
+        # V_custom = spunfiber.set_tempVV(V_l[0], V_l[-1], func_temp_interp)
         #
         # # Load the magnetic field distribution along the VV (30 m)
         # strfile_B = 'B-field_around_VV.txt'
         # data_B = np.loadtxt(strfile_B)
         # func_B_interp = interp1d(data_B[:, 0], data_B[:, 1], kind='cubic')
-        # spunfiber.set_nonuniform_B_around_VV(func_B_interp)
+        # c = spunfiber.set_nonuniform_B_around_VV(func_B_interp)
         #
         # V_Jout = spunfiber.cal_Jout4()
-        # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
+        # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout, V_Itotal=spunfiber.V_Ip*c, V_custom=V_custom)
         #
         # spunfiber.save_Jones(str_file1, V_Jout, append=False)
         # fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+        #
+        # # plot the temperature effect
+        # fig_temp, ax_temp = plt.subplots(4, 1, figsize=(8, 5))
+        # fig_temp.subplots_adjust(hspace=0.32, left=0.24)
+        # ax_temp[0].plot(spunfiber.V_SF, spunfiber.V_temp_VV-273.15)
+        #
+        # ax_temp[1].plot(spunfiber.V_SF, (spunfiber.LB*(1 + 3e-5 * (spunfiber.V_temp_VV - 273.15 - 20))))
+        #
+        # ax_temp[2].plot(spunfiber.V_SF, spunfiber.V * (1 + 8.1e-5 * (spunfiber.V_temp_VV - 273.15 - 20)))
+        #
+        # ax_temp[3].plot(spunfiber.V_SF, spunfiber.V_H*3e6*4*pi*1e-7, label='3MA')
+        # ax_temp[3].plot(spunfiber.V_SF, spunfiber.V_H*5e6*4*pi*1e-7, label='5MA')
+        # ax_temp[3].plot(spunfiber.V_SF, spunfiber.V_H*15e6*4*pi*1e-7, label='15MA')
+        #
+        # xmax = 29
+        # ax_temp[0].set(xlim=(0, xmax), ylim=(18, 110))
+        # ax_temp[1].set(xlim=(0, xmax), ylim=(0.9995, 1.003))
+        # ax_temp[2].set(xlim=(0, xmax), ylim=(0.6780e-6, 0.6835e-6))
+        # ax_temp[3].set(xlim=(0, xmax), ylim=(-2, 2))
+        # #ax.yaxis.set_major_formatter(OOMFormatter(0, "%3.2f"))
+        # ax_temp[1].yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+        # ax_temp[2].yaxis.set_major_formatter(OOMFormatter(-6, "%5.4f"))
+        # ax_temp[0].set_ylabel('Temperature \n(degC)')
+        # ax_temp[1].set_ylabel('Beatlength \n(m)')
+        # ax_temp[2].set_ylabel('Verdet constant  \n(rad/A)')
+        # ax_temp[3].set_ylabel('B-field  \n(T)')
+        # ax_temp[3].set_xlabel('Fiber position (m)')
+        # ax_temp[3].legend()
+        # fig_temp.align_ylabels(ax_temp)
 
 
 plt.show()
