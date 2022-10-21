@@ -27,6 +27,8 @@ import pandas as pd
 import os
 import csv
 
+from scipy.interpolate import CubicSpline
+from scipy.interpolate import interp1d
 
 class OOMFormatter(matplotlib.ticker.ScalarFormatter):
     """
@@ -127,6 +129,9 @@ class SPUNFIBER:
         self.V_theta_BF1 = self.V_BF1 * s_t_r
         self.V_theta = self.V_theta_BF1[-1] + self.V_SF * s_t_r
         self.V_theta_BF2 = self.V_theta[-1] + self.V_BF1 * s_t_r
+
+        self.V_H = 1 / self.len_sf * ones(len(self.V_theta))
+
         print('Initialized spun fiber model: '
               '\n-LB = ', self.LB,
               '\n-SP = ', self.SP,
@@ -241,7 +246,7 @@ class SPUNFIBER:
         :param Ip: plasma current
         :param DIR: direction of light propagation  (+1: forward, -1: backward)
         :param V_theta: vector of theta (angle of oprientation of optic axes for each sliced fiber section)
-        :return: M matrix calculated from N matrix
+        :return: Single 2x2 Jones matrix
 
         example: self.cal_Jout1
         """
@@ -648,6 +653,11 @@ class SPUNFIBER:
 
     # advanced version
 
+    # Bridge vibration 1st
+    #   - Unifrom B-field only around VV
+    #   - No B-field along Bridge
+    #   - See example 4
+    # todo : multi processing
     def create_Mvib(self, nM_vib, max_phi, max_theta_e):
         theta = (np.random.rand(nM_vib) - 0.5) * 2 * pi / 2  # random axis of LB
         phi = (np.random.rand(nM_vib) - 0.5) * 2 * max_phi * pi / 180  # ellipticity angle change from experiment
@@ -670,11 +680,670 @@ class SPUNFIBER:
         # Random birefringence(circular + linear), random optic axis matrix calculation
         self.M_vib = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
 
-    # Bridge vibration
+    def laming2(self, Ip, DIR, V_theta, perturbations='N'):
+        """Calculation of Jones matrix of spun fiber when plasma current (Ip) flows.
+        Spun fiber model was designed following Laming's paper
+        --NOT USING THE INFINISIMAL MODEL--
+
+        :param Ip: plasma current
+        :param DIR: direction of light propagation  (+1: forward, -1: backward)
+        :param V_theta: vector of theta (angle of oprientation of optic axes for each sliced fiber section)
+        :param perturbations: 'N' : no perturbation
+                              'V' : including Vibration matrices
+       :return: Single 2x2 Jones matrix
+
+        example: self.cal_Jout1
+
+
+        """
+        # todo: including matrix calculation log in spun fiber class
+
+        s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
+        delta = 2 * pi / self.LB
+        V_delta = delta * ones(len(V_theta))
+        # magnetic field in unit length
+        # H = Ip / (2 * pi * r)
+        # H = Ip / self.len_sf
+        # rho = self.V * H
+
+        m = 0
+        # magnetic field in unit length
+        r = self.len_sf / (2 * pi)
+        V_H = Ip / (2 * pi * r) * ones(len(V_theta))
+        V_rho = self.V * V_H  # <<- Vector
+
+        # --------Laming: orientation of the local slow axis ------------
+        V_qu = 2 * (s_t_r - V_rho) / V_delta  # <<- Vector
+        # See Note/Note 1 (sign of Farday effect in Laming's method).jpg
+        # The sign of farday rotation (rho) is opposite to that of the Laming paper, inorder
+        # to be consistant with anti-clockwise (as in Jones paper) orientation for both
+        # spin and faraday rotation.
+
+        V_gma = 0.5 * (V_delta ** 2 + 4 * ((s_t_r - V_rho) ** 2)) ** 0.5  # <<- Vector
+
+        V_n = zeros(len(V_rho))  # for compensating the 2pi ambiguity in arctan calculation of V_omega
+        for nn in range(len(V_rho)):
+            if arctan((-V_qu[nn] / ((1 + V_qu[nn] ** 2) ** 0.5)) * tan(V_gma[nn] * self.dz)) > 0:
+                V_n[nn] = -DIR * int(V_gma[nn] * self.dz / pi) - 0.5 * (1 + DIR)
+            else:
+                V_n[nn] = -DIR * int(V_gma[nn] * self.dz / pi) + 0.5 * (1 - DIR)
+
+        V_omega = s_t_r * self.dz + \
+                  arctan((-V_qu / ((1 + V_qu ** 2) ** 0.5)) * tan(V_gma * self.dz)) + V_n * pi  # <<- Vector
+
+        V_R = 2 * arcsin(sin(V_gma * self.dz) / ((1 + V_qu ** 2) ** 0.5))  # <<- Vector
+
+        V_phi = ((s_t_r * self.dz) - V_omega) / 2 + m * (pi / 2)
+        V_phi += V_theta if DIR == 1 else np.flip(V_theta)
+
+        # Not using N-matrix technique
+        m11 = cos(V_R / 2) + 1j * sin(V_R / 2) * cos(2 * V_phi)
+        m12 = 1j * sin(V_R / 2) * sin(2 * V_phi)
+        m21 = 1j * sin(V_R / 2) * sin(2 * V_phi)
+        m22 = cos(V_R / 2) - 1j * sin(V_R / 2) * cos(2 * V_phi)
+
+        M_R = np.array([[m11, m21], [m12, m22]]).T
+        M_omega = np.array([[cos(V_omega), sin(V_omega)], [-sin(V_omega), cos(V_omega)]]).T
+
+        # Note that the result of [[n11,n21],[n21,n22]].T is [[n11[0], n12[0]],[n21[0],n22[0]], ...
+        # Therefore, M_R, M_omega array should be defined as transposed matrix to have correct matrix.
+        # See Note2 in Note folder
+
+        M = np.array([[1, 0], [0, 1]])
+
+        if perturbations == 'V':
+            tmp = np.array([])  # Logging matrix caculation
+            tmp2 = np.array([])  # logging the position of Merr
+            nM_vib = self.M_vib.shape[2]
+            nSet = int((len(V_theta) - 1) / (nM_vib + 1))
+            rem = (len(V_theta) - 1) % nSet
+
+            kk = 0
+
+        for nn in range(len(self.V_theta) - 1):
+            M = M_omega[nn] @ M_R[nn] @ M
+
+            if perturbations == 'V':
+                # When vibration mode is selected (mode = 'V' or mode='VL'), vibration matrices are inserted.
+                # For example, if Merr.shape[2] == 2, two Merr matrices will be inserted at the 1/3 and 2/3 point of spun fiber
+                # When vibration mode is 'VL', the location of inserted vibration matrces are printed.
+
+                if DIR == 1:
+                    tmp = np.append(tmp, "M" + str(nn))  # For indexing matrix to indicate the position of Merr
+                    if (nn + 1) % nSet == 0:
+                        if kk != nM_vib and (nn + 1 - rem) != 0:
+                            M = self.M_vib[..., kk] @ M
+                            # print('Merr has been added at ',
+                            #       nn+1,
+                            #       'th position of spun fiber model')
+                            tmp2 = np.append(tmp2, nn + 1)
+                            tmp = np.append(tmp, "Merr" + str(kk))
+
+                            kk = kk + 1
+
+                elif DIR == -1:
+                    tmp = np.append(tmp, "M" + str(
+                        len(V_theta) - 1 - nn))  # For indexing matrix to indicate the position of Merr
+                    if (nn + 1 - rem) % nSet == 0:
+                        if kk != nM_vib and (nn + 1 - rem) != 0:
+                            M = self.M_vib[..., -1 - kk].T @ M
+
+                            # print('Merr has been added at ',
+                            #       len(V_theta) - 1 - nn -1,
+                            #       'th position of spun fiber model (backward)')
+                            tmp2 = np.append(tmp2, len(V_theta) - 1 - nn - 1)
+                            tmp = np.append(tmp, "Merr" + str(nM_vib - kk - 1))
+
+                            kk = kk + 1
+
+        if perturbations == 'V':
+            if DIR == 1:
+                np.savetxt("MatrixCalculationlog_forward.txt", tmp, fmt='%s')
+                print("Merr matrices have been added at", end='')
+                for nn in tmp2:
+                    print(int(nn), "th, ", end='')
+                print("postions of spun fiber model")
+                print("Entire spun fiber model has been saved in MatrixCalculationlog_forward.txt")
+            elif DIR == -1:
+                np.savetxt("MatrixCalculationlog_backward.txt", tmp, fmt='%s')
+                print("Merr matrices have been added at ", end='')
+                for nn in tmp2:
+                    print(int(nn), "th, ", end='')
+                print("postions of spun fiber model")
+                print("Entire spun fiber model has been saved in MatrixCalculationlog_backward.txt")
+
+        return M
+
+    def cal_Jout1(self, num = 0, dic_Jout=None, V_Ip=None, Jin=None, perturbations='V'):
+        """ Calcuate the output Jones vector for each Ip
+
+        :param num: index of dictionary of Vout_dic (default: num = 0 --> Not using the multiprocessing)
+        :param dic_Jout: output Jones vector   (default: Vout_dic = None --> Not using the multiprocessing)
+        :param V_Ip: Plasma current (Ip) vector (default: None --> using the initialized vector)
+        :param Jin: Input Jones vector (default: None) --> using LHP (np.array([[1],[0]]))
+        :param perturbations: Perturbations
+                              'V': Vibration
+                              'T':
+
+        :return:
+        Case 1) normal calculation --> output Jones vectors (see example #3)
+        Case 2) multiprocssing calculation --> No return    (see example #4)
+
+        """
+
+        if V_Ip is None:
+            V_Ip = self.V_Ip
+
+        laming = self.laming2
+
+
+        V_Jout = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+        if Jin is None:
+            Jin = np.array([[1],[0]])
+        mm = 0
+        for Ip in V_Ip:
+
+            M_lf_f = laming(0, 1, self.V_theta_BF1, perturbations=perturbations)
+            M_f = laming(Ip, 1, self.V_theta)
+            M_lf_f2 = laming(0, 1, self.V_theta_BF2, perturbations=perturbations)
+            M_lf_b2 = laming(0, -1, self.V_theta_BF2, perturbations=perturbations)
+            M_b = laming(Ip, -1, self.V_theta)
+            M_lf_b = laming(0, -1, self.V_theta_BF1, perturbations=perturbations)
+
+            if num == 0 and Ip == V_Ip[0]:
+                print("Verification of Matrix Calculation bewteen the foward and backward propagation")
+                print("1) When Ip = 0A, the two matrices must be transposed to each other.")
+                print("--> Calcuate the difference of M_f and M_b when Ip = 0A")
+                print("dz = ",self.dz)
+                print("--> Norm (M_f - M_b) = ", norm(M_lf_f - M_lf_b.T))
+
+            if Ip == V_Ip[-1] and self.LB > 10000000:
+                print("2) When LB is the infinite, the two matrices must be the same")
+                print("--> Calcuate the difference of M_f and M_b when LB > 10000000")
+                print("--> Norm (M_f - M_b) = ", norm(M_f - M_b))
+
+            V_Jout[mm] = M_lf_b @ M_b @ M_lf_b2 @ self.M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Jin
+
+            print("process [",num,"], ",mm,"/",len(V_Ip), V_Ip[mm]/1000, "kA")
+            mm = mm + 1
+
+
+        if dic_Jout is None:
+            return V_Jout
+        else:
+            dic_Jout[num] = V_Jout
+
+    def cal_Jout1_mp(self, num_processor):
+        """ FOCS simulation using multiprocessing technique
+
+        :param num_processor: number of processor to use in multiprocess
+        :return: Calculated output Jones vector for each input Plasma current
+        """
+        spl_I = np.array_split(self.V_Ip, num_processor)
+
+        procs = []
+        manager = Manager()
+        dic_Jout = manager.dict()
+
+        # print("Vin_calc_mp", Vin)
+        for num in range(num_processor):
+            # proc = Process(target=self.cal_rotation,
+            proc = Process(target=self.cal_Jout0,
+                           args=(num, dic_Jout, spl_I[num], None, 'V'))
+            procs.append(proc)
+            proc.start()
+
+        for proc in procs:
+            proc.join()
+
+        V_Jout = dic_Jout[0]
+        for kk in range(num_processor - 1):
+            V_Jout = np.vstack((V_Jout, dic_Jout[kk + 1]))
+
+        return V_Jout
+
+    def save_error(self, filename, V_err, V_Iref=None, append=True):
+        """ save the calculated error by self.eval_FOCS_fromJones
+            If there is the same file,
+            the data will be saved in the last column of data file (when append=Ture)
+
+        :param filename: file name
+        :param V_Jout: numpy array of output Jones vector
+        :param V_Iref: reference current (default=None : self.V_Ip)
+        :param append: selecte save mode (defualt=True)
+        """
+        V_I = self.V_Ip if V_Iref is None else V_Iref
+        if os.path.exists(filename) and append is True:
+            df2 = pd.read_csv(filename)
+            ncol2 = df2.shape[1] - 1
+            df2[str(ncol2)] = V_err
+        else:
+            out_dict2 = {'Iref': V_I[1:]}
+            out_dict2['0'] = V_err
+            df2 = pd.DataFrame(out_dict2)
+        df2.to_csv(filename, index=False)
+
+    def plot_errorbar(self, filename):
+        """ Plot the calculated relative error
+
+        :param filename: data file
+        :return: fig, ax, lines to overlab the graph
+        """
+
+        data = pd.read_csv(filename)
+        V_Iref = data['Iref']
+
+        fig, ax = plt.subplots(figsize=(6, 3))
+        lines = []
+
+        # Draw ITER specifications
+        V_Iref = V_Iref[:]
+        absErrorlimit = V_Iref * 0.01
+        absErrorlimit[V_Iref < 1e6] = 10e3
+        relErrorlimit = absErrorlimit/V_Iref
+
+        lines += ax.plot(V_Iref, relErrorlimit, 'r', label='ITER specification')
+        lines += ax.plot(V_Iref, -relErrorlimit, 'r')
+
+        # Calculate mean and std
+        # (V_Ip - V_Iref) / V_Iref
+        df_mean = data.drop(['Iref'], axis=1).mean(axis=1)
+        df_std = data.drop(['Iref'], axis=1).std(axis=1)
+
+        # Draw mean error
+        lines += ax.plot(V_Iref[:], df_mean[:], label="mean value")
+        # Draw std as error bar
+        lines += ax.errorbar(V_Iref[::2], df_mean[::2], yerr=df_std[::2], label="std", ls='None', c='black', ecolor='g', capsize=4)
+
+        ax.legend(loc="upper right")
+        ax.set_xlabel(r'Plasma current $I_{p}(A)$')
+        ax.set_ylabel(r'Relative error on $I_{P}$')
+        ax.set(xlim=(0, 18e6), ylim=(-0.012, 0.012))
+        ax.yaxis.set_major_locator(MaxNLocator(4))
+        ax.xaxis.set_major_locator(MaxNLocator(10))
+        ax.xaxis.set_major_formatter(OOMFormatter(6, "%1.0f"))
+        ax.yaxis.set_major_formatter(OOMFormatter(0, "%4.3f"))
+        ax.ticklabel_format(axis='x', style='sci', useMathText=True, scilimits=(-3, 5))
+        ax.grid(ls='--', lw=0.5)
+        fig.subplots_adjust(left = 0.17, hspace=0.4, right=0.95, top=0.93, bottom=0.2)
+
+        return fig, ax, lines
+
+    # Bridge vibration 2nd
+    #   - Uniform B-field only around VV
+    #   - Nonuniform  B-field along Bridge (using Biot-Savart's law)
+    #   - See example 5
+    # todo : multi processing
+
+    def set_nonuniform_B_along_bridge(self):
+        """
+        :param DIR: direction (+1: forward, -1: backward)
+        :param Ip: plasma current
+        :param L: fiber length
+        :param V_theta: vector of theta (angle of optic axes)
+        :return: M matrix calculated from N matrix
+        """
+
+        # magnetic field in unit length
+        # H = Ip / (2 * pi * r)
+        r = self.len_sf /(2*pi)
+
+        self.V_h1_f = r / (2*pi*(r**2+ (self.len_bf - self.V_BF1)**2))
+        self.V_h2_f = r / (2*pi*(r**2+ self.V_BF2**2))
+        self.V_h2_b = r / (2*pi*(r**2+ (self.len_bf - self.V_BF2)**2))
+        self.V_h1_b = r / (2*pi*(r**2+ self.V_BF1**2))
+
+        print("----------------------------")
+        print("Non uniform magnetic field in bridge has been calculated")
+        print("----------------------------")
+        # V_H =  V_h * Ip
+        # V_rho = self.V * V_H
+
+    def laming2_nonuniform(self, Ip, DIR, V_theta, V_temp=None, V_H=None, Vib=False):
+        """Calculation of Jones matrix of spun fiber when plasma current (Ip) flows.
+        Spun fiber model was designed following Laming's paper
+        --NOT USING THE INFINISIMAL MODEL--
+
+        :param Ip: plasma current
+        :param DIR: direction of light propagation  (+1: forward, -1: backward)
+        :param V_theta: vector of theta (angle of oprientation of optic axes for each sliced fiber section)
+        :param V_temp: temperature vector (kelvin)
+                        None (default) : unifrom temperature (20degC)
+        :param V_H: magnetic field vector
+                    None (default)--> no magenetic field
+                    self.V_H: unifrom magnetic field around VV
+                    self.V_h1_f : 1st bridge forward direction
+                    self.V_h2_f : 2st bridge forward direction
+                    self.V_h2_b : 2st bridge backward direction
+                    self.V_h1_b : 1st bridge backward direction
+        :param Vib: False : no vibration
+               True : including the Vibration matrices
+        :return: Single 2x2 Jones matrix
+
+        example: self.cal_Jout1
+
+        """
+        # todo: including matrix calculation log in spun fiber class
+
+        s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
+
+        if V_H is None:
+            V_H = zeros(len(V_theta))
+        V_rho = self.V * Ip * V_H
+
+        delta = 2 * pi / self.LB
+        if V_temp is None:
+            V_delta = delta * ones(len(V_theta))
+        else:
+            V_delta = delta * (1 + 3e-5 * (V_temp - 273.15 - 20))
+            V_rho = V_rho * (1 + 8.1e-5 * (V_temp - 273.15 - 20))
+
+
+        m = 0
+        # --------Laming: orientation of the local slow axis ------------
+        V_qu = 2 * (s_t_r - V_rho) / V_delta  # <<- Vector
+        # See Note/Note 1 (sign of Farday effect in Laming's method).jpg
+        # The sign of farday rotation (rho) is opposite to that of the Laming paper, inorder
+        # to be consistant with anti-clockwise (as in Jones paper) orientation for both
+        # spin and faraday rotation.
+
+        V_gma = 0.5 * (V_delta ** 2 + 4 * ((s_t_r - V_rho) ** 2)) ** 0.5  # <<- Vector
+
+        V_n = zeros(len(V_rho))  # for compensating the 2pi ambiguity in arctan calculation of V_omega
+        for nn in range(len(V_rho)):
+            if arctan((-V_qu[nn] / ((1 + V_qu[nn] ** 2) ** 0.5)) * tan(V_gma[nn] * self.dz)) > 0:
+                V_n[nn] = -DIR * int(V_gma[nn] * self.dz / pi) - 0.5 * (1 + DIR)
+            else:
+                V_n[nn] = -DIR * int(V_gma[nn] * self.dz / pi) + 0.5 * (1 - DIR)
+
+        V_omega = s_t_r * self.dz + \
+                  arctan((-V_qu / ((1 + V_qu ** 2) ** 0.5)) * tan(V_gma * self.dz)) + V_n * pi  # <<- Vector
+
+        V_R = 2 * arcsin(sin(V_gma * self.dz) / ((1 + V_qu ** 2) ** 0.5))  # <<- Vector
+
+        V_phi = ((s_t_r * self.dz) - V_omega) / 2 + m * (pi / 2)
+        V_phi += V_theta if DIR == 1 else np.flip(V_theta)
+
+        # Not using N-matrix technique
+        m11 = cos(V_R / 2) + 1j * sin(V_R / 2) * cos(2 * V_phi)
+        m12 = 1j * sin(V_R / 2) * sin(2 * V_phi)
+        m21 = 1j * sin(V_R / 2) * sin(2 * V_phi)
+        m22 = cos(V_R / 2) - 1j * sin(V_R / 2) * cos(2 * V_phi)
+
+        M_R = np.array([[m11, m21], [m12, m22]]).T
+        M_omega = np.array([[cos(V_omega), sin(V_omega)], [-sin(V_omega), cos(V_omega)]]).T
+
+        # Note that the result of [[n11,n21],[n21,n22]].T is [[n11[0], n12[0]],[n21[0],n22[0]], ...
+        # Therefore, M_R, M_omega array should be defined as transposed matrix to have correct matrix.
+        # See Note2 in Note folder
+
+        M = np.array([[1, 0], [0, 1]])
+
+        if Vib is True:
+            tmp = np.array([])  # Logging matrix caculation
+            tmp2 = np.array([])  # logging the position of Merr
+            nM_vib = self.M_vib.shape[2]
+            nSet = int((len(V_theta) - 1) / (nM_vib + 1))
+            rem = (len(V_theta) - 1) % nSet
+
+            kk = 0
+
+        for nn in range(len(V_theta) - 1):
+            M = M_omega[nn] @ M_R[nn] @ M
+
+            if Vib is True:
+                # When vibration mode is selected (mode = 'V' or mode='VL'), vibration matrices are inserted.
+                # For example, if Merr.shape[2] == 2, two Merr matrices will be inserted at the 1/3 and 2/3 point of spun fiber
+                # When vibration mode is 'VL', the location of inserted vibration matrces are printed.
+
+                if DIR == 1:
+                    tmp = np.append(tmp, "M" + str(nn))  # For indexing matrix to indicate the position of Merr
+                    if (nn + 1) % nSet == 0:
+                        if kk != nM_vib and (nn + 1 - rem) != 0:
+                            M = self.M_vib[..., kk] @ M
+                            # print('Merr has been added at ',
+                            #       nn+1,
+                            #       'th position of spun fiber model')
+                            tmp2 = np.append(tmp2, nn + 1)
+                            tmp = np.append(tmp, "Merr" + str(kk))
+
+                            kk = kk + 1
+
+                elif DIR == -1:
+                    tmp = np.append(tmp, "M" + str(
+                        len(V_theta) - 1 - nn))  # For indexing matrix to indicate the position of Merr
+                    if (nn + 1 - rem) % nSet == 0:
+                        if kk != nM_vib and (nn + 1 - rem) != 0:
+                            M = self.M_vib[..., -1 - kk].T @ M
+
+                            # print('Merr has been added at ',
+                            #       len(V_theta) - 1 - nn -1,
+                            #       'th position of spun fiber model (backward)')
+                            tmp2 = np.append(tmp2, len(V_theta) - 1 - nn - 1)
+                            tmp = np.append(tmp, "Merr" + str(nM_vib - kk - 1))
+
+                            kk = kk + 1
+
+        if Vib is True:
+            if DIR == 1:
+                np.savetxt("MatrixCalculationlog_forward.txt", tmp, fmt='%s')
+                print("Merr matrices have been added at", end='')
+                for nn in tmp2:
+                    print(int(nn), "th, ", end='')
+                print("postions of spun fiber model")
+                print("Entire spun fiber model has been saved in MatrixCalculationlog_forward.txt")
+            elif DIR == -1:
+                np.savetxt("MatrixCalculationlog_backward.txt", tmp, fmt='%s')
+                print("Merr matrices have been added at ", end='')
+                for nn in tmp2:
+                    print(int(nn), "th, ", end='')
+                print("postions of spun fiber model")
+                print("Entire spun fiber model has been saved in MatrixCalculationlog_backward.txt")
+
+        return M
+
+    def cal_Jout2(self, num=0, dic_Jout=None, V_Ip=None, Jin=None, Vib=True):
+        """ Calcuate the output Jones vector for each Ip
+
+        :param num: index of dictionary of Vout_dic (default: num = 0 --> Not using the multiprocessing)
+        :param dic_Jout: output Jones vector   (default: Vout_dic = None --> Not using the multiprocessing)
+        :param V_Ip: Plasma current (Ip) vector (default: None --> using the initialized vector)
+        :param Jin: Input Jones vector (default: None) --> using LHP (np.array([[1],[0]]))
+        :param Vib: Vibration
+                    True (default) : Vibration in Bridge section
+                    False : No vibration
+        :return:
+        Case 1) normal calculation --> output Jones vectors (see example #3)
+        Case 2) multiprocssing calculation --> No return    (see example #4)
+
+        """
+
+        if V_Ip is None:
+            V_Ip = self.V_Ip
+
+        laming = self.laming2_nonuniform
+
+        V_Jout = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+        if Jin is None:
+            Jin = np.array([[1], [0]])
+        mm = 0
+        for Ip in V_Ip:
+
+            M_lf_f = laming(0, 1, self.V_theta_BF1, V_H=self.V_h1_f, Vib=True)
+            M_f = laming(Ip, 1, self.V_theta, V_H=self.V_H)
+            M_lf_f2 = laming(0, 1, self.V_theta_BF2, V_H=self.V_h2_f, Vib=True)
+            M_lf_b2 = laming(0, -1, self.V_theta_BF2, V_H=self.V_h2_b, Vib=True)
+            M_b = laming(Ip, -1, self.V_theta, V_H=self.V_H)
+            M_lf_b = laming(0, -1, self.V_theta_BF1, V_H=self.V_h1_b, Vib=True)
+
+            if num == 0 and Ip == V_Ip[0]:
+                print("Verification of Matrix Calculation bewteen the foward and backward propagation")
+                print("1) When Ip = 0A, the two matrices must be transposed to each other.")
+                print("--> Calcuate the difference of M_f and M_b when Ip = 0A")
+                print("dz = ", self.dz)
+                print("--> Norm (M_f - M_b) = ", norm(M_lf_f - M_lf_b.T))
+
+            if Ip == V_Ip[-1] and self.LB > 10000000:
+                print("2) When LB is the infinite, the two matrices must be the same")
+                print("--> Calcuate the difference of M_f and M_b when LB > 10000000")
+                print("--> Norm (M_f - M_b) = ", norm(M_f - M_b))
+
+            V_Jout[mm] = M_lf_b @ M_b @ M_lf_b2 @ self.M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Jin
+
+            print("process [", num, "], ", mm, "/", len(V_Ip), V_Ip[mm] / 1000, "kA")
+            mm = mm + 1
+
+        if dic_Jout is None:
+            return V_Jout
+        else:
+            dic_Jout[num] = V_Jout
 
     # Nonuniform Temperature effect
+    #    - No vibration
+    #    - Uniform magnetic field around VV
+    #    - No magnetic field along Bridge
+    #    - Non uniform temperature around VV given by ITER report  (VVtemp.csv)
+    #    - See example 6
+    # todo : multi processing
 
-    # Nonuniform Magnetic effect
+    def set_tempVV(self, li, lf, func_temp_interp):
+        self.V_temp_VV = np.array([periodicf(li, lf, func_temp_interp, xi) for xi in self.V_SF])
+        tmp = self.V_temp_VV.mean()
+        print("average temperature of VV is ", tmp)
+        print("corresponding calibration factor is", (1 + 8.1e-5 * (tmp - 273.15 - 20)))
+        print("Use V_custom=",
+              self.V*(1 + 8.1e-5 * (tmp - 273.15 - 20)),
+              " when calculate the FOCS accuracy")
+        return self.V*(1 + 8.1e-5 * (tmp - 273.15 - 20))
+
+    def cal_Jout3(self, num=0, dic_Jout=None, V_Ip=None, Jin=None, Vib=True):
+        """ Calcuate the output Jones vector for each Ip
+
+        :param num: index of dictionary of Vout_dic (default: num = 0 --> Not using the multiprocessing)
+        :param dic_Jout: output Jones vector   (default: Vout_dic = None --> Not using the multiprocessing)
+        :param V_Ip: Plasma current (Ip) vector (default: None --> using the initialized vector)
+        :param Jin: Input Jones vector (default: None) --> using LHP (np.array([[1],[0]]))
+        :param Vib: Vibration
+                    True (default) : Vibration in Bridge section
+                    False : No vibration
+        :return:
+        Case 1) normal calculation --> output Jones vectors (see example #3)
+        Case 2) multiprocssing calculation --> No return    (see example #4)
+
+        """
+
+        if V_Ip is None:
+            V_Ip = self.V_Ip
+
+        laming = self.laming2_nonuniform
+
+        V_Jout = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+        if Jin is None:
+            Jin = np.array([[1], [0]])
+        mm = 0
+        for Ip in V_Ip:
+
+            M_lf_f = laming(0, 1, self.V_theta_BF1)
+            M_f = laming(Ip, 1, self.V_theta, V_temp=self.V_temp_VV, V_H=self.V_H)
+            M_lf_f2 = laming(0, 1, self.V_theta_BF2)
+            M_lf_b2 = laming(0, -1, self.V_theta_BF2)
+            M_b = laming(Ip, -1, self.V_theta, V_temp=self.V_temp_VV, V_H=self.V_H)
+            M_lf_b = laming(0, -1, self.V_theta_BF1)
+
+            if num == 0 and Ip == V_Ip[0]:
+                print("Verification of Matrix Calculation bewteen the foward and backward propagation")
+                print("1) When Ip = 0A, the two matrices must be transposed to each other.")
+                print("--> Calcuate the difference of M_f and M_b when Ip = 0A")
+                print("dz = ", self.dz)
+                print("--> Norm (M_f - M_b) = ", norm(M_lf_f - M_lf_b.T))
+
+            if Ip == V_Ip[-1] and self.LB > 10000000:
+                print("2) When LB is the infinite, the two matrices must be the same")
+                print("--> Calcuate the difference of M_f and M_b when LB > 10000000")
+                print("--> Norm (M_f - M_b) = ", norm(M_f - M_b))
+
+            V_Jout[mm] = M_lf_b @ M_b @ M_lf_b2 @ self.M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Jin
+
+            print("process [", num, "], ", mm, "/", len(V_Ip), V_Ip[mm] / 1000, "kA")
+            mm = mm + 1
+
+        if dic_Jout is None:
+            return V_Jout
+        else:
+            dic_Jout[num] = V_Jout
+
+    # Nonuniform Temperature + magnetic effect
+    #    - No vibration
+    #    - non Uniform magnetic field around VV given by ITER report ('B-field_around_VV.txt')
+    #    - No magnetic field along Bridge
+    #    - Non uniform temperature around VV given by ITER report  (VVtemp.csv)
+    #    - See example 7
+    # todo : multi processing
+
+    def set_nonuniform_B_around_VV(self, func_B_interp):
+        # the magnetic field profile given by ITER is only 15MA scenario.
+        # However,
+        self.V_H = -func_B_interp(self.V_SF) * 1 / (4 * pi * 1e-7) / 15e6
+        tmp = np.trapz(self.V_H, x=self.V_SF) # integral calculation of B-field along VV
+        c = ((-tmp/(4*pi*1e-7))/15e6)
+        print('Use total current Itotal = Ip x', c)
+        return c
+
+    def cal_Jout4(self, num=0, dic_Jout=None, V_Ip=None, Jin=None, Vib=True):
+        """ Calcuate the output Jones vector for each Ip
+
+        :param num: index of dictionary of Vout_dic (default: num = 0 --> Not using the multiprocessing)
+        :param dic_Jout: output Jones vector   (default: Vout_dic = None --> Not using the multiprocessing)
+        :param V_Ip: Plasma current (Ip) vector (default: None --> using the initialized vector)
+        :param Jin: Input Jones vector (default: None) --> using LHP (np.array([[1],[0]]))
+        :param Vib: Vibration
+                    True (default) : Vibration in Bridge section
+                    False : No vibration
+        :return:
+        Case 1) normal calculation --> output Jones vectors (see example #3)
+        Case 2) multiprocssing calculation --> No return    (see example #4)
+
+        """
+
+        if V_Ip is None:
+            V_Ip = self.V_Ip
+
+        laming = self.laming2_nonuniform
+
+        V_Jout = np.einsum('...i,jk->ijk', ones(len(V_Ip)) * 1j, np.mat([[0], [0]]))
+        if Jin is None:
+            Jin = np.array([[1], [0]])
+        mm = 0
+        for Ip in V_Ip:
+
+            M_lf_f = laming(0, 1, self.V_theta_BF1)
+            M_f = laming(Ip, 1, self.V_theta, V_temp=self.V_temp_VV, V_H=self.V_H)
+            M_lf_f2 = laming(0, 1, self.V_theta_BF2)
+            M_lf_b2 = laming(0, -1, self.V_theta_BF2)
+            M_b = laming(Ip, -1, self.V_theta, V_temp=self.V_temp_VV, V_H=self.V_H)
+            M_lf_b = laming(0, -1, self.V_theta_BF1)
+
+            if num == 0 and Ip == V_Ip[0]:
+                print("Verification of Matrix Calculation bewteen the foward and backward propagation")
+                print("1) When Ip = 0A, the two matrices must be transposed to each other.")
+                print("--> Calcuate the difference of M_f and M_b when Ip = 0A")
+                print("dz = ", self.dz)
+                print("--> Norm (M_f - M_b) = ", norm(M_lf_f - M_lf_b.T))
+
+            if Ip == V_Ip[-1] and self.LB > 10000000:
+                print("2) When LB is the infinite, the two matrices must be the same")
+                print("--> Calcuate the difference of M_f and M_b when LB > 10000000")
+                print("--> Norm (M_f - M_b) = ", norm(M_f - M_b))
+
+            V_Jout[mm] = M_lf_b @ M_b @ M_lf_b2 @ self.M_FR @ M_lf_f2 @ M_f @ M_lf_f @ Jin
+
+            print("process [", num, "], ", mm, "/", len(V_Ip), V_Ip[mm] / 1000, "kA")
+            mm = mm + 1
+
+        if dic_Jout is None:
+            return V_Jout
+        else:
+            dic_Jout[num] = V_Jout
 
 
 if __name__ == '__main__':
@@ -682,11 +1351,13 @@ if __name__ == '__main__':
     if mode == 0:
         LB = 1.000
         SP = 0.005
-        dz = 0.00005
+        dz = 0.0005
         len_lf = 1  # lead fiber
-        len_ls = 1  # sensing fiber
+        len_ls = 29  # sensing fiber
         spunfiber = SPUNFIBER(LB, SP, dz, len_lf, len_ls)
         str_file1 ='xx.csv'
+        str_file2 ='xx_err.csv'
+
 
         # example 1
         # V_Jout= spunfiber.cal_Jout0()
@@ -695,17 +1366,126 @@ if __name__ == '__main__':
         # spunfiber.save_Jones(str_file1, V_Jout)
 
         # example 2
-        num_processor = 8
-        spunfiber.set_input_current(0,18e6,1e5)
-        V_Jout= spunfiber.cal_Jout0_mp(num_processor)
-        V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
-        fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
-        spunfiber.save_Jones(str_file1, V_Jout)
+        # num_processor = 8
+        # spunfiber.set_input_current(0,18e6,1e5)
+        # V_Jout= spunfiber.cal_Jout0_mp(num_processor)
+        # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
+        # fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+        # spunfiber.save_Jones(str_file1, V_Jout)
 
-        # example 2
+        # example 3
         # V_Iref, V_Jout, isEOF = spunfiber.load_Jones(str_file1)
         # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
         # fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
         # fig2, ax2 = spunfiber.draw_Stokes(V_Jout)
+
+        # -------------------------------------------------------------------------------- #
+        # example 4
+        # Vibration
+        # -------------------------------------------------------------------------------- #
+
+        # num_iter = 3 # number of iterations
+        # nM_vib = 5
+        # spunfiber.set_input_current(0,1e6,2e5)
+        #
+        # for nn in range(num_iter):
+        #     spunfiber.create_Mvib(nM_vib, 1, 1)
+        #     V_Jout= spunfiber.cal_Jout1()
+        #     V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
+        #     if nn == 0:
+        #         spunfiber.save_Jones(str_file1, V_Jout, append=False)
+        #         spunfiber.save_error(str_file2, V_err, append = False)
+        #         fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+        #     else:
+        #         spunfiber.save_Jones(str_file1, V_Jout, append=True)
+        #         spunfiber.save_error(str_file2, V_err, append=True)
+        #         fig, ax, lines = spunfiber.plot_error(V_err,
+        #                                               fig=fig, ax=ax, lines=lines,
+        #                                               label='LB/SP=200')
+        # fig, ax, lines = spunfiber.plot_errorbar(str_file2)
+
+        # -------------------------------------------------------------------------------- #
+        # example 5
+        # Vibration with nonunifrom magnetic field along Bridge
+        # -------------------------------------------------------------------------------- #
+
+        # num_iter = 3  # number of iterations
+        # nM_vib = 5
+        # spunfiber.set_input_current(0, 1e6, 2e5)
+        # spunfiber.set_nonuniform_B_along_bridge()
+        #
+        # for nn in range(num_iter):
+        #     spunfiber.create_Mvib(nM_vib, 1, 1)
+        #     V_Jout = spunfiber.cal_Jout2()
+        #     V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
+        #     if nn == 0:
+        #         spunfiber.save_Jones(str_file1, V_Jout, append=False)
+        #         spunfiber.save_error(str_file2, V_err, append=False)
+        #         fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+        #     else:
+        #         spunfiber.save_Jones(str_file1, V_Jout, append=True)
+        #         spunfiber.save_error(str_file2, V_err, append=True)
+        #         fig, ax, lines = spunfiber.plot_error(V_err,
+        #                                               fig=fig, ax=ax, lines=lines,
+        #                                               label='LB/SP=200')
+        # fig, ax, lines = spunfiber.plot_errorbar(str_file2)
+
+        # -------------------------------------------------------------------------------- #
+        # example 6
+        # no vibration
+        # nonuniform magnetic field along Bridge
+        # uniform magnetic field around VV
+        # Non uniform temperature given by ITER report (VVtemp.csv)
+        # todo: multiprocessing
+        # -------------------------------------------------------------------------------- #
+
+        spunfiber.set_input_current(0, 1e6, 2e5)
+
+        # Load a part of temperature distribution along the VV (20 cm, a clamp in the middle)
+        data = pd.read_csv('VVtemp.csv', delimiter=';')
+        V_l = data['L'].to_numpy() / 100
+        V_temp = data['TEMP'].to_numpy()
+        func_temp_interp = CubicSpline(V_l, V_temp)
+        V_custom = spunfiber.set_tempVV(V_l[0], V_l[-1], func_temp_interp)
+
+        V_Jout = spunfiber.cal_Jout3()
+        # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)          # without considering temp dependence of Verdet constant in VV section
+        V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout, V_custom=V_custom)
+
+        spunfiber.save_Jones(str_file1, V_Jout, append=False)
+        fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+
+        # -------------------------------------------------------------------------------- #
+        # example 7
+        # Non unifrom temperature along VV
+        # Non uniform magnetic field along VV
+        # No magnetic field in Bridge section
+        # No Vibration
+        # -------------------------------------------------------------------------------- #
+
+        # num_iter = 1  # number of iterations
+        #
+        # spunfiber.set_input_current(0, 1e6, 2e5)
+        # #spunfiber.set_nonuniform_B_along_bridge()
+        #
+        # # Load a part of temperature distribution along the VV (20 cm, a clamp in the middle)
+        # data = pd.read_csv('VVtemp.csv', delimiter=';')
+        # V_l = data['L'].to_numpy() / 100
+        # V_temp = data['TEMP'].to_numpy()
+        # func_temp_interp = CubicSpline(V_l, V_temp)
+        # spunfiber.set_tempVV(V_l[0], V_l[-1], func_temp_interp)
+        #
+        # # Load the magnetic field distribution along the VV (30 m)
+        # strfile_B = 'B-field_around_VV.txt'
+        # data_B = np.loadtxt(strfile_B)
+        # func_B_interp = interp1d(data_B[:, 0], data_B[:, 1], kind='cubic')
+        # spunfiber.set_nonuniform_B_around_VV(func_B_interp)
+        #
+        # V_Jout = spunfiber.cal_Jout4()
+        # V_IFOCS, V_err = spunfiber.eval_FOCS_fromJones(V_Jout)
+        #
+        # spunfiber.save_Jones(str_file1, V_Jout, append=False)
+        # fig, ax, lines = spunfiber.plot_error(V_err, label='LB/SP=200')
+
 
 plt.show()
