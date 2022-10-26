@@ -664,7 +664,18 @@ class SPUNFIBER:
     #   - No B-field along Bridge
     #   - See example 4
     # todo : multi processing
+
     def create_Mvib(self, nM_vib, max_phi, max_theta_e):
+        """ Create vibration matrices (pertubation matrices)
+
+        retardation (phi) values are randomly set within -max_phi < phi < max_phi
+        angles of the birefringence axis (theta) will be randomly set within -2pi < theta < 2pi
+        rotation (theta_e) values are randomly set within -max_theta_e < theta_e < max_theta_e
+
+        :param nM_vib: number of vibration matrices
+        :param max_phi: maximum value of retardation
+        :param max_theta_e: maximum value of rotation
+        """
         theta = (np.random.rand(nM_vib) - 0.5) * 2 * pi / 2  # random axis of LB
         phi = (np.random.rand(nM_vib) - 0.5) * 2 * max_phi * pi / 180  # ellipticity angle change from experiment
         theta_e = (np.random.rand(nM_vib) - 0.5) * 2 * max_theta_e * pi / 180  # azimuth angle change from experiment
@@ -683,13 +694,15 @@ class SPUNFIBER:
         Bexp = np.exp(1j * np.vstack((phi, -phi)))
         M_phi = einsum('ijk, ...ik -> ijk', IB, Bexp)
 
+        # Flag to show how the vibration matrices inserted
+        # see
         self.is_spunfiber_set_with_Mvib_in_forward = False
         self.is_spunfiber_set_with_Mvib_in_backward = False
 
         # Random birefringence(circular + linear), random optic axis matrix calculation
         self.M_vib = einsum('ij..., jk..., kl...,lm...-> im...', M_rot, M_theta, M_phi, M_theta_T)
 
-    def laming2(self, Ip, DIR, V_theta, perturbations='N'):
+    def laming2(self, Ip, DIR, V_theta, Vib = False):
         """Calculation of Jones matrix of spun fiber when plasma current (Ip) flows.
         Spun fiber model was designed following Laming's paper
         --NOT USING THE INFINISIMAL MODEL--
@@ -697,8 +710,8 @@ class SPUNFIBER:
         :param Ip: plasma current
         :param DIR: direction of light propagation  (+1: forward, -1: backward)
         :param V_theta: vector of theta (angle of oprientation of optic axes for each sliced fiber section)
-        :param perturbations: 'N' : no perturbation
-                              'V' : including Vibration matrices
+        :param Vib: False (default) : No vbiration
+                    Ture: including vibration matrices self.Merr
        :return: Single 2x2 Jones matrix
 
         example: self.cal_Jout1
@@ -710,16 +723,13 @@ class SPUNFIBER:
         s_t_r = 2 * pi / self.SP * DIR  # spin twist ratio
         delta = 2 * pi / self.LB
         V_delta = delta * ones(len(V_theta))
-        # magnetic field in unit length
-        # H = Ip / (2 * pi * r)
-        # H = Ip / self.len_sf
-        # rho = self.V * H
 
         m = 0
         # magnetic field in unit length
         r = self.len_sf / (2 * pi)
         V_H = Ip / (2 * pi * r) * ones(len(V_theta))
         V_rho = self.V * V_H  # <<- Vector
+
 
         # --------Laming: orientation of the local slow axis ------------
         V_qu = 2 * (s_t_r - V_rho) / V_delta  # <<- Vector
@@ -760,7 +770,7 @@ class SPUNFIBER:
 
         M = np.array([[1, 0], [0, 1]])
 
-        if perturbations == 'V':
+        if Vib is True:
             tmp = np.array([])  # Logging matrix caculation
             tmp2 = np.array([])  # logging the position of Merr
             nM_vib = self.M_vib.shape[2]
@@ -772,10 +782,9 @@ class SPUNFIBER:
         for nn in range(len(self.V_theta) - 1):
             M = M_omega[nn] @ M_R[nn] @ M
 
-            if perturbations == 'V':
-                # When vibration mode is selected (mode = 'V' or mode='VL'), vibration matrices are inserted.
-                # For example, if Merr.shape[2] == 2, two Merr matrices will be inserted at the 1/3 and 2/3 point of spun fiber
-                # When vibration mode is 'VL', the location of inserted vibration matrces are printed.
+            if Vib is True:
+                # When vibration mode is selected (Vib = True), vibration matrices (self.Merr) are inserted.
+                # For example, if self.Merr.shape[2] == 2, two Merr matrices will be inserted at the 1/3 and 2/3 point of spun fiber
 
                 if DIR == 1:
                     tmp = np.append(tmp, "M" + str(nn))  # For indexing matrix to indicate the position of Merr
@@ -805,15 +814,18 @@ class SPUNFIBER:
 
                             kk = kk + 1
 
-        if perturbations == 'V':
-            if DIR == 1:
+        if Vib is True:
+            # The configurations of forward and backward matrices are saved
+            if DIR == 1 and self.is_spunfiber_set_with_Mvib_in_forward is False:
+                self.is_spunfiber_set_with_Mvib_in_forward = True
                 np.savetxt("MatrixCalculationlog_forward.txt", tmp, fmt='%s')
                 print("Merr matrices have been added at", end='')
                 for nn in tmp2:
                     print(int(nn), "th, ", end='')
                 print("postions of spun fiber model")
                 print("Entire spun fiber model has been saved in MatrixCalculationlog_forward.txt")
-            elif DIR == -1:
+            elif DIR == -1 and self.is_spunfiber_set_with_Mvib_in_backward is False:
+                self.is_spunfiber_set_with_Mvib_in_backward = True
                 np.savetxt("MatrixCalculationlog_backward.txt", tmp, fmt='%s')
                 print("Merr matrices have been added at ", end='')
                 for nn in tmp2:
@@ -823,7 +835,7 @@ class SPUNFIBER:
 
         return M
 
-    def cal_Jout1(self, num = 0, dic_Jout=None, V_Ip=None, Jin=None, perturbations='V'):
+    def cal_Jout1(self, num = 0, dic_Jout=None, V_Ip=None, Jin=None):
         """ Calcuate the output Jones vector for each Ip
 
         :param num: index of dictionary of Vout_dic (default: num = 0 --> Not using the multiprocessing)
@@ -850,12 +862,12 @@ class SPUNFIBER:
         mm = 0
         for Ip in V_Ip:
 
-            M_lf_f = laming(0, 1, self.V_theta_BF1, perturbations=perturbations)
+            M_lf_f = laming(0, 1, self.V_theta_BF1, Vib=True)
             M_f = laming(Ip, 1, self.V_theta)
-            M_lf_f2 = laming(0, 1, self.V_theta_BF2, perturbations=perturbations)
-            M_lf_b2 = laming(0, -1, self.V_theta_BF2, perturbations=perturbations)
+            M_lf_f2 = laming(0, 1, self.V_theta_BF2, Vib=True)
+            M_lf_b2 = laming(0, -1, self.V_theta_BF2, Vib=True)
             M_b = laming(Ip, -1, self.V_theta)
-            M_lf_b = laming(0, -1, self.V_theta_BF1, perturbations=perturbations)
+            M_lf_b = laming(0, -1, self.V_theta_BF1, Vib=True)
 
             if num == 0 and Ip == V_Ip[0]:
                 print("Verification of Matrix Calculation bewteen the foward and backward propagation")
@@ -896,7 +908,7 @@ class SPUNFIBER:
         for num in range(num_processor):
             # proc = Process(target=self.cal_rotation,
             proc = Process(target=self.cal_Jout1,
-                           args=(num, dic_Jout, spl_I[num], None, 'V'))
+                           args=(num, dic_Jout, spl_I[num], None))
             procs.append(proc)
             proc.start()
 
@@ -1014,19 +1026,29 @@ class SPUNFIBER:
         :param DIR: direction of light propagation  (+1: forward, -1: backward)
         :param V_theta: vector of theta (angle of oprientation of optic axes for each sliced fiber section)
         :param V_temp: temperature vector (kelvin)
-                        None (default) : unifrom temperature (20degC)
+                        None (default) : uniform temperature (20degC)
+
         :param V_H: magnetic field vector
                     None (default)--> no magenetic field
-                    self.V_H: unifrom magnetic field around VV
-                    self.V_h1_f : 1st bridge forward direction
-                    self.V_h2_f : 2nd bridge forward direction
-                    self.V_h2_b : 2nd bridge backward direction
-                    self.V_h1_b : 1st bridge backward direction
-        :param Vib: False : no vibration
-               True : including the Vibration matrices
+
+                    self.V_H: uniform magnetic field around VV (Circular shape of VV)
+
+                    # predefined Magnetic field vector used in OE paper (see cal_Jout2)
+                    self.V_h1_f : 1st bridge forward direction (Straight Bridge)
+                    self.V_h2_f : 2nd bridge forward direction (Straight Bridge)
+                    self.V_h2_b : 2nd bridge backward direction (Straight Bridge)
+                    self.V_h1_b : 1st bridge backward direction (Straight Bridge)
+
+        :param Vib: False (default) : no vibration
+                    True : including the Vibration matrices (self.Merr)
+                            self.Merr can be defined by self.create_Mvib
         :return: Single 2x2 Jones matrix
 
-        example: self.cal_Jout1
+        example:
+
+        self.cal_Jout2 : B field on Circular shape of VV and straight line of Bridge
+        self.cal_Jout3 : B field on Circular shape, no B field along bridge, Nonuniform temperature around VV
+        self.cal_Jout4 : Nonuniform B field arond VV, no B field along Bridge, Nonuniform temperature around VV
 
         """
         # todo: including matrix calculation log in spun fiber class
@@ -1044,6 +1066,9 @@ class SPUNFIBER:
             V_delta = delta * (1 + 3e-5 * (V_temp - 273.15 - 20))
             V_rho = V_rho * (1 + 8.1e-5 * (V_temp - 273.15 - 20))
 
+        # ------------------- Below is just copy of self.laming2 no change --------------------
+        # ------------------- Below is just copy of self.laming2 no change --------------------
+        # ------------------- Below is just copy of self.laming2 no change --------------------
 
         m = 0
         # --------Laming: orientation of the local slow axis ------------
@@ -1098,9 +1123,8 @@ class SPUNFIBER:
             M = M_omega[nn] @ M_R[nn] @ M
 
             if Vib is True:
-                # When vibration mode is selected (mode = 'V' or mode='VL'), vibration matrices are inserted.
-                # For example, if Merr.shape[2] == 2, two Merr matrices will be inserted at the 1/3 and 2/3 point of spun fiber
-                # When vibration mode is 'VL', the location of inserted vibration matrces are printed.
+                # When vibration mode is selected (Vib = True), vibration matrices (self.Merr) are inserted.
+                # For example, if self.Merr.shape[2] == 2, two Merr matrices will be inserted at the 1/3 and 2/3 point of spun fiber
 
                 if DIR == 1:
                     tmp = np.append(tmp, "M" + str(nn))  # For indexing matrix to indicate the position of Merr
